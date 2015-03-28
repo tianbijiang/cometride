@@ -9,7 +9,7 @@ import java.sql.Timestamp;
  * Time: 5:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LocationUpdate {
+public class Location {
 
     private int id;
     private String cabId;
@@ -17,15 +17,15 @@ public class LocationUpdate {
     private String lon;
     private Timestamp timeStamp;
 
-//    public LocationUpdate(){}
-//
-//    public LocationUpdate( String cabId, String lat, String lon, Timestamp timeStamp, int id ) {
-//        this.cabId = cabId;
-//        this.lat = lat;
-//        this.lon = lon;
-//        this.timeStamp = timeStamp;
-//        this.id = id;
-//    }
+    public Location(){}
+
+    public Location( String cabId, String lat, String lon, Timestamp timeStamp, int id ) {
+        this.cabId = cabId;
+        this.lat = lat;
+        this.lon = lon;
+        this.timeStamp = timeStamp;
+        this.id = id;
+    }
 
     public int getId() {
         return id;

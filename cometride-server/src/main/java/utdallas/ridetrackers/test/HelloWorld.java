@@ -15,8 +15,7 @@ public class HelloWorld {
 
     @GET
     public String sayHello(){
-        StringBuilder stringBuilder = new StringBuilder("Hello generic user!" +
-			" Tell me your name by adding '/{name}' to the end of this url!" );
+        StringBuilder stringBuilder = new StringBuilder("Hello generic user!" );
 
         return stringBuilder.toString();
     }
@@ -41,7 +40,7 @@ public class HelloWorld {
 		  String port = System.getProperty("RDS_PORT");
 		  String jdbcUrl = "jdbc:mysql://" + hostname + ":" +
 			port + "/" + dbName + "?user=" + userName + "&password=" + password;
-		  
+
 		  // Load the JDBC Driver
 		  try {
 			System.out.println("Loading driver...");
@@ -62,19 +61,19 @@ public class HelloWorld {
 		  try {
 			// Create connection to RDS instance
 			conn = DriverManager.getConnection(jdbcUrl);
-			
+
 			// Create a table and write two rows
 			setupStatement = conn.createStatement();
 			String createTable = "CREATE TABLE Beanstalk (Resource char(50));";
 			String insertRow1 = "INSERT INTO Beanstalk (Resource) VALUES ('EC2 Instance');";
 			String insertRow2 = "INSERT INTO Beanstalk (Resource) VALUES ('RDS Instance');";
-			
+
 			setupStatement.addBatch(createTable);
 			setupStatement.addBatch(insertRow1);
 			setupStatement.addBatch(insertRow2);
 			setupStatement.executeBatch();
 			setupStatement.close();
-			
+
 		  } catch (SQLException ex) {
 			// handle any errors
 			System.out.println("SQLException: " + ex.getMessage());
@@ -87,7 +86,7 @@ public class HelloWorld {
 
 		  try {
 			conn = DriverManager.getConnection(jdbcUrl);
-			
+
 			readStatement = conn.createStatement();
 			resultSet = readStatement.executeQuery("SELECT Resource FROM Beanstalk;");
 
@@ -95,7 +94,7 @@ public class HelloWorld {
 			results = resultSet.getString("Resource");
 			resultSet.next();
 			results += ", " + resultSet.getString("Resource");
-			
+
 			resultSet.close();
 			readStatement.close();
 			conn.close();
@@ -109,7 +108,7 @@ public class HelloWorld {
 			   System.out.println("Closing the connection.");
 			  if (conn != null) try { conn.close(); } catch (SQLException ignore) {}
 		  }
-		  
+
 		return results;
 	}
 
