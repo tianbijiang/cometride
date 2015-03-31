@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="cabroutes">
+        <item> @string/route1</item>
+        <item> @string/route2</item>
+        <item> @string/route3</item>
+        <item> @string/route4</item>
+        <item> @string/route5</item>
+    </string-array>
+</resources>
