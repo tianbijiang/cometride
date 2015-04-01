@@ -34,7 +34,7 @@
     height: 100%;
     top: 0;
     z-index: 1001;
-    background-color: #555;
+    background-color: #008542;
     -webkit-box-shadow: 4px 0px 19px -5px rgba(0, 0, 0, 0.7);
     -moz-box-shadow: 4px 0px 19px -5px rgba(0, 0, 0, 0.7);
     box-shadow: 4px 0px 19px -5px rgba(0, 0, 0, 0.7);
@@ -51,6 +51,17 @@
 
 .form-control {
     position: relative;
+}
+
+.btn-panel {
+    background-color: transparent;
+    border: 1px solid #fff;
+    border-radius: 0px;
+    color: rgba(255,255,255,0.8);
+}
+
+.btn-panel:hover {
+    color: rgba(255,255,255,1);
 }
 
 /* Menu Movement */
