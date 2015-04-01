@@ -7,9 +7,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 
 public class Options extends Activity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +43,31 @@ public class Options extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
-    public void OpenDriver(View view){
-        Intent intent  =new Intent(this, Driver.class);
-        startActivity(intent);
+
+
+
+    public void OpenDriver(View v)
+    {
+        final RadioButton seven = (RadioButton) findViewById(R.id.radioButton1);
+        final RadioButton nine = (RadioButton) findViewById(R.id.radioButton2);
+
+        Button proceed = (Button) findViewById(R.id.button2);
+        proceed.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+                if(seven.isChecked()) {
+                    Intent sevenIntent = new Intent(getApplicationContext(), Driver.class);
+                    startActivityForResult(sevenIntent, 0);
+                } else if (nine.isChecked()) {
+                    Intent nineIntent = new Intent(getApplicationContext(), Driver2.class);
+                    startActivityForResult(nineIntent, 0);
+                }
+            }
+        });
     }
+
+
 }

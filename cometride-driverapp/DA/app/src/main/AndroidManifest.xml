@@ -24,6 +24,10 @@
             android:name=".Driver"
             android:label="@string/title_activity_driver" >
         </activity>
+        <activity
+            android:name=".Driver2"
+            android:label="@string/title_activity_driver2" >
+        </activity>
     </application>
 
 </manifest>
