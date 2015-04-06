@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">CometRider</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+     <string name="for_all">Show All Routes</string> 
+     <string name="btn_rider">I am interested</string>
+  
+</resources>
