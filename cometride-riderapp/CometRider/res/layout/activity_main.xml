@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
   
-    tools:context="com.utd.cometrider.MainActivity" >
+    tools:context="com.utd.cometrider.ui.MainActivity" >
 
      <fragment
         android:id="@+id/map"
@@ -15,7 +15,7 @@
 
 
     
-       <com.utd.cometrider.MultiSpinner android:id="@+id/multi_spinner" 
+       <com.utd.cometrider.ui.MultiSpinner android:id="@+id/multi_spinner" 
          android:layout_marginTop="5dp"  
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
