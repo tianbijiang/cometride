@@ -9,6 +9,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
+import android.widget.ImageButton;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends Activity {
@@ -17,6 +24,22 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ImageButton imgbtn = (ImageButton)findViewById(R.id.logo);
+        Animation ranim = AnimationUtils.loadAnimation(this, R.anim.rotate);
+        imgbtn.setAnimation(ranim);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+
+            public void run() {
+
+                Intent nextIntent = new Intent(getApplicationContext(), Options.class);
+                startActivityForResult(nextIntent, 0);
+
+            }
+
+        }, 5000);
     }
 
 

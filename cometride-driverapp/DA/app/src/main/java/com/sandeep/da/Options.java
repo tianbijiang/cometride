@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 
 public class Options extends Activity {
@@ -64,7 +65,10 @@ public class Options extends Activity {
                 } else if (nine.isChecked()) {
                     Intent nineIntent = new Intent(getApplicationContext(), Driver2.class);
                     startActivityForResult(nineIntent, 0);
+                }else{
+                    Toast.makeText(getApplicationContext(), "Choose a Cab Type", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
     }

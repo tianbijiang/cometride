@@ -1,7 +1,9 @@
 package com.sandeep.da;
 
+import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,7 +11,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 
-public class Driver2 extends ActionBarActivity {
+public class Driver2 extends Activity {
 
     int num = 0;
     int total;
@@ -74,6 +76,47 @@ public class Driver2 extends ActionBarActivity {
         });
     }
 
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+
+        tView = (TextView) findViewById(R.id.textView8);
+        tView1 = (TextView) findViewById(R.id.textView7);
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(num<9)
+                            {
+                                num++;
+                                total++;
+                                tView1.setText(Integer.toString(total));
+                                tView.setText(Integer.toString(num));
+                            }
+                        }
+                    });
+                }
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(num>0)
+                            {
+                                num--;
+
+                                tView.setText(Integer.toString(num));
+                            }
+                        }
+                    });
+                }
+                return true;
+            default:
+                return super.dispatchKeyEvent(event);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
