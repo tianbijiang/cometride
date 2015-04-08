@@ -1,5 +1,6 @@
 package utdallas.ridetrackers.server;
 
+import com.sun.jersey.spi.resource.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
@@ -8,15 +9,19 @@ import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.driver.DriverStatus;
 import utdallas.ridetrackers.server.datatypes.driver.LocationUpdate;
+import utdallas.ridetrackers.server.datatypes.driver.TallyUpdate;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
 
 import javax.print.attribute.standard.Media;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.xml.ws.soap.MTOM;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+@Singleton
 @Path("/")
 public class CometRideServlet {
 
@@ -29,6 +34,7 @@ public class CometRideServlet {
 
 
     public CometRideServlet() {
+        logger.info( "Creating servlet." );
         controller = new CometRideController();
     }
 
@@ -170,11 +176,25 @@ public class CometRideServlet {
     @Path( "/location" )
     public Response updateDriverLocation( LocationUpdate locationUpdate ) {
         try {
+            locationUpdate.setTimestamp( new Timestamp( new Date().getTime() ));
             controller.updateDriverLocation( locationUpdate );
             return Response.ok().build();
         } catch ( Exception e ) {
             return Response.serverError().entity( "An error occurred while updating driver (" +
                     locationUpdate.getDriverId() + ") location." ).build();
+        }
+    }
+
+    @POST
+    @Consumes( MediaType.APPLICATION_JSON )
+    @Path( "/tally" )
+    public Response updateDriverLocation( TallyUpdate tallyUpdate ) {
+        try {
+            controller.updateDriverTally(tallyUpdate);
+            return Response.ok().build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while updating driver (" +
+                    tallyUpdate.getDriverId() + ") tally." ).build();
         }
     }
 

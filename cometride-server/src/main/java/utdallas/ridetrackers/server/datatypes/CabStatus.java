@@ -6,20 +6,31 @@ package utdallas.ridetrackers.server.datatypes;
  */
 public class CabStatus {
 
-    private String cabId;
-    private LatLng location;
-    private Integer maxCapacity;
-    private String name;
-    private Integer passengerCount;
-    private String status;
+    private String cabId; // From query / driver session
+    private LatLng location; // From cab status
+    private Integer maxCapacity; // From driver session
+    private Integer passengerCount; // From cab status
+    private String routeId; // From driver session
+    private String status; // TODO: Find a location for this
 
     public CabStatus() {}
 
-    public CabStatus( String cabId, LatLng location, Integer maxCapacity, Integer passengerCount, String status) {
+    public CabStatus( String cabId, LatLng location, Integer maxCapacity,
+                      Integer passengerCount, String routeId, String status) {
+        this.cabId = cabId;
         this.location = location;
         this.maxCapacity = maxCapacity;
         this.passengerCount = passengerCount;
+        this.routeId = routeId;
         this.status = status;
+    }
+
+    public String getCabId() {
+        return cabId;
+    }
+
+    public void setCabId(String cabId) {
+        this.cabId = cabId;
     }
 
     public LatLng getLocation() {
@@ -34,7 +45,7 @@ public class CabStatus {
         return maxCapacity;
     }
 
-    public void setMaxCapacity(int maxCapacity) {
+    public void setMaxCapacity(Integer maxCapacity) {
         this.maxCapacity = maxCapacity;
     }
 
@@ -42,8 +53,16 @@ public class CabStatus {
         return passengerCount;
     }
 
-    public void setPassengerCount(int passengerCount) {
+    public void setPassengerCount(Integer passengerCount) {
         this.passengerCount = passengerCount;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
     }
 
     public String getStatus() {

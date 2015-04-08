@@ -9,8 +9,8 @@ import java.sql.Timestamp;
 public class LocationUpdate {
 
     private String driverId;
-    private double lat;
-    private double lng;
+    private Double lat;
+    private Double lng;
     private Timestamp timestamp;
 
     // TODO: Driver ID set by session info somehow?
@@ -19,7 +19,7 @@ public class LocationUpdate {
 
     public LocationUpdate() {}
 
-    public LocationUpdate(String driverId, double lat, double lng, Timestamp timestamp) {
+    public LocationUpdate(String driverId, Double lat, Double lng, Timestamp timestamp) {
         this.driverId = driverId;
         this.lat = lat;
         this.lng = lng;
@@ -34,19 +34,19 @@ public class LocationUpdate {
         this.driverId = driverId;
     }
 
-    public double getLat() {
+    public Double getLat() {
         return lat;
     }
 
-    public void setLat(double lat) {
+    public void setLat(Double lat) {
         this.lat = lat;
     }
 
-    public double getLng() {
+    public Double getLng() {
         return lng;
     }
 
-    public void setLng(double lng) {
+    public void setLng(Double lng) {
         this.lng = lng;
     }
 

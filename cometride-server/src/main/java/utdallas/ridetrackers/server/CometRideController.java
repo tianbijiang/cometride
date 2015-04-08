@@ -1,11 +1,15 @@
 package utdallas.ridetrackers.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
+import utdallas.ridetrackers.server.datatypes.CometRideDatabaseAccess;
 import utdallas.ridetrackers.server.datatypes.LatLng;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.driver.DriverStatus;
 import utdallas.ridetrackers.server.datatypes.driver.LocationUpdate;
+import utdallas.ridetrackers.server.datatypes.driver.TallyUpdate;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
 
 import java.util.ArrayList;
@@ -17,6 +21,15 @@ import java.util.List;
  */
 public class CometRideController {
 
+    private final Logger logger = LoggerFactory.getLogger(CometRideController.class);
+
+    // TODO: Get rid of these!!!
+    private double testLat = 32.990709;
+    private double testLng = -96.752627;
+    private boolean markerIncrementing = true;
+    // TODO: Get rid of these!!!
+
+    private final CometRideDatabaseAccess db = new CometRideDatabaseAccess();
 
 
     //
@@ -33,7 +46,7 @@ public class CometRideController {
         testWaypoints.add( new LatLng( 32.985559, -96.749478 ) );
 
         Route testRoute = new Route(
-                "purple",
+                "#900dba",
                 "route1",
                 "Route 1",
                 "ACTIVE",
@@ -51,7 +64,7 @@ public class CometRideController {
         testWaypoints2.add( new LatLng( 32.990111, -96.743875 ) );
 
         Route testRoute2 = new Route(
-                "green",
+                "#edb712",
                 "route2",
                 "Route 2",
                 "ACTIVE",
@@ -85,16 +98,28 @@ public class CometRideController {
     //
 
     public CabStatus[] getAllCabStatuses( String queryType ) {
-        List<CabStatus> cabs = new ArrayList<CabStatus>();
+            List<CabStatus> cabs = new ArrayList<CabStatus>();
 
-        cabs.add( new CabStatus( "1", new LatLng( 32.987356, -96.746551 ), 8, 2, "ON_DUTY" ));
-        cabs.add( new CabStatus( "2", new LatLng( 32.990709, -96.752627 ), 8, 8, "ON_DUTY" ));
+        if( markerIncrementing ) {
+            this.testLat = this.testLat + 0.00005;
+        } else {
+            this.testLat = this.testLat - 0.00005;
+        }
+
+        if (this.testLat > 32.991771) {
+            markerIncrementing = false;
+        } else if (this.testLat < 32.990709) {
+            markerIncrementing = true;
+        }
+
+        cabs.add( new CabStatus( "1", new LatLng( 32.987356, -96.746551 ), 8, 2, "route2", "ON_DUTY" ));
+        cabs.add( new CabStatus( "2", new LatLng( this.testLat, this.testLng ), 8, 8, "route1", "ON_DUTY" ));
 
         return cabs.toArray( new CabStatus[]{} );
     }
 
     public CabStatus getCabStatus( String id ) {
-        return new CabStatus( "123", new LatLng( 32.987356, -96.746551 ), 8, 2, "ON_DUTY" );
+        return new CabStatus( "123", new LatLng( 32.987356, -96.746551 ), 8, 2, "route2", "ON_DUTY" );
     }
 
 
@@ -113,6 +138,10 @@ public class CometRideController {
     }
 
     public void updateDriverLocation( LocationUpdate locationUpdate ) {
+        db.persistLocationUpdate( locationUpdate );
+    }
+
+    public void updateDriverTally( TallyUpdate tallyUpdate ) {
 
     }
 
