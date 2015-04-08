@@ -4,9 +4,9 @@ package utdallas.ridetrackers.server.datatypes.driver;
  * Created with IntelliJ IDEA.
  * User: mlautz
  */
-public class DriverStatus {
+public class CabSession {
 
-    private String driverId;
+    private String cabSessionId;
     private String dutyStatus;
     private String routeId;
     private int maxCapacity;
@@ -16,21 +16,21 @@ public class DriverStatus {
     // TODO: Should status updates be through a separate object?
 
 
-    public DriverStatus() {}
+    public CabSession() {}
 
-    public DriverStatus(String driverId, String dutyStatus, String routeId, int maxCapacity) {
-        this.driverId = driverId;
+    public CabSession(String cabSessionId, String dutyStatus, String routeId, int maxCapacity) {
+        this.cabSessionId = cabSessionId;
         this.dutyStatus = dutyStatus;
         this.routeId = routeId;
         this.maxCapacity = maxCapacity;
     }
 
-    public String getDriverId() {
-        return driverId;
+    public String getCabSessionId() {
+        return cabSessionId;
     }
 
-    public void setDriverId(String driverId) {
-        this.driverId = driverId;
+    public void setCabSessionId(String cabSessionId) {
+        this.cabSessionId = cabSessionId;
     }
 
     public String getDutyStatus() {

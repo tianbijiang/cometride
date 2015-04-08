@@ -3,17 +3,18 @@ package utdallas.ridetrackers.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
-import utdallas.ridetrackers.server.datatypes.CometRideDatabaseAccess;
 import utdallas.ridetrackers.server.datatypes.LatLng;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
-import utdallas.ridetrackers.server.datatypes.driver.DriverStatus;
-import utdallas.ridetrackers.server.datatypes.driver.LocationUpdate;
-import utdallas.ridetrackers.server.datatypes.driver.TallyUpdate;
+import utdallas.ridetrackers.server.datatypes.driver.CabSession;
+import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
+import utdallas.ridetrackers.server.db.CometRideDatabaseAccess;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -98,8 +99,9 @@ public class CometRideController {
     //
 
     public CabStatus[] getAllCabStatuses( String queryType ) {
-            List<CabStatus> cabs = new ArrayList<CabStatus>();
+        List<CabStatus> cabs = new ArrayList<CabStatus>();
 
+        // TODO: Get rid of test data
         if( markerIncrementing ) {
             this.testLat = this.testLat + 0.00005;
         } else {
@@ -114,12 +116,29 @@ public class CometRideController {
 
         cabs.add( new CabStatus( "1", new LatLng( 32.987356, -96.746551 ), 8, 2, "route2", "ON_DUTY" ));
         cabs.add( new CabStatus( "2", new LatLng( this.testLat, this.testLng ), 8, 8, "route1", "ON_DUTY" ));
+        // TODO: Get rid of test data
+
+        try {
+            cabs.addAll( db.retrieveCurrentCabStatuses() );
+        } catch (SQLException e) {
+            logger.error( "Failed to retrieve cab statuses from DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
 
         return cabs.toArray( new CabStatus[]{} );
     }
 
     public CabStatus getCabStatus( String id ) {
-        return new CabStatus( "123", new LatLng( 32.987356, -96.746551 ), 8, 2, "route2", "ON_DUTY" );
+        CabStatus matchingStatus = null;
+
+        try {
+            matchingStatus = db.retrieveCabStatus( id );
+        } catch (SQLException e) {
+            logger.error( "Failed to retrieve cab status (" + id + ") from DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return matchingStatus;
     }
 
 
@@ -127,22 +146,30 @@ public class CometRideController {
     //  Driver
     //
 
-    public String createDriverSession( DriverStatus newDriverStatus ) {
+    public String createCabSession( CabSession newCabSession) {
+        // TODO: Maintain a list of session start / end times
+
+        String sessionId = "cab-" + UUID.randomUUID();
+        newCabSession.setCabSessionId( sessionId );
+
+        try {
+            db.createCabSession( newCabSession );
+        } catch (Exception e) {
+            logger.error( "Failed to create cab session in DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return sessionId;
+    }
+
+    public String updateDriverStatus( CabSession updatedCabSession) {
 
         return "1234";
     }
 
-    public String updateDriverStatus( DriverStatus updatedDriverStatus ) {
-
-        return "1234";
-    }
-
-    public void updateDriverLocation( LocationUpdate locationUpdate ) {
-        db.persistLocationUpdate( locationUpdate );
-    }
-
-    public void updateDriverTally( TallyUpdate tallyUpdate ) {
-
+    public void storeTrackingUpdate( TrackingUpdate trackingUpdate) {
+        // TODO: Validate input to ensure all properties are set
+        db.persistTrackingUpdate(trackingUpdate);
     }
 
 

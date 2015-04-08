@@ -6,12 +6,12 @@ package utdallas.ridetrackers.server.datatypes;
  */
 public class CabStatus {
 
-    private String cabId; // From query / driver session
-    private LatLng location; // From cab status
-    private Integer maxCapacity; // From driver session
-    private Integer passengerCount; // From cab status
-    private String routeId; // From driver session
-    private String status; // TODO: Find a location for this
+    private String cabId;
+    private LatLng location;
+    private Integer maxCapacity;
+    private Integer passengerCount;
+    private String routeId;
+    private String status;
 
     public CabStatus() {}
 
