@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import com.google.android.gms.maps.model.LatLng;
 
 public class Route {
-
 	 private String id;
 	 private String name;
 	 private String color;

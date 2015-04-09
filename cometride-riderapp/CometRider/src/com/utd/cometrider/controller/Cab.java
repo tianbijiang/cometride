@@ -7,6 +7,21 @@ public class Cab {
       private int maxCapacity;
       private int passengerCount;
       private String status;
+      private String routeId;
+      private String cabId;
+
+	public String getCabId() {
+		return cabId;
+	}
+	public void setCabId(String cabId) {
+		this.cabId = cabId;
+	}
+	public String getRouteId() {
+		return routeId;
+	}
+	public void setRouteId(String routeId) {
+		this.routeId = routeId;
+	}
 	public LatLng getLocation() {
 		return location;
 	}
