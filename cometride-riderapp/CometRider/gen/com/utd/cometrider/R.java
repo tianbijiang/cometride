@@ -406,8 +406,8 @@ containing a value of this type.
         public static final int common_signin_btn_light_text_disabled=0x7f070006;
         public static final int common_signin_btn_light_text_focused=0x7f070007;
         public static final int common_signin_btn_light_text_pressed=0x7f070005;
-        public static final int common_signin_btn_text_dark=0x7f070017;
-        public static final int common_signin_btn_text_light=0x7f070018;
+        public static final int common_signin_btn_text_dark=0x7f070018;
+        public static final int common_signin_btn_text_light=0x7f070019;
         public static final int wallet_bright_foreground_disabled_holo_light=0x7f07000f;
         /** 
          Wallet colors to support consistent Wallet fragment holo dark UI in client application
@@ -426,8 +426,9 @@ containing a value of this type.
         public static final int wallet_hint_foreground_holo_light=0x7f070011;
         public static final int wallet_holo_blue_light=0x7f070015;
         public static final int wallet_link_text_light=0x7f070016;
-        public static final int wallet_primary_text_holo_light=0x7f070019;
-        public static final int wallet_secondary_text_holo_dark=0x7f07001a;
+        public static final int wallet_primary_text_holo_light=0x7f07001a;
+        public static final int wallet_secondary_text_holo_dark=0x7f07001b;
+        public static final int white=0x7f070017;
     }
     public static final class dimen {
         /**  Default screen margins, per the Android Design guidelines. 
@@ -475,11 +476,12 @@ containing a value of this type.
         public static final int ic_plusone_small_off_client=0x7f02001f;
         public static final int ic_plusone_standard_off_client=0x7f020020;
         public static final int ic_plusone_tall_off_client=0x7f020021;
-        public static final int powered_by_google_dark=0x7f020022;
-        public static final int powered_by_google_light=0x7f020023;
+        public static final int logo=0x7f020022;
+        public static final int powered_by_google_dark=0x7f020023;
+        public static final int powered_by_google_light=0x7f020024;
     }
     public static final class id {
-        public static final int action_settings=0x7f0b001b;
+        public static final int action_settings=0x7f0b001c;
         public static final int adjust_height=0x7f0b0000;
         public static final int adjust_width=0x7f0b0001;
         public static final int book_now=0x7f0b0010;
@@ -493,6 +495,7 @@ containing a value of this type.
         public static final int holo_dark=0x7f0b0007;
         public static final int holo_light=0x7f0b0008;
         public static final int hybrid=0x7f0b0003;
+        public static final int imgLogo=0x7f0b001b;
         public static final int map=0x7f0b0018;
         public static final int match_parent=0x7f0b000e;
         public static final int monochrome=0x7f0b0016;
@@ -513,6 +516,7 @@ containing a value of this type.
     }
     public static final class layout {
         public static final int activity_displaymap=0x7f030000;
+        public static final int activity_splash=0x7f030001;
     }
     public static final class menu {
         public static final int main=0x7f0a0000;
@@ -637,6 +641,7 @@ containing a value of this type.
         public static final int create_calendar_message=0x7f060005;
         public static final int create_calendar_title=0x7f060004;
         public static final int decline=0x7f060003;
+        public static final int img_logo=0x7f06002a;
         public static final int store_picture_message=0x7f060001;
         public static final int store_picture_title=0x7f060000;
         /**  Text on a placeholder buy button when Google Play services is not

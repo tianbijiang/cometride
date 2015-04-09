@@ -109,6 +109,8 @@ public class RouteSelectionSpinner extends Spinner implements
 					someUnselected = true;
 				}
 			}
+			
+			
 			String spinnerText;
 			if (someUnselected) {
 				spinnerText = spinnerBuffer.toString();
@@ -118,6 +120,11 @@ public class RouteSelectionSpinner extends Spinner implements
 			} else {
 				spinnerText = defaultText;
 			}
+			if(spinnerText==""){
+				
+				spinnerText="Select Routes Here";
+			}
+			
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(
 					getContext(), android.R.layout.simple_spinner_item,
 					new String[] { spinnerText });
