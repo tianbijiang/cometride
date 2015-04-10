@@ -379,8 +379,7 @@ $(document).ready(function() {
             endDate = $(".create #end-date").val();
         }
 
-        var dataString = [];
-        dataString.push({
+        var dataString = {
             name: name,
             color: color,
             status: status,
@@ -389,7 +388,7 @@ $(document).ready(function() {
             times: times,
             startDate: startDate,
             endDate: endDate
-        });
+        };
         dataString = JSON.stringify(dataString);
         alert(dataString);
 
