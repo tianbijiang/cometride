@@ -1,8 +1,13 @@
 $(document).ready(function() {
+    var timepickers = 1;
+    var timepickers_edit = 1;
+    
     $(".create #plus-timepicker").click(function() {
-        $(".create #time-picker").append("<div class='timepicker-set'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");
+        timepickers++;
+        $(".create #time-picker").append("<div class='timepicker-set' id='timepicker-set-" + timepickers + "'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");
         $(".create .timepicker").timepicker({
-            defaultTime: false
+            defaultTime: false,
+            showMeridian: false
         });
     });
     $(".create #minus-timepicker").click(function() {
@@ -10,7 +15,8 @@ $(document).ready(function() {
     });
 
     $(".create .timepicker").timepicker({
-        defaultTime: false
+        defaultTime: false,
+        showMeridian: false
     });
 
     $('.create #date-picker').hide();
@@ -30,31 +36,27 @@ $(document).ready(function() {
         todayHighlight: true
     });
 
-    $(".create #btn-save").hide();
+    $(".create #btn-actual-draw").hide();
     $(".create #btn-reverse").hide();
-
-    $("#login").click(function() {
-        alert("login clicked");
-        // $("#fade").style.display = "block";
-        // $("#light").css({
-        //     "display": "block"
-        // });
-    });
+    $(".create #btn-save").hide();
 
     $(".create #btn-draw").click(function() {
-        $(".create #btn-save").show();
+        $(".create #btn-actual-draw").show();
         $(".create #btn-reverse").show();
+        $(".create #btn-save").show();
         $(".create #btn-draw").hide();
     });
 
     $(".create #hide-sb").click(function() {
         $(".create #btn-draw").show();
-        $(".create #btn-save").hide();
+        $(".create #btn-actual-draw").hide();
         $(".create #btn-reverse").hide();
+        $(".create #btn-save").hide();
     });
 
     $(".edit #plus-timepicker").click(function() {
-        $(".edit #time-picker").append("<div class='timepicker-set'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");
+        timepickers_edit++;
+        $(".edit #time-picker").append("<div class='timepicker-set' id='timepicker-set-edit-" + timepickers_edit + "'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");
         $(".edit .timepicker").timepicker({
             defaultTime: false
         });
@@ -84,12 +86,14 @@ $(document).ready(function() {
         todayHighlight: true
     });
 
-    $(".edit #btn-save").hide();
+    $(".edit #btn-actual-draw").hide();
     $(".edit #btn-reverse").hide();
+    $(".edit #btn-save").hide();
 
     $(".edit #btn-draw").click(function() {
         $(".edit #btn-save").show();
         $(".edit #btn-reverse").show();
+        $(".edit #btn-actual-draw").show();
         $(".edit #btn-draw").hide();
     });
 
@@ -97,6 +101,7 @@ $(document).ready(function() {
         $(".edit #btn-draw").show();
         $(".edit #btn-save").hide();
         $(".edit #btn-reverse").hide();
+        $(".edit #btn-actual-draw").hide();
     });
 
 

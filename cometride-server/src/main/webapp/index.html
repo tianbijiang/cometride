@@ -29,6 +29,8 @@
     <!-- custom css -->
     <script src="js/script.js"></script>
     <script src="js/route.draw.js"></script>
+    <!--<script src="js/route.display.js"></script>-->
+    <script src="js/login.js"></script>
 </head>
 
 <body>
@@ -49,9 +51,9 @@
                     </div>
                     <div class="form-group" id="status-picker">
                         <select class="form-control" id="status" name="status">
-                            <option value="-1">Status</option>
-                            <option value="0">Available</option>
-                            <option value="1">Not Available</option>
+                            <option value="N/A">Status</option>
+                            <option value="Available">Available</option>
+                            <option value="NotAvailable">Not Available</option>
                         </select>
                         <!-- <label class="control-label" for="status" id="feedback-status"></label> -->
                     </div>
@@ -66,40 +68,40 @@
                     <h4>Active Time</h4></label>
                 <div id="time-container" class="sb-container">
                     <div class="form-group btn-group" id="day-picker">
-                        <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days <span class="caret"></span></button>
+                        <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days</button>
                         <ul class="dropdown-menu">
                             <li>
-                                <input type="checkbox" id="monday">
-                                <label for="monday" name="monday" value="monday">Monday</label>
+                                <input type="checkbox" id="monday" name="monday" value="Monday">
+                                <label for="monday">Monday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="tuesday">
-                                <label for="tuesday" name="tuesday" value="tuesday">Tuesday</label>
+                                <input type="checkbox" id="tuesday" name="tuesday" value="Tuesday">
+                                <label for="tuesday">Tuesday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="wednesday">
-                                <label for="wednesday" name="wednesday" value="wednesday">Wednesday</label>
+                                <input type="checkbox" id="wednesday" name="wednesday" value="Wednesday">
+                                <label for="wednesday">Wednesday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="thusday">
-                                <label for="thusday" name="thusday" value="thusday">Thusday</label>
+                                <input type="checkbox" id="thusday" name="thusday" value="Thusday">
+                                <label for="thusday">Thusday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="friday">
-                                <label for="friday" name="friday" value="friday">Friday</label>
+                                <input type="checkbox" id="friday" name="friday" value="Friday">
+                                <label for="friday">Friday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="saturday">
-                                <label for="saturday" name="saturday" value="saturday">Saturday</label>
+                                <input type="checkbox" id="saturday" name="saturday" value="Saturday">
+                                <label for="saturday">Saturday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="sunday">
-                                <label for="sunday" name="sunday" value="sunday">Sunday</label>
+                                <input type="checkbox" id="sunday" name="sunday" value="Sunday">
+                                <label for="sunday">Sunday</label>
                             </li>
                         </ul>
                     </div>
                     <div class="form-group" id="time-picker">
-                        <div class='timepicker-set'>
+                        <div class='timepicker-set' id="timepicker-set-1">
                             <input class='form-control timepicker start-time' placeholder='Start Time' />
                             <p>to</p>
                             <input class='form-control timepicker end-time' placeholder='End Time' />
@@ -120,14 +122,16 @@
                         <label class="label" for="temporary-flag">Temporary Route</label>
                     </div>
                     <div class="form-group" id="date-picker">
-                        <input type="text" class="form-control" placeholder="Starting Date" />
-                        <input type="text" class="form-control" placeholder="End Date" />
+                        <input type="text" id="start-date" class="form-control" placeholder="Start Date" />
+                        <p>to</p>
+                        <input type="text" id="end-date" class="form-control" placeholder="End Date" />
                     </div>
                 </div>
             </div>
             <button id="btn-draw" class="btn btn-panel btn-block">Start Drawing</button>
-            <button id="btn-save" class="btn btn-panel half-block">Save</button>
+            <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button>
             <button id="btn-reverse" class="btn btn-panel half-block">Reverse</button>
+            <button id="btn-save" class="btn btn-panel btn-block">Save</button>
             <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
         </div>
     </div>
@@ -197,8 +201,8 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="form-group" id="time-picker">
-                        <div class='timepicker-set'>
+                    <div class="form-group" id="time-picker-edit">
+                        <div class='timepicker-set' id="timepicker-set-edit-1">
                             <input class='form-control timepicker start-time' placeholder='Start Time' />
                             <p>to</p>
                             <input class='form-control timepicker end-time' placeholder='End Time' />
@@ -212,21 +216,24 @@
             </div>
             <div id="active-date" class="sb-box">
                 <label for="active-date">
-                    <h4>Active Date</h4></label>
+                    <h4>Active Date</h4>
+                </label>
                 <div id="date-container" class="sb-container">
                     <div class="form-group">
                         <input type="checkbox" id="temporary-flag" />
                         <label class="label" for="temporary-flag">Temporary Route</label>
                     </div>
                     <div class="form-group" id="date-picker">
-                        <input type="text" class="form-control" placeholder="Starting Date" />
-                        <input type="text" class="form-control" placeholder="End Date" />
+                        <input type="text" id="start-date-edit" class="form-control" placeholder="Start Date" />
+                        <p>to</p>
+                        <input type="text" id="end-date-edit" class="form-control" placeholder="End Date" />
                     </div>
                 </div>
             </div>
             <button id="btn-draw" class="btn btn-panel btn-block">Start Drawing</button>
-            <button id="btn-save" class="btn btn-panel half-block">Save</button>
+            <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button>
             <button id="btn-reverse" class="btn btn-panel half-block">Reverse</button>
+            <button id="btn-save" class="btn btn-panel btn-block">Save</button>
             <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
         </div>
     </div>
@@ -300,10 +307,31 @@
     <div id="container">
         <div id="map-canvas"></div>
     </div>
-    <div id="light" class="white_content">
-        <h1>test</h1>
+    <!-- <div id="light" class="white_content container">
+        <div class="card card-container">
+        <div id="close-login">
+            <i class="fa fa-cross"></i>
+        </div>
+            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
+            <p id="profile-name" class="profile-name-card"></p>
+            <form class="form-signin">
+                <span id="reauth-email" class="reauth-email"></span>
+                <input type="email" id="inputUsername" name="inputUsername" class="form-control" placeholder="Email address" required autofocus>
+                <input type="password" id="inputPassword" name="inputPassword" class="form-control" placeholder="Password" required>
+                <div id="remember" class="checkbox">
+                    <label>
+                        <input type="checkbox" value="remember-me"> Remember me
+                    </label>
+                </div>
+                <button id="actual-login"class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
+            </form>
+            <a href="#" class="forgot-password">
+                Forgot the password?
+            </a>
+            <div id="error"></div>
+        </div>
     </div>
-    <div id="fade" class="black_overlay"></div>
+    <div id="fade" class="black_overlay"></div> -->
 </body>
 
 </html>
