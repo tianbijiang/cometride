@@ -40,6 +40,7 @@ public class CometRideController {
     public Route[] getAllRoutes() {
         List<Route> routes = new ArrayList<Route>();
 
+        // TODO: Get rid of test data!!!
         List<LatLng> testWaypoints = new ArrayList<LatLng>();
         testWaypoints.add( new LatLng( 32.985559, -96.749478 ) );
         testWaypoints.add( new LatLng( 32.985642, -96.749430 ) );
@@ -73,19 +74,33 @@ public class CometRideController {
         );
 
         routes.add( testRoute2 );
+        // TODO: Get rid of test data!!!
+
+        routes.addAll( db.getRouteDetails() );
 
         return routes.toArray( new Route[]{} );
     }
 
     public RouteDetails getRouteDetails( String id ) {
-        RouteDetails details = new RouteDetails( null, id, null, null, null );
+        RouteDetails details = new RouteDetails();
+        details.setId( id );
 
         return details;
     }
 
     public String createRoute( RouteDetails newRouteDetails ) {
 
-        return "1234";
+        String routeId = "route-" + UUID.randomUUID();
+        newRouteDetails.setId( routeId );
+
+        try {
+            db.createRoute(newRouteDetails );
+        } catch (Exception e) {
+            logger.error( "Failed to create route in DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return routeId;
     }
 
     public String updateRoute( String id, RouteDetails createRoute ) {

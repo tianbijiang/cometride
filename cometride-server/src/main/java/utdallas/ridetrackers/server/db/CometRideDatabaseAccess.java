@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
 import utdallas.ridetrackers.server.datatypes.LatLng;
+import utdallas.ridetrackers.server.datatypes.Route;
+import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
 
@@ -57,10 +59,6 @@ public class CometRideDatabaseAccess {
     public List<CabStatus> retrieveCurrentCabStatuses() throws SQLException {
         List<CabStatus> statusList = new ArrayList<CabStatus>();
 
-//        String queryStatement = "SELECT cab_session_id, lat, lng, passenger_count FROM ebdb.CabStatus t1 " +
-//                "JOIN ( SELECT cab_session_id id, MAX( submission_time ) subtime FROM ebdb.CabStatus GROUP BY cab_session_id ) t2 " +
-//                "ON t1.cab_session_id = t2.id AND t1.submission_time = t2.subtime;";
-
         String queryStatement = "SELECT cab_session_id, cabStatus.lat, cabStatus.lng, max_capacity, cabStatus.passenger_count, route_id, duty_status \n" +
                 "FROM ebdb.CabSession cabSession JOIN \n" +
                 "\t( SELECT cab_session_id cabId, lat, lng, passenger_count FROM ebdb.CabStatus t1 \n" +
@@ -107,8 +105,12 @@ public class CometRideDatabaseAccess {
     }
 
     public CabStatus retrieveCabStatus( String cabId ) throws SQLException {
-        String queryStatement = "SELECT cab_session_id, lat, lng, passenger_count, MAX( submission_time ) submission_time " +
-                "FROM ebdb.CabStatus WHERE cab_session_id = '" + cabId + "';";
+        String queryStatement = "SELECT cab_session_id, cabStatus.lat, cabStatus.lng, max_capacity, cabStatus.passenger_count, route_id, duty_status \n" +
+                "FROM ebdb.CabSession cabSession JOIN \n" +
+                "\t( SELECT cab_session_id cabId, lat, lng, passenger_count, MAX( submission_time ) submission_time " +
+                "FROM ebdb.CabStatus WHERE cab_session_id = '" + cabId + "' ) cabStatus \n" +
+                "ON cabStatus.cabId =  cabSession.cab_session_id;";
+
         // TODO: Protect this from injection             ^^^^^
         // TODO: Add the ability to include / exclude inactive cabs
 
@@ -163,6 +165,92 @@ public class CometRideDatabaseAccess {
     }
 
 
+
+    //
+    // Routes
+    //
+
+    public List<Route> getRouteDetails() {
+        // TODO: Enhance select statement with time info
+        String queryStatement = "SELECT route_id, name, color, status FROM ebdb.RouteInfo;";
+
+        List<Route> routes = new ArrayList<Route>();
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection( jdbcUrl );
+            Statement setupStatement = connection.createStatement();
+            ResultSet results = setupStatement.executeQuery( queryStatement );
+
+            while( results.next() ) {
+                Route newDetails = new Route();
+                List<LatLng> waypoints = new ArrayList<LatLng>();
+
+                try {
+                    String waypointQueryStatement = "SELECT route_id, lat, lng, sequence_num FROM ebdb.RouteWaypoints " +
+                            "WHERE route_id = '" + results.getString( "route_id" ) + "' ORDER BY sequence_num ASC;";
+
+                    Statement waypointSetupStatement = connection.createStatement();
+                    ResultSet waypointResults = waypointSetupStatement.executeQuery( waypointQueryStatement );
+
+                    while( waypointResults.next() ) {
+                        LatLng newWaypoint = new LatLng();
+
+                        newWaypoint.setLat( waypointResults.getDouble( "lat" ) );
+                        newWaypoint.setLng(waypointResults.getDouble("lng" ) );
+
+                        waypoints.add( newWaypoint );
+                    }
+
+                    waypointSetupStatement.close();
+                } catch (SQLException ex) {
+                    logger.error("SQLException: " + ex.getMessage());
+                    logger.error("SQLState: " + ex.getSQLState());
+                    logger.error("VendorError: " + ex.getErrorCode());
+                }
+
+
+                newDetails.setId( results.getString("route_id") );
+                newDetails.setName( results.getString("name") );
+                newDetails.setColor( results.getString("color") );
+                newDetails.setStatus( results.getString("status") );
+                newDetails.setWaypoints( waypoints );
+
+                routes.add( newDetails );
+            }
+
+            setupStatement.close();
+        } catch (SQLException ex) {
+            logger.error("SQLException: " + ex.getMessage());
+            logger.error("SQLState: " + ex.getSQLState());
+            logger.error("VendorError: " + ex.getErrorCode());
+        } finally {
+            System.out.println("Closing the connection.");
+            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+        }
+
+        return routes;
+    }
+
+    public void createRoute( RouteDetails newRoute ) {
+
+        List<LatLng> waypoints = newRoute.getWaypoints();
+
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, color, status) VALUES ( ?, ?, ?, ? );";
+        db.executeUpdate( routeInfoStatement, newRoute.getId(), newRoute.getName(), newRoute.getColor(),
+                newRoute.getStatus() );
+
+        // TODO: Add Date / Time Handling
+
+        for( int i=0; i < waypoints.size(); i++ ) {
+            LatLng waypoint = waypoints.get(i);
+            String wayPointStatement = "\n" +
+                    "INSERT INTO ebdb.RouteWaypoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
+            db.executeUpdate(wayPointStatement, newRoute.getId(), waypoint.getLat(), waypoint.getLng(), i);
+        }
+    }
+
+
     // Tables
 
     private void createTables() {
@@ -180,7 +268,7 @@ public class CometRideDatabaseAccess {
 
         // Create Route Waypoints Table
         String routeWaypointsTableSatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteWaypoints` (\n" +
-                "  `waypoint_id` VARCHAR(45) NOT NULL,\n" +
+                "  `waypoint_id` INT NOT NULL AUTO_INCREMENT,\n" +
                 "  `route_id` VARCHAR(45) NOT NULL,\n" +
                 "  `lat` DOUBLE NOT NULL,\n" +
                 "  `lng` VARCHAR(45) NOT NULL,\n" +

@@ -71,7 +71,7 @@ public class CometRideServlet {
 
             UriBuilder uib = uriInfo.getAbsolutePathBuilder();
             uib.path( id );
-            return Response.created( uib.build() ).build();
+            return Response.created( uib.build() ).entity( id ).build();
         } catch ( Exception e ) {
             return Response.serverError().entity( "An error occurred while creating route " +
                     details.getName() + "." ).build();
@@ -167,7 +167,7 @@ public class CometRideServlet {
 
     @POST
     @Consumes( MediaType.APPLICATION_JSON )
-    @Path( "/location" )
+    @Path( "/cab" )
     public Response updateDriverLocation( TrackingUpdate trackingUpdate) {
         try {
             trackingUpdate.setTimestamp( new Timestamp( new Date().getTime() ) );
