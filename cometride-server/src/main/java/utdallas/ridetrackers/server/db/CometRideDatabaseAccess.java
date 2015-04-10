@@ -32,10 +32,16 @@ public class CometRideDatabaseAccess {
 
     public CometRideDatabaseAccess() {
         dbName = System.getProperty("RDS_DB_NAME");
+        logger.info( "RDS_DB_NAME: " + dbName );
         userName = System.getProperty("RDS_USERNAME");
+        logger.info( "RDS_USERNAME: " + userName );
         password = System.getProperty("RDS_PASSWORD");
+        logger.info( "RDS_PASSWORD: " + password );
         hostname = System.getProperty("RDS_HOSTNAME");
+        logger.info( "RDS_HOSTNAME: " + hostname );
         port = System.getProperty("RDS_PORT");
+        logger.info( "RDS_PORT: " + port );
+
         jdbcUrl = "jdbc:mysql://" + hostname + ":" +
                 port + "/" + dbName + "?user=" + userName + "&password=" + password;
 

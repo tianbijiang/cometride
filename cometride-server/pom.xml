@@ -58,6 +58,13 @@
                 <configuration>
                     <container>
                         <containerId>tomcat8x</containerId>
+                        <systemProperties>
+                            <RDS_DB_NAME>cometride</RDS_DB_NAME>
+                            <RDS_USERNAME>cometride</RDS_USERNAME>
+                            <RDS_PASSWORD>cometride</RDS_PASSWORD>
+                            <RDS_HOSTNAME>localhost</RDS_HOSTNAME>
+                            <RDS_PORT>3306</RDS_PORT>
+                        </systemProperties>
                     </container>
                     <configuration>
                         <properties>
