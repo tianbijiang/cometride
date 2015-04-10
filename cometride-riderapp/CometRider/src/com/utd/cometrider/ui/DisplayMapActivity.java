@@ -64,6 +64,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 	DisplayMapActivity displayMap = this;
 	int numberOfRoutes = 0;
 	GoogleMap googleMap;
+	HashMap<Cab, Marker> cabMarkerMap;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -150,15 +151,20 @@ public class DisplayMapActivity extends FragmentActivity implements
 	private void initCabInfo() {
 		if (googleMap != null) {
 
+			cabMarkerMap = new HashMap<Cab, Marker>();
+			
+			
 			for (int i = 0; i < allCabs.size(); i++) {
 
 				cabLocationMarkers.add(googleMap.addMarker(new MarkerOptions()
 						.position(allCabs.get(i).getLocation())
 						.title("Cab" + (i + 1))
-						.snippet("Active")
+						.snippet("From "+ allCabs.get(i).getRouteId())
 						.icon(BitmapDescriptorFactory
 								.fromResource(R.drawable.cab_green))));
-
+				
+				
+				cabMarkerMap.put(allCabs.get(i),cabLocationMarkers.get(i));
 			}
 		}
 	}
@@ -228,7 +234,11 @@ public class DisplayMapActivity extends FragmentActivity implements
 			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
 					allCabs.get(0).getLocation(), 16));
 
-			UpdateCabInfo.update(cabLocationMarkers, allCabs);
+			Log.v("allCabs", allCabs.toString());
+			Log.v("cabMarkerMap", cabMarkerMap.toString());
+			
+			
+		 	UpdateCabInfo.update(allCabs,cabMarkerMap);
 
 			new GetAllRoutes().execute();
 
@@ -432,14 +442,25 @@ public class DisplayMapActivity extends FragmentActivity implements
 		routePolyLines.get(id).setVisible(true);
 
 		for (int i = 0; i < allCabs.size(); i++) {
+		//	cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+			
+			
+			
 			if (allRoutes.get(id).getId().equals(allCabs.get(i).getRouteId())) {
 
 				Log.v("routeId", allRoutes.get(id).getId());
 				Log.v("cabrouteId", allCabs.get(i).getRouteId());
-				cabLocationMarkers.get(i).setVisible(true);
+				
+			
+				
+					cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+					
+				//cabLocationMarkers.get(i).setVisible(true);
+				
+				}
 			}
 
-		}
+		
 
 	}
 
@@ -447,8 +468,18 @@ public class DisplayMapActivity extends FragmentActivity implements
 		// TODO Auto-generated method stub
 		for (int i = 0; i < numberOfRoutes; i++) {
 			routePolyLines.get(i).setVisible(false);
-			cabLocationMarkers.get(i).setVisible(false);
+			
+		
+			
+			
+			
 		}
+		
+	for (int j = 0; j < allCabs.size(); j++) {
+			
+			cabLocationMarkers.get(j).setVisible(false);
+			}
+		
 	}
 
 	// exit application, clear all running threads
