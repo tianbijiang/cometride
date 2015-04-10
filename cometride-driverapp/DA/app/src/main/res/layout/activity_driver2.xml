@@ -153,6 +153,13 @@
             android:textSize="30sp"
             android:layout_gravity="center_horizontal"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="POST"
+            android:layout_gravity="center_horizontal" />
     </LinearLayout>
 
 

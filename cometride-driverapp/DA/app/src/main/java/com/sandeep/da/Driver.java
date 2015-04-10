@@ -1,13 +1,29 @@
 package com.sandeep.da;
-
+import com.sandeep.da.JsonReader;
+import com.sandeep.da.PostCabInfo;
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class Driver extends Activity {
@@ -17,6 +33,7 @@ public class Driver extends Activity {
     TextView tView,tView1;
     ImageButton plus1, minus1;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +42,7 @@ public class Driver extends Activity {
         tView1 = (TextView) findViewById(R.id.textView7);
         plus1 = (ImageButton) findViewById(R.id.plus);
         minus1 = (ImageButton) findViewById(R.id.minus);
+
 
         plus1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -73,6 +91,7 @@ public class Driver extends Activity {
                 return true;
             }
         });
+
     }
 
     @Override
@@ -138,4 +157,7 @@ public class Driver extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+
 }
