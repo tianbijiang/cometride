@@ -394,6 +394,7 @@ $(document).ready(function() {
         alert(dataString);
 
         $.ajax({
+            contentType: 'application/json',
             type: "POST",
             url: "http://cometride.elasticbeanstalk.com/api/route",
             data: dataString,
