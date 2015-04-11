@@ -3,22 +3,6 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_3_0.xsd" version="3.0">
     <display-name>RideTrackers-CometRide</display-name>
 	
-    <servlet>
-        <servlet-name>rest-ws</servlet-name>
-        <servlet-class>
-            com.sun.jersey.spi.container.servlet.ServletContainer
-        </servlet-class>
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>utdallas.ridetrackers.test</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>rest-ws</servlet-name>
-        <url-pattern>/example/*</url-pattern>
-    </servlet-mapping>
-	
 	<servlet>
         <servlet-name>cometride-server</servlet-name>
         <servlet-class>
@@ -41,11 +25,33 @@
 	
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
-		<!--<welcome-file>index.htm</welcome-file>-->
-		<!--<welcome-file>index.jsp</welcome-file>-->
-		<!--<welcome-file>default.html</welcome-file>-->
-		<!--<welcome-file>default.htm</welcome-file>-->
-		<!--<welcome-file>default.jsp</welcome-file>	-->
-	</welcome-file-list>	
+	</welcome-file-list>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Wildcard means whole app requires authentication</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>PUT</http-method>
+        </web-resource-collection>
+
+        <auth-constraint>
+            <role-name>cometride-admin</role-name>
+        </auth-constraint>
+
+        <user-data-constraint>
+            <!-- transport-guarantee can be CONFIDENTIAL, INTEGRAL, or NONE -->
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/login.html</form-login-page>
+            <form-error-page>/login-failed.html</form-error-page>
+        </form-login-config>
+    </login-config>
 
 </web-app>
