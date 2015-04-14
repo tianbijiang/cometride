@@ -55,6 +55,7 @@ public class CometRideDatabaseAccess {
 
         db = new DatabaseExecutor( jdbcUrl );
 
+        ensureUserTablesExist();
         createTables();
     }
 
@@ -325,6 +326,23 @@ public class CometRideDatabaseAccess {
                 "  PRIMARY KEY (`cab_status_id`),\n" +
                 "  UNIQUE INDEX `cabStatusId_UNIQUE` (`cab_status_id` ASC)); ";
         db.executeStatement( cabStatusTableStatement );
+    }
+
+
+    public void ensureUserTablesExist() {
+        String userTableCreate = "create table `ebdb`.`users` (\n" +
+                "  user_name         varchar(15) not null primary key,\n" +
+                "  user_pass         varchar(15) not null\n" +
+                ");";
+
+        String rolesTableCreate = "create table `ebdb`.`user_roles` (\n" +
+                "  user_name         varchar(15) not null,\n" +
+                "  role_name         varchar(15) not null,\n" +
+                "  primary key (user_name, role_name)\n" +
+                ");";
+
+        db.executeStatement( userTableCreate );
+        db.executeStatement( rolesTableCreate );
     }
 
 }

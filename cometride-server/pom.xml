@@ -59,7 +59,7 @@
                     <container>
                         <containerId>tomcat8x</containerId>
                         <systemProperties>
-                            <RDS_DB_NAME>cometride</RDS_DB_NAME>
+                            <RDS_DB_NAME>ebdb</RDS_DB_NAME>
                             <RDS_USERNAME>cometride</RDS_USERNAME>
                             <RDS_PASSWORD>cometride</RDS_PASSWORD>
                             <RDS_HOSTNAME>localhost</RDS_HOSTNAME>
@@ -69,9 +69,11 @@
                     <configuration>
                         <properties>
                             <cargo.servlet.port>8080</cargo.servlet.port>
+                            <!--
                             <cargo.servlet.users>
                                 test:test:cometride-admin
                             </cargo.servlet.users>
+                            -->
                             <!--
                             <cargo.servlet.port>8443</cargo.servlet.port>
                             <cargo.protocol>https</cargo.protocol>
@@ -83,6 +85,13 @@
                             <cargo.tomcat.httpSecure>true</cargo.tomcat.httpSecure>
                             -->
                         </properties>
+
+                        <configfiles>
+                            <configfile>
+                                <file>${project.basedir}/server.xml</file>
+                                <todir>conf</todir>
+                            </configfile>
+                        </configfiles>
                     </configuration>
                 </configuration>
             </plugin>
