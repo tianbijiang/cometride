@@ -1,10 +1,8 @@
-package com.sandeep.da;
-import com.sandeep.da.Cab;
+package com.UTD.driverapp;
 import android.app.Activity;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -35,10 +33,13 @@ public class Driver2 extends Activity implements View.OnClickListener {
     int total;
     TextView tView,tView1;
     ImageButton plus1, minus1;
-
+    String sessionId;
+    GPSTracker gps;
     TextView textView7,textView8,textView10;
     Button btnPost;
     Cab cab;
+    double lat;
+    double lng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +173,7 @@ public class Driver2 extends Activity implements View.OnClickListener {
     }
 
     public static String POST(String url, Cab cab){
+
         InputStream inputStream = null;
         String result = "";
         try {
@@ -186,14 +188,16 @@ public class Driver2 extends Activity implements View.OnClickListener {
 
             // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
-            jsonObject.accumulate("dutyStatus", cab.getStatus());
-            jsonObject.accumulate("maxCapacity", cab.getCapacity());
-            jsonObject.accumulate("routeId", cab.getrouteId());
+            jsonObject.accumulate("cabSessionId", cab.getcabSessionId());
+            jsonObject.accumulate("lat", cab.getlat());
+            jsonObject.accumulate("lng", cab.getlng());
+            jsonObject.accumulate("passengerCount", cab.getpassengerCount());
+            jsonObject.accumulate("passengerTotal", cab.getpassengerTotal());
 
             // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
 
-            // ** Alternative way to convert Person object to JSON string usin Jackson Lib
+            // ** Alternative way to convert Person object to JSON string using Jackson Lib
             // ObjectMapper mapper = new ObjectMapper();
             // json = mapper.writeValueAsString(person);
 
@@ -243,7 +247,23 @@ public class Driver2 extends Activity implements View.OnClickListener {
                 if(!validate())
                     Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
                 // call AsynTask to perform network operation on separate thread
-                new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/session");
+                gps = new GPSTracker(Driver2.this);
+
+                // check if GPS enabled
+                if (gps.canGetLocation()) {
+
+                    lat = gps.getLatitude();
+                    lng = gps.getLongitude();
+
+                    // \n is for new line
+                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + lat + "\nLong: " + lng, Toast.LENGTH_LONG).show();
+                } else {
+                    // can't get location
+                    // GPS or Network is not enabled
+                    // Ask user to enable GPS/network in settings
+                    gps.showSettingsAlert();
+                }
+                new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/cab");
                 break;
         }
 
@@ -251,11 +271,13 @@ public class Driver2 extends Activity implements View.OnClickListener {
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
-
+            sessionId="hello";
             cab = new Cab();
-            cab.setStatus(textView10.getText().toString());
-            cab.setCapacity(Integer.parseInt(textView8.getText().toString()));
-            cab.setrouteId(textView7.getText().toString());
+            cab.setcabSessionId(sessionId);
+            cab.setlat(lat);
+            cab.setlng(lng);
+            cab.setpassengerCount(Integer.parseInt(textView8.getText().toString()));
+            cab.setpassengerTotal(Integer.parseInt(textView7.getText().toString()));
 
             return POST(urls[0],cab);
         }

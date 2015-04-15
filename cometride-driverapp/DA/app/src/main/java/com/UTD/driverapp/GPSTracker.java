@@ -1,4 +1,4 @@
-package com.sandeep.da;
+package com.UTD.driverapp;
 
 import android.app.AlertDialog;
 import android.app.Service;
@@ -12,8 +12,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
-
-import java.security.Provider;
 
 public class GPSTracker extends Service implements LocationListener {
 

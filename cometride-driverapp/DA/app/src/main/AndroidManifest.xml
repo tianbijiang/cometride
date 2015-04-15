@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sandeep.da" >
+    android:screenOrientation="portrait"
+    package="com.UTD.driverapp" >
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name="com.UTD.driverapp.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,15 +23,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Options"
+            android:name="com.UTD.driverapp.Options"
             android:label="@string/title_activity_options" >
         </activity>
         <activity
-            android:name=".Driver"
+            android:name="com.UTD.driverapp.Driver"
             android:label="@string/title_activity_driver" >
         </activity>
         <activity
-            android:name=".Driver2"
+            android:name="com.UTD.driverapp.Driver2"
             android:label="@string/title_activity_driver2" >
         </activity>
     </application>

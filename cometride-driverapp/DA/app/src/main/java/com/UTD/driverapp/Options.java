@@ -1,55 +1,119 @@
-package com.sandeep.da;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.String;
-import java.io.InputStreamReader;
+package com.UTD.driverapp;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.Toast;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONObject;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.app.Activity;
-import com.sandeep.da.Cab;
-import com.sandeep.da.Driver2;
 
-public class PostCabInfo extends Activity implements OnClickListener {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
-    TextView textView7,textView8,textView10;
+
+public class Options extends Activity implements View.OnClickListener {
     Button btnPost;
-
     Cab cab;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_options);
+        final RadioButton seven = (RadioButton) findViewById(R.id.radioButton1);
+        final RadioButton nine = (RadioButton) findViewById(R.id.radioButton2);
 
-        // get reference to the views
+        Button proceed = (Button) findViewById(R.id.next);
+        proceed.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
 
-        textView10 = (TextView) findViewById(R.id.textView10);
-         textView7= (TextView) findViewById(R.id.textView7);
-         textView8= (TextView) findViewById(R.id.textView8);
-        btnPost = (Button) findViewById(R.id.btnPost);
+                if(seven.isChecked()) {
+                    Intent sevenIntent = new Intent(getApplicationContext(), Driver.class);
+                    startActivityForResult(sevenIntent, 0);
+                } else if (nine.isChecked()) {
+                    Intent nineIntent = new Intent(getApplicationContext(), Driver2.class);
+                    startActivityForResult(nineIntent, 0);
+                }else{
+                    Toast.makeText(getApplicationContext(), "Choose a Cab Type", Toast.LENGTH_SHORT).show();
+                }
 
-        // add click listener to Button "POST"
-        btnPost.setOnClickListener(this);
+            }
+        });
+        btnPost = (Button) findViewById(R.id.next);
+        btnPost.setOnClickListener(Options.this);
 
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_options, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+  /*  public void OpenDriver(View v)
+    {
+        final RadioButton seven = (RadioButton) findViewById(R.id.radioButton1);
+        final RadioButton nine = (RadioButton) findViewById(R.id.radioButton2);
+
+        Button proceed = (Button) findViewById(R.id.next);
+        proceed.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+                if(seven.isChecked()) {
+                    Intent sevenIntent = new Intent(getApplicationContext(), Driver.class);
+                    startActivityForResult(sevenIntent, 0);
+                } else if (nine.isChecked()) {
+                    Intent nineIntent = new Intent(getApplicationContext(), Driver2.class);
+                    startActivityForResult(nineIntent, 0);
+                }else{
+                    Toast.makeText(getApplicationContext(), "Choose a Cab Type", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+    }*/
     public static String POST(String url, Cab cab){
+
         InputStream inputStream = null;
         String result = "";
         try {
@@ -65,13 +129,13 @@ public class PostCabInfo extends Activity implements OnClickListener {
             // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
             jsonObject.accumulate("dutyStatus", cab.getStatus());
-            jsonObject.accumulate("maxCapacity", cab.getCapacity());
+            jsonObject.accumulate("maxCapacity", cab.getmaxCapacity());
             jsonObject.accumulate("routeId", cab.getrouteId());
 
             // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
 
-            // ** Alternative way to convert Person object to JSON string usin Jackson Lib
+            // ** Alternative way to convert Person object to JSON string using Jackson Lib
             // ObjectMapper mapper = new ObjectMapper();
             // json = mapper.writeValueAsString(person);
 
@@ -113,7 +177,7 @@ public class PostCabInfo extends Activity implements OnClickListener {
         else
             return false;
     }
-    @Override
+
     public void onClick(View view) {
 
         switch(view.getId()){
@@ -121,6 +185,7 @@ public class PostCabInfo extends Activity implements OnClickListener {
                 if(!validate())
                     Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
                 // call AsynTask to perform network operation on separate thread
+
                 new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/session");
                 break;
         }
@@ -129,11 +194,11 @@ public class PostCabInfo extends Activity implements OnClickListener {
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
-
             cab = new Cab();
-            cab.setStatus(textView10.getText().toString());
-            cab.setCapacity(Integer.parseInt(textView8.getText().toString()));
-            cab.setrouteId(textView7.getText().toString());
+            cab.setStatus("OnDuty");
+            cab.setmaxCapacity(9);
+            cab.setrouteId("1");
+
 
             return POST(urls[0],cab);
         }
@@ -145,16 +210,16 @@ public class PostCabInfo extends Activity implements OnClickListener {
     }
 
     private boolean validate(){
-        if(textView10.getText().toString().trim().equals(""))
+       /* if(Spinner.getText().toString().trim().equals(""))
             return false;
         else if(textView8.getText().toString().trim().equals(""))
             return false;
         else if(textView7.getText().toString().trim().equals(""))
             return false;
-        else
+        else*/
             return true;
     }
-    private static String convertInputStreamToString(InputStream inputStream) throws IOException{
+    private static String convertInputStreamToString(InputStream inputStream) throws IOException {
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";
         String result = "";
@@ -165,4 +230,5 @@ public class PostCabInfo extends Activity implements OnClickListener {
         return result;
 
     }
+
 }

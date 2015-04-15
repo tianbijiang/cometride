@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.sandeep.da.Options"
+    tools:context="com.UTD.driverapp.Options"
     android:background="#ffffffff">
 
     <TextView
@@ -91,11 +91,13 @@
         android:layout_height="20dp" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/next"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="OpenDriver"
-        android:text="@string/continue_button" />
+        android:text="@string/continue_button"
+        android:background="#ffc75c14"
+        android:shadowColor="#b7ec6314"
+        android:textColor="#ffffffff" />
 
 
 </LinearLayout>

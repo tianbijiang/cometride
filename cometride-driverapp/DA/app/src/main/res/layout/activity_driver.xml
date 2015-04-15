@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#ffffffff"
-    tools:context="com.sandeep.da.Driver">
+    tools:context="com.UTD.driverapp.Driver">
 
     <TextView
         android:id="@+id/cometride"
