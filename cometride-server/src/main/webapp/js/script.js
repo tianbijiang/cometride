@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var timepickers = 1;
     var timepickers_edit = 1;
-    
+
     $(".create #plus-timepicker").click(function() {
         timepickers++;
         $(".create #time-picker").append("<div class='timepicker-set' id='timepicker-set-" + timepickers + "'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");

@@ -1,6 +1,14 @@
 /// <reference path="../typings/google.maps.d.ts" />
 /// <reference path="site.ts" />
 $(document).ready(function() {
+
+    var API_ROUTE = "api/route";
+    var API_CAB = "api/cab";
+    var GREEN_CAB_IMG = "img/cab_green.png";
+    var ORANGE_CAB_IMG = "img/cab_orange.png";
+    var RED_CAB_IMG = "img/cab_red.png";
+    var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
+
     var locationsAdded = 1;
     var map;
     var center = new google.maps.LatLng(32.9860365, -96.7518621);
@@ -8,49 +16,23 @@ $(document).ready(function() {
     var markers = [];
     var directionsDisplay;
 
+    var datalength;
+    var numberOfCabs = 0;
+    var dirsDisplay = [];
+    var dirsService = [];
+    var dirsRequest = [];
+    var colors = [];
+    var ids = [];
+    var cab_ids = [];
+    var selectedRoutesTemp = [];
+
     var routeColor = "rgb(224, 102, 102)";
     var polylineOptions = {};
 
-    //displayroute
+
     var marker1;
     var markerIncrementing = true;
     var marker2;
-    var directionsService3 = new google.maps.DirectionsService();
-    var directionsService2 = new google.maps.DirectionsService();
-
-    var driveA = new google.maps.LatLng(32.985559, -96.749478);
-    var driveA2 = new google.maps.LatLng(32.985642, -96.749430);
-    var loopRd = new google.maps.LatLng(32.991806, -96.753607);
-    var wayPts = [];
-    wayPts.push({
-        location: driveA2,
-        stopover: true
-    });
-    wayPts.push({
-        location: loopRd,
-        stopover: true
-    });
-
-    var lotA = new google.maps.LatLng(32.990111, -96.743875);
-    var lotA2 = new google.maps.LatLng(32.989424, -96.745462);
-    var library = new google.maps.LatLng(32.987391, -96.747009);
-    //var lotG = new google.maps.LatLng(32.984627, -96.745398);
-    var outsideLibrary = new google.maps.LatLng(32.987716, -96.746244);
-    var wayPts2 = [];
-    wayPts2.push({
-        location: lotA2,
-        stopover: true
-    });
-    wayPts2.push({
-        location: library,
-        stopover: true
-    });
-    //wayPts2.push( { location: lotG, stopover: true } );
-    wayPts2.push({
-        location: outsideLibrary,
-        stopover: true
-    });
-    //displayroute
 
     $(".create #color").spectrum({
         color: "rgb(224, 102, 102)",
@@ -115,69 +97,17 @@ $(document).ready(function() {
 
         directionsDisplay = new google.maps.DirectionsRenderer();
 
-        //displayroute
-        directionsDisplay3 = new google.maps.DirectionsRenderer({
-            polylineOptions: {
-                strokeColor: "red"
-            },
-            suppressMarkers: true,
-        });
-        directionsDisplay3.setMap(map);
-
-        directionsDisplay2 = new google.maps.DirectionsRenderer({
-            polylineOptions: {
-                strokeColor: "green"
-            },
-            suppressMarkers: true,
-            preserveViewport: true
-        });
-        directionsDisplay2.setMap(map);
-
-        var request3 = {
-            origin: driveA,
-            destination: driveA,
-            waypoints: wayPts,
-            travelMode: google.maps.TravelMode['DRIVING']
-        };
-
-        directionsService3.route(request3, function(response, status) {
-            if (status == google.maps.DirectionsStatus.OK) {
-                directionsDisplay3.setDirections(response);
-            }
-        });
-
-        var request2 = {
-            origin: lotA,
-            destination: lotA,
-            waypoints: wayPts2,
-            travelMode: google.maps.TravelMode['DRIVING']
-        };
-
-        directionsService2.route(request2, function(response, status) {
-            if (status == google.maps.DirectionsStatus.OK) {
-                directionsDisplay2.setDirections(response);
-            }
-        });
-
-        createMarkers();
-        //displayroute
+        getRoute();
+        getCab();
     }
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
-    $(".create-btn").click(function() {                
-        //displayroute
-        directionsDisplay2.setMap(null);
-        directionsDisplay3.setMap(null);
-        marker1.setMap(null);
-        marker2.setMap(null);
+    $(".create-btn").click(function() {
+        hideRoute();
     });
-
-    $(".create #hide-sb").click(function(){
-        directionsDisplay2.setMap(map);
-        directionsDisplay3.setMap(map);
-        marker1.setMap(map);
-        marker2.setMap(map);
+    $(".edit-btn").click(function() {
+        hideRoute();
     });
 
     $("#btn-draw").click(function() {
@@ -196,7 +126,6 @@ $(document).ready(function() {
         };
 
         getDirections();
-
     });
 
     $("#btn-reverse").click(function() {
@@ -212,11 +141,66 @@ $(document).ready(function() {
             draggableCursor: "default"
         });
 
-
-
         clearPolyLine();
         google.maps.event.clearListeners(map, 'click');
+
+        if (selectedRoutesTemp.length == 0) {
+            showSelectedRoute(ids);
+        } else {
+            showSelectedRoute(selectedRoutesTemp);
+        }
     });
+
+    // $(".edit #hide-sb").click(function() {
+    //     showSelectedRoute(selectedRoutesTemp);
+    // });
+
+    //$(".noroute").hide();
+
+    loadRouteName();
+
+    function loadRouteName() {
+        $.getJSON(API_ROUTE, function(data) {
+            if (data.length == 0) {
+                //$(".noroute").show();
+            } else {
+                // selectRouteList.append($("<option></option>")
+                //     .attr("value", ids)
+                //     .text("Select All Routes"));
+                for (var i = 0; i < data.length; i++) {
+                    var route = data[i];
+                    var name = route.name;
+                    var id = route.id;
+                    selectRouteList.append($("<option></option>")
+                        .attr("value", id)
+                        .text(name));
+                    // $("#navHeaderCollapse #navs #editRoute #editRouteList")
+                    //     .append("<option id=" + id + ">" + id + "</option>");
+                }
+            }
+            showSelectedRoutes();
+        });
+        return false;
+    }
+
+    function showSelectedRoutes() {
+        $('#selectRouteList').multiselect({
+            includeSelectAllOption: true,
+            numberDisplayed: 1,
+            onChange: function(option, checked, select) {
+                var selectedRoutes = [];
+                $('#selectRouteList :selected').each(function(i, selected) {
+                    selectedRoutes.push($(selected).val());
+                });
+                selectedRoutesTemp = selectedRoutes;
+                showSelectedRoute(selectedRoutes);
+            },
+            buttonClass: '',
+            templates: {
+                button: '<span class="multiselect dropdown-toggle" data-toggle="dropdown"><i class="fa fa-taxi"></i> Select a Route <b class="caret"></b></span>'
+            }
+        });
+    }
 
     function getLocationInfo(latlng, locationName) {
         if (latlng != null) {
@@ -229,16 +213,7 @@ $(document).ready(function() {
         }
     }
 
-    function clearMarkers() {
-        for (var i = 0; i < markers.length; i++) {
-            markers[i].setMap(null);
-        }
-        markers = [];
-    }
-
     function buildPoints() {
-        clearMarkers();
-        //var html = "";
         for (var i = 0; i < points.length; i++) {
             var marker = new google.maps.Marker({
                 position: points[i].LatLng,
@@ -338,7 +313,7 @@ $(document).ready(function() {
         var name = $(".create #name").val();
 
         var color = "rgb(224, 102, 102)";
-        if($(".create #color").val()!=""){
+        if ($(".create #color").val() != "") {
             color = $(".create #color").val();
         } //rgb(255,0,0)
         color = colorToHex(color);
@@ -380,8 +355,8 @@ $(document).ready(function() {
         }
 
         var dataString = {
-            name: name,
             color: color,
+            name: name,
             status: status,
             waypoints: waypoints,
             days: days,
@@ -395,7 +370,7 @@ $(document).ready(function() {
         $.ajax({
             contentType: 'application/json',
             type: "POST",
-            url: "/api/route",
+            url: API_ROUTE,
             data: dataString,
             dataType: "json",
             cache: false,
@@ -424,8 +399,180 @@ $(document).ready(function() {
         var blue = parseInt(digits[4]);
 
         var rgb = blue | (green << 8) | (red << 16);
-        return digits[1] + '#' + rgb.toString(16);
-    };
+        return '#' + (0x1000000 | rgb).toString(16).substring(1);
+    }
+
+    function getRoute() {
+        hideRoute();
+        $.getJSON(API_ROUTE, function(data) {
+            datalength = data.length;
+            for (var i = 0; i < datalength; i++) {
+                var route = data[i];
+
+                var id = route.id;
+                ids.push(id);
+
+                var name = route.name;
+
+                var color = route.color;
+                colors.push(color);
+
+                var wps = [];
+                var startPoint;
+                var endPoint;
+                for (var k = 0; k < route.waypoints.length; k++) {
+                    var newlatlng = new google.maps.LatLng(route.waypoints[k].lat, route.waypoints[k].lng);
+                    wps.push({
+                        location: newlatlng
+                    });
+                    if (k == 0) {
+                        startPoint = newlatlng;
+                    }
+                    if (k == route.waypoints.length - 1) {
+                        endPoint = newlatlng;
+                    }
+                }
+
+                dirsRequest.push({
+                    origin: startPoint,
+                    destination: endPoint,
+                    waypoints: wps,
+                    travelMode: google.maps.TravelMode['DRIVING']
+                });
+
+                displayRoute(i);
+            }
+        });
+        return false;
+    }
+
+    function getCab() {
+        $.getJSON(API_CAB, function(data) {
+
+            numberOfCabs = data.length;
+            console.log("numberOfCabs" + numberOfCabs);
+            for (var m = 0; m < numberOfCabs; m++) {
+                var cab = data[m];
+                var cab_id = cab.cabId;
+
+                var route_id = cab.routeId;
+                cab_ids.push(route_id);
+
+                var passengerCount = cab.passengerCount;
+                var capacity = cab.maxCapacity;
+                var cab_img = checkCapacity(passengerCount, capacity);
+
+                var cabStatus = cab.status;
+
+                var lat = cab.location.lat;
+                var lng = cab.location.lng;
+
+                markers[m] = new google.maps.Marker({
+                    position: new google.maps.LatLng(lat, lng),
+                    map: map,
+                    title: 'Cab ' + (m + 1),
+                    icon: cab_img
+                });
+
+                displayCab(m);
+            }
+            window.setInterval(function() {
+                updateCab();
+            }, 3000);
+        });
+        return false;
+    }
+
+    function checkCapacity(passengerCount, capacity) {
+        var cab_img;
+        if (passengerCount / capacity < 0.6) {
+            cab_img = GREEN_CAB_IMG;
+        } else if (passengerCount / capacity == 1) {
+            cab_img = RED_CAB_IMG;
+        } else {
+            cab_img = ORANGE_CAB_IMG;
+        }
+        return cab_img;
+    }
+
+    function updateCab() {
+        $.getJSON(API_CAB, function(data) {
+            for (var m = 0; m < numberOfCabs; m++) {
+                var cab = data[m];
+
+                var passengerCount = cab.passengerCount;
+                var capacity = cab.maxCapacity;
+                var cab_img = checkCapacity(passengerCount, capacity);
+
+                var cabStatus = cab.status;
+
+                var lat = cab.location.lat;
+                var lng = cab.location.lng;
+
+                markers[m].setPosition(new google.maps.LatLng(lat, lng));
+                markers[m].setIcon(cab_img);
+            }
+        });
+    }
+
+    function displayRoute(i) {
+        dirsService[i] = new google.maps.DirectionsService();
+        dirsService[i].route(dirsRequest[i], function(response, status) {
+
+            if (status == google.maps.DirectionsStatus.OK) {
+                dirsDisplay[i] = new google.maps.DirectionsRenderer();
+                dirsDisplay[i].setOptions({
+                    polylineOptions: {
+                        strokeColor: colors[i]
+                    },
+                    suppressMarkers: true,
+                    preserveViewport: true
+                });
+                dirsDisplay[i].setMap(map);
+                dirsDisplay[i].setDirections(response);
+
+                displayCab(i);
+
+            } else {
+                if (status == "OVER_QUERY_LIMIT") {
+                    setTimeout(function() {
+                        displayRoute(i);
+                        console.log("delayed" + i);
+                    }, 500);
+                }
+            }
+        });
+    }
+
+    function displayCab(m) {
+        if (m < numberOfCabs) {
+            //console.log("cab" + m);
+            markers[m].setMap(map);
+        }
+    }
+
+    function hideRoute() {
+        for (var i = 0; i < datalength; i++) {
+            dirsDisplay[i].setMap(null);
+        }
+        for (var m = 0; m < numberOfCabs; m++) {
+            //console.log(markers[m]);
+            markers[m].setMap(null);
+        }
+    }
+
+    function showSelectedRoute(selectedId) {
+        hideRoute();
+        for (var k = 0; k < selectedId.length; k++) {
+            //console.log("k"+k+" selectedId[k]"+selectedId[k]);
+            for (var i = 0; i < datalength; i++) {
+                if (ids[i] == selectedId[k]) {
+                    //console.log("i"+i+" ids[i]"+ids[i]);
+                    displayRoute(i);
+                }
+            }
+        }
+    }
 
     function createMarkers() {
         marker1 = new google.maps.Marker({
