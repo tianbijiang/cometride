@@ -50,7 +50,7 @@ public class CometRideServlet {
 
     @GET
     @Produces( MediaType.APPLICATION_JSON )
-    @Path( "/route/{id}" )
+    @Path( "/admin/route/{id}" )
     public Response getRouteDetails( @PathParam( "id" ) String id ) {
         try {
             RouteDetails details = controller.getRouteDetails( id );
@@ -63,7 +63,7 @@ public class CometRideServlet {
 
     @POST
     @Consumes( MediaType.APPLICATION_JSON )
-    @Path( "/route" )
+    @Path( "/admin/route" )
     public Response createRoute( RouteDetails details ) {
         try {
             logger.info( "Creating route: " + details.getName() );
@@ -80,7 +80,7 @@ public class CometRideServlet {
 
     @PUT
     @Consumes( MediaType.APPLICATION_JSON )
-    @Path( "/route/{id}" )
+    @Path( "/admin/route/{id}" )
     public Response updateRoute( @PathParam( "id" ) String id, RouteDetails details ) {
         try {
             logger.info( "Updating route: " + details.getName() );
@@ -136,7 +136,7 @@ public class CometRideServlet {
 
     @POST
     @Consumes( MediaType.APPLICATION_JSON )
-    @Path( "/session" )
+    @Path( "/driver/session" )
     public Response createDriverSession( CabSession newCabSession) {
         try {
             String id = controller.createCabSession(newCabSession);
@@ -151,7 +151,7 @@ public class CometRideServlet {
 
     @PUT
     @Consumes( MediaType.APPLICATION_JSON )
-    @Path( "/session/{id}" )
+    @Path( "/driver/session/{id}" )
     public Response updateDriverStatus( CabSession statusUpdate ) {
         try {
             String id = controller.updateDriverStatus( statusUpdate );
@@ -167,7 +167,7 @@ public class CometRideServlet {
 
     @POST
     @Consumes( MediaType.APPLICATION_JSON )
-    @Path( "/cab" )
+    @Path( "/driver/cab" )
     public Response updateDriverLocation( TrackingUpdate trackingUpdate) {
         try {
             trackingUpdate.setTimestamp( new Timestamp( new Date().getTime() ) );
