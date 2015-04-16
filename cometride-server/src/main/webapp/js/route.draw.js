@@ -5,7 +5,7 @@ $(document).ready(function() {
     var API_ROUTE = "api/route";
     var API_CAB = "api/cab";
     var GREEN_CAB_IMG = "img/cab_green.png";
-    var ORANGE_CAB_IMG = "img/cab_orange.png";
+    var ORANGE_CAB_IMG = "img/cab_yellow.png";
     var RED_CAB_IMG = "img/cab_red.png";
     var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
 
