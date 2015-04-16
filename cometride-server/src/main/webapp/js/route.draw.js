@@ -1,22 +1,31 @@
-/// <reference path="../typings/google.maps.d.ts" />
-/// <reference path="site.ts" />
 $(document).ready(function() {
 
-    var API_ROUTE = "api/route";
+    /* Some Constants */
+    var API_ROUTE_GET = "api/route";
+    var API_ROUTE_POST = "api/admin/route";
     var API_CAB = "api/cab";
     var GREEN_CAB_IMG = "img/cab_green.png";
     var ORANGE_CAB_IMG = "img/cab_yellow.png";
     var RED_CAB_IMG = "img/cab_red.png";
+    
+    /* Some Element Names */
     var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
+    var colorBtns = $('.create #color, .edit #color');
+    var colorBtnCreate = $('.create #color');
+    var colorBtnEdit = $('.edit #color');
 
-    var locationsAdded = 1;
+    /* Some Variables for Drawing */
     var map;
     var center = new google.maps.LatLng(32.9860365, -96.7518621);
     var points = [];
     var markers = [];
+    var locationsAdded = 1;
     var directionsDisplay;
+    var routeColor = "rgb(224, 102, 102)";
+    var polylineOptions = {};
 
-    var datalength;
+    /* Some Variables for Displaying */
+    var datalength = 0;
     var numberOfCabs = 0;
     var dirsDisplay = [];
     var dirsService = [];
@@ -26,83 +35,37 @@ $(document).ready(function() {
     var cab_ids = [];
     var selectedRoutesTemp = [];
 
-    var routeColor = "rgb(224, 102, 102)";
-    var polylineOptions = {};
-
-
-    var marker1;
-    var markerIncrementing = true;
-    var marker2;
-
-    $(".create #color").spectrum({
-        color: "rgb(224, 102, 102)",
-        showPalette: true,
-        palette: [
-            ["rgb(0, 0, 0)", "rgb(67, 67, 67)", "rgb(102, 102, 102)",
-                "rgb(204, 204, 204)", "rgb(217, 217, 217)", "rgb(255, 255, 255)"
-            ],
-            ["rgb(152, 0, 0)", "rgb(255, 0, 0)", "rgb(255, 153, 0)", "rgb(255, 255, 0)", "rgb(0, 255, 0)",
-                "rgb(0, 255, 255)", "rgb(74, 134, 232)", "rgb(0, 0, 255)", "rgb(153, 0, 255)", "rgb(255, 0, 255)"
-            ],
-            ["rgb(230, 184, 175)", "rgb(244, 204, 204)", "rgb(252, 229, 205)", "rgb(255, 242, 204)", "rgb(217, 234, 211)",
-                "rgb(208, 224, 227)", "rgb(201, 218, 248)", "rgb(207, 226, 243)", "rgb(217, 210, 233)", "rgb(234, 209, 220)",
-                "rgb(221, 126, 107)", "rgb(234, 153, 153)", "rgb(249, 203, 156)", "rgb(255, 229, 153)", "rgb(182, 215, 168)",
-                "rgb(162, 196, 201)", "rgb(164, 194, 244)", "rgb(159, 197, 232)", "rgb(180, 167, 214)", "rgb(213, 166, 189)",
-                "rgb(204, 65, 37)", "rgb(224, 102, 102)", "rgb(246, 178, 107)", "rgb(255, 217, 102)", "rgb(147, 196, 125)",
-                "rgb(118, 165, 175)", "rgb(109, 158, 235)", "rgb(111, 168, 220)", "rgb(142, 124, 195)", "rgb(194, 123, 160)",
-                "rgb(166, 28, 0)", "rgb(204, 0, 0)", "rgb(230, 145, 56)", "rgb(241, 194, 50)", "rgb(106, 168, 79)",
-                "rgb(69, 129, 142)", "rgb(60, 120, 216)", "rgb(61, 133, 198)", "rgb(103, 78, 167)", "rgb(166, 77, 121)",
-                "rgb(91, 15, 0)", "rgb(102, 0, 0)", "rgb(120, 63, 4)", "rgb(127, 96, 0)", "rgb(39, 78, 19)",
-                "rgb(12, 52, 61)", "rgb(28, 69, 135)", "rgb(7, 55, 99)", "rgb(32, 18, 77)", "rgb(76, 17, 48)"
-            ]
-        ]
-    });
-    $(".edit #color").spectrum({
-        color: "rgb(224, 102, 102)",
-        showPalette: true,
-        palette: [
-            ["rgb(0, 0, 0)", "rgb(67, 67, 67)", "rgb(102, 102, 102)",
-                "rgb(204, 204, 204)", "rgb(217, 217, 217)", "rgb(255, 255, 255)"
-            ],
-            ["rgb(152, 0, 0)", "rgb(255, 0, 0)", "rgb(255, 153, 0)", "rgb(255, 255, 0)", "rgb(0, 255, 0)",
-                "rgb(0, 255, 255)", "rgb(74, 134, 232)", "rgb(0, 0, 255)", "rgb(153, 0, 255)", "rgb(255, 0, 255)"
-            ],
-            ["rgb(230, 184, 175)", "rgb(244, 204, 204)", "rgb(252, 229, 205)", "rgb(255, 242, 204)", "rgb(217, 234, 211)",
-                "rgb(208, 224, 227)", "rgb(201, 218, 248)", "rgb(207, 226, 243)", "rgb(217, 210, 233)", "rgb(234, 209, 220)",
-                "rgb(221, 126, 107)", "rgb(234, 153, 153)", "rgb(249, 203, 156)", "rgb(255, 229, 153)", "rgb(182, 215, 168)",
-                "rgb(162, 196, 201)", "rgb(164, 194, 244)", "rgb(159, 197, 232)", "rgb(180, 167, 214)", "rgb(213, 166, 189)",
-                "rgb(204, 65, 37)", "rgb(224, 102, 102)", "rgb(246, 178, 107)", "rgb(255, 217, 102)", "rgb(147, 196, 125)",
-                "rgb(118, 165, 175)", "rgb(109, 158, 235)", "rgb(111, 168, 220)", "rgb(142, 124, 195)", "rgb(194, 123, 160)",
-                "rgb(166, 28, 0)", "rgb(204, 0, 0)", "rgb(230, 145, 56)", "rgb(241, 194, 50)", "rgb(106, 168, 79)",
-                "rgb(69, 129, 142)", "rgb(60, 120, 216)", "rgb(61, 133, 198)", "rgb(103, 78, 167)", "rgb(166, 77, 121)",
-                "rgb(91, 15, 0)", "rgb(102, 0, 0)", "rgb(120, 63, 4)", "rgb(127, 96, 0)", "rgb(39, 78, 19)",
-                "rgb(12, 52, 61)", "rgb(28, 69, 135)", "rgb(7, 55, 99)", "rgb(32, 18, 77)", "rgb(76, 17, 48)"
-            ]
-        ]
-    });
-
-    $(".create #color").change(function() {
-        routeColor = $(".create #color").val();
-    });
-    $(".edit #color").change(function() {
-        routeColor = $(".edit #color").val();
-    });
-
-    function initialize() {
-        var mapOptions = {
-            zoom: 16,
-            center: center
-        };
-        map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-
-        directionsDisplay = new google.maps.DirectionsRenderer();
-
-        getRoute();
-        getCab();
-    }
-
     google.maps.event.addDomListener(window, 'load', initialize);
 
+    colorBtns.spectrum({
+        color: "rgb(224, 102, 102)",
+        showPalette: true,
+        palette: [
+            ["rgb(0, 0, 0)", "rgb(67, 67, 67)", "rgb(102, 102, 102)",
+                "rgb(204, 204, 204)", "rgb(217, 217, 217)", "rgb(255, 255, 255)"
+            ],
+            ["rgb(152, 0, 0)", "rgb(255, 0, 0)", "rgb(255, 153, 0)", "rgb(255, 255, 0)", "rgb(0, 255, 0)",
+                "rgb(0, 255, 255)", "rgb(74, 134, 232)", "rgb(0, 0, 255)", "rgb(153, 0, 255)", "rgb(255, 0, 255)"
+            ],
+            ["rgb(230, 184, 175)", "rgb(244, 204, 204)", "rgb(252, 229, 205)", "rgb(255, 242, 204)", "rgb(217, 234, 211)",
+                "rgb(208, 224, 227)", "rgb(201, 218, 248)", "rgb(207, 226, 243)", "rgb(217, 210, 233)", "rgb(234, 209, 220)",
+                "rgb(221, 126, 107)", "rgb(234, 153, 153)", "rgb(249, 203, 156)", "rgb(255, 229, 153)", "rgb(182, 215, 168)",
+                "rgb(162, 196, 201)", "rgb(164, 194, 244)", "rgb(159, 197, 232)", "rgb(180, 167, 214)", "rgb(213, 166, 189)",
+                "rgb(204, 65, 37)", "rgb(224, 102, 102)", "rgb(246, 178, 107)", "rgb(255, 217, 102)", "rgb(147, 196, 125)",
+                "rgb(118, 165, 175)", "rgb(109, 158, 235)", "rgb(111, 168, 220)", "rgb(142, 124, 195)", "rgb(194, 123, 160)",
+                "rgb(166, 28, 0)", "rgb(204, 0, 0)", "rgb(230, 145, 56)", "rgb(241, 194, 50)", "rgb(106, 168, 79)",
+                "rgb(69, 129, 142)", "rgb(60, 120, 216)", "rgb(61, 133, 198)", "rgb(103, 78, 167)", "rgb(166, 77, 121)",
+                "rgb(91, 15, 0)", "rgb(102, 0, 0)", "rgb(120, 63, 4)", "rgb(127, 96, 0)", "rgb(39, 78, 19)",
+                "rgb(12, 52, 61)", "rgb(28, 69, 135)", "rgb(7, 55, 99)", "rgb(32, 18, 77)", "rgb(76, 17, 48)"
+            ]
+        ]
+    });
+    colorBtnCreate.change(function() {
+        routeColor = colorBtnCreate.val();
+    });
+    colorBtnEdit.change(function() {
+        routeColor = colorBtnEdit.val();
+    });
     $(".create-btn").click(function() {
         hideRoute();
     });
@@ -157,10 +120,22 @@ $(document).ready(function() {
 
     //$(".noroute").hide();
 
-    loadRouteName();
+    function initialize() {
+        var mapOptions = {
+            zoom: 16,
+            center: center
+        };
+        map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+
+        directionsDisplay = new google.maps.DirectionsRenderer();
+
+        getRoute();
+        getCab();
+        loadRouteName();
+    } 
 
     function loadRouteName() {
-        $.getJSON(API_ROUTE, function(data) {
+        $.getJSON(API_ROUTE_GET, function(data) {
             if (data.length == 0) {
                 //$(".noroute").show();
             } else {
@@ -370,7 +345,7 @@ $(document).ready(function() {
         $.ajax({
             contentType: 'application/json',
             type: "POST",
-            url: API_ROUTE,
+            url: API_ROUTE_POST,
             data: dataString,
             dataType: "json",
             cache: false,
@@ -404,7 +379,7 @@ $(document).ready(function() {
 
     function getRoute() {
         hideRoute();
-        $.getJSON(API_ROUTE, function(data) {
+        $.getJSON(API_ROUTE_GET, function(data) {
             datalength = data.length;
             for (var i = 0; i < datalength; i++) {
                 var route = data[i];
