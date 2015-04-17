@@ -12,9 +12,9 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -65,7 +65,8 @@ public class DisplayMapActivity extends FragmentActivity implements
 	int numberOfRoutes = 0;
 	GoogleMap googleMap;
 	HashMap<Cab, Marker> cabMarkerMap;
-
+	LocationManager mLocationManager;
+	LatLng myLocation;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -77,16 +78,20 @@ public class DisplayMapActivity extends FragmentActivity implements
 		if (isNetworkConnected()) {
 
 			setContentView(R.layout.activity_displaymap);
-
-			// Set policy
-			if (android.os.Build.VERSION.SDK_INT > 9) {
-				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-						.permitAll().build();
-				StrictMode.setThreadPolicy(policy);
-			}
-
+			
+	
 			// get all cab information from server
 			new GetAllCabInfo().execute();
+			
+            //get current gps location
+			mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
+				            0, mLocationListener);
+				
+			myLocation=new LatLng(0,0);
+			
+			
 
 			// Load map
 			SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager()
@@ -103,7 +108,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 			// interest button
 			final Button button = (Button) findViewById(R.id.btn_rider);
-			button.setOnClickListener(new View.OnClickListener() {
+			button.setOnClickListener(new View.OnClickListener(){
 				public void onClick(View v) {
 					LocationManager locManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 					Criteria cri = new Criteria();
@@ -148,23 +153,52 @@ public class DisplayMapActivity extends FragmentActivity implements
 			return true;
 	}
 
+	
+	private final LocationListener mLocationListener = new LocationListener() {
+	    @Override
+	    public void onLocationChanged(final Location location) {
+	    	myLocation =new LatLng( location.getLatitude(),location.getLongitude());
+	    	 String Text = "My current location is: " +
+	    		        "Latitud = " + location.getLatitude() +
+	    		        "Longitud = " + location.getLongitude();
+
+	    		        Toast.makeText( getApplicationContext(), Text, Toast.LENGTH_SHORT).show();
+	    }
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onProviderEnabled(String provider) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onProviderDisabled(String provider) {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	
 	private void initCabInfo() {
 		if (googleMap != null) {
 
 			cabMarkerMap = new HashMap<Cab, Marker>();
-			
-			
+
 			for (int i = 0; i < allCabs.size(); i++) {
 
 				cabLocationMarkers.add(googleMap.addMarker(new MarkerOptions()
 						.position(allCabs.get(i).getLocation())
-						.title("Cab" + (i + 1))
-						.snippet("From "+ allCabs.get(i).getRouteId())
+						.title(allCabs.get(i).getRouteId())
+						.snippet("From " + allCabs.get(i).getRouteId()+ "\n" + allCabs.get(i).getPassengerCount() +"/" + allCabs.get(i).getMaxCapacity())
 						.icon(BitmapDescriptorFactory
 								.fromResource(R.drawable.cab_green))));
-				
-				
-				cabMarkerMap.put(allCabs.get(i),cabLocationMarkers.get(i));
+
+				cabMarkerMap.put(allCabs.get(i), cabLocationMarkers.get(i));
 			}
 		}
 	}
@@ -174,6 +208,10 @@ public class DisplayMapActivity extends FragmentActivity implements
 		@Override
 		protected Void doInBackground(Void... params) {
 
+			
+			 
+			
+			
 			try {
 
 				jAllCabs = JsonReader
@@ -204,8 +242,12 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 					cab.setLocation(p);
 					allCabs.add(cab);
+				
+					
 					//
 
+				
+					
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -229,23 +271,17 @@ public class DisplayMapActivity extends FragmentActivity implements
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 
-			initCabInfo();
+		
 
-			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-					allCabs.get(0).getLocation(), 16));
-
-			Log.v("allCabs", allCabs.toString());
-			Log.v("cabMarkerMap", cabMarkerMap.toString());
-			
-			
-		 	UpdateCabInfo.update(allCabs,cabMarkerMap);
-
-			new GetAllRoutes().execute();
+		
+            
+            new GetAllRoutes().execute();
 
 		}
 
 	}
 
+	
 	private class GetAllRoutes extends AsyncTask<Void, Void, Void> {
 
 		@Override
@@ -305,6 +341,21 @@ public class DisplayMapActivity extends FragmentActivity implements
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 
+			initCabInfo();
+
+			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+					allCabs.get(0).getLocation(), 16));
+
+			Log.v("allCabs", allCabs.toString());
+			Log.v("cabMarkerMap", cabMarkerMap.toString());
+			
+			
+			 
+			if (myLocation!=null){
+				UpdateCabInfo.update(allCabs, cabMarkerMap, myLocation);
+	            
+			}
+			
 			// Init route selection drop down
 			routeSelectionSpinner.setItems(selectedRoutes,
 					getString(R.string.all_routes), displayMap);
@@ -314,9 +365,12 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 				String url = getMapsApiDirectionsUrl(n);
 
-				ReadGoogleMapAPIURL readURL = new ReadGoogleMapAPIURL();
+				if (url != null) {
 
-				readURL.execute(url);
+					ReadGoogleMapAPIURL readURL = new ReadGoogleMapAPIURL();
+
+					readURL.execute(url);
+				}
 
 			}
 
@@ -326,30 +380,39 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 	// Google Map Direction API
 	private String getMapsApiDirectionsUrl(int routeId) {
-		String waypoints = "&waypoints=optimize:true";
+		String waypoints = "";
+		String url = "";
+		if (allRoutes.get(routeId).getWaypoints().size() > 0) {
+			waypoints = "&waypoints=optimize:true";
 
-		for (int i = 1; i < allRoutes.get(routeId).getWaypoints().size() - 1; i++) {
-			waypoints += "|"
-					+ allRoutes.get(routeId).getWaypoints().get(i).latitude
+			for (int i = 1; i < allRoutes.get(routeId).getWaypoints().size() - 1; i++) {
+				waypoints += "|"
+						+ allRoutes.get(routeId).getWaypoints().get(i).latitude
+						+ ","
+						+ allRoutes.get(routeId).getWaypoints().get(i).longitude;
+
+			}
+
+			String sensor = "sensor=false";
+			String origin = "origin="
+					+ allRoutes.get(routeId).getWaypoints().get(0).latitude
 					+ ","
-					+ allRoutes.get(routeId).getWaypoints().get(i).longitude;
+					+ allRoutes.get(routeId).getWaypoints().get(0).longitude;
+			String destination = "destination="
+					+ allRoutes.get(routeId).getWaypoints().get(0).latitude
+					+ ","
+					+ allRoutes.get(routeId).getWaypoints().get(0).longitude;
+			String params = waypoints + "&" + sensor;
+			String output = "json";
+			url += "https://maps.googleapis.com/maps/api/directions/" + output
+					+ "?" + origin + "&" + destination + params;
 
+			Log.v("Route Start", allRoutes.get(routeId).getWaypoints().get(0)
+					.toString());
+			return url;
+		} else {
+			return null;
 		}
-		String sensor = "sensor=false";
-		String origin = "origin="
-				+ allRoutes.get(routeId).getWaypoints().get(0).latitude + ","
-				+ allRoutes.get(routeId).getWaypoints().get(0).longitude;
-		String destination = "destination="
-				+ allRoutes.get(routeId).getWaypoints().get(0).latitude + ","
-				+ allRoutes.get(routeId).getWaypoints().get(0).longitude;
-		String params = waypoints + "&" + sensor;
-		String output = "json";
-		String url = "https://maps.googleapis.com/maps/api/directions/"
-				+ output + "?" + origin + "&" + destination + params;
-
-		Log.v("Route Start", allRoutes.get(routeId).getWaypoints().get(0)
-				.toString());
-		return url;
 
 	}
 
@@ -439,28 +502,23 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 	@Override
 	public void displaySelectedRoute(int id) {
+
 		routePolyLines.get(id).setVisible(true);
 
 		for (int i = 0; i < allCabs.size(); i++) {
-		//	cabMarkerMap.get(allCabs.get(i)).setVisible(true);
-			
-			
-			
+			// cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+
 			if (allRoutes.get(id).getId().equals(allCabs.get(i).getRouteId())) {
 
 				Log.v("routeId", allRoutes.get(id).getId());
 				Log.v("cabrouteId", allCabs.get(i).getRouteId());
-				
-			
-				
-					cabMarkerMap.get(allCabs.get(i)).setVisible(true);
-					
-				//cabLocationMarkers.get(i).setVisible(true);
-				
-				}
-			}
 
-		
+				cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+
+				// cabLocationMarkers.get(i).setVisible(true);
+
+			}
+		}
 
 	}
 
@@ -468,18 +526,14 @@ public class DisplayMapActivity extends FragmentActivity implements
 		// TODO Auto-generated method stub
 		for (int i = 0; i < numberOfRoutes; i++) {
 			routePolyLines.get(i).setVisible(false);
-			
-		
-			
-			
-			
+
 		}
-		
-	for (int j = 0; j < allCabs.size(); j++) {
-			
+
+		for (int j = 0; j < allCabs.size(); j++) {
+
 			cabLocationMarkers.get(j).setVisible(false);
-			}
-		
+		}
+
 	}
 
 	// exit application, clear all running threads
