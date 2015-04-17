@@ -151,6 +151,10 @@ body {
     .nav li a {
         color: rgba(0, 0, 0, 0.6);
     }
+    /*.nav li select {
+        color: rgba(0, 0, 0, 0.6);
+        margin-left: 2em;
+    }*/
     .navbar-default .nav li a:hover p,
     .navbar-shrink .nav li a:hover p {
         border-bottom: none;
