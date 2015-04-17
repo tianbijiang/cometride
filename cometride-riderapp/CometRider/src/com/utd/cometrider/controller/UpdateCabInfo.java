@@ -1,6 +1,7 @@
 package com.utd.cometrider.controller;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,6 +13,8 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -20,25 +23,26 @@ import com.utd.cometrider.R;
 
 
 public class UpdateCabInfo {
+	
+
+	
+	
 	static public void update(final ArrayList<Cab> allCabs,
-			final HashMap<Cab, Marker> cabMarkerMap) {
-			
-		final Handler handler = new Handler();
-       
-		handler.post(new Thread(new Runnable() {
+			final HashMap<Cab, Marker> cabMarkerMap,final LatLng myLocation) {
+
+		final class UpdateCab extends AsyncTask<Void, Void, Void> {
 
 			@Override
-			public void run() {
+			protected Void doInBackground(Void... params) {
 
 				JSONArray jAllCabs = null;
-			
 
 				try {
 					jAllCabs = JsonReader
 							.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/cab");
 
 					for (int i = 0; i < jAllCabs.length(); i++) {
-						//Cab cab = new Cab();
+						// Cab cab = new Cab();
 						JSONObject c = jAllCabs.getJSONObject(i);
 						String routeId = c.getString("routeId");
 						int maxCapacity = c.getInt("maxCapacity");
@@ -65,14 +69,12 @@ public class UpdateCabInfo {
 						// locations.add(p);
 
 						allCabs.get(i).setLocation(p);
-						
-						Log.v("p",p.toString());
+
+						Log.v("p", p.toString());
 						Log.v("allCabs", allCabs.toString());
 						allCabs.set(i, allCabs.get(i));
-						//allCabs.add(cab);
+						// allCabs.add(cab);
 					}
-
-					
 
 				} catch (IOException e) {
 					e.getMessage();
@@ -80,50 +82,110 @@ public class UpdateCabInfo {
 					e.getMessage();
 				}
 
+				return null;
+			}
+
+			protected void onPostExecute(Void result) {
+				super.onPostExecute(result);
+
+			
+			
+				
+				
+				
 				for (int i = 0; i < allCabs.size(); i++) {
 					
-					//update cab location
-				    cabMarkerMap.get(allCabs.get(i)).setPosition(allCabs.get(i).getLocation());
+				int distance= CalculationByDistance(myLocation, allCabs.get(i).getLocation());
+				double speed=32;
+				double time = ((double)distance/speed)*60;
 
-					//update cab color
-					double cabCap=(double)allCabs.get(i).getPassengerCount()/(double)allCabs.get(i).getMaxCapacity();
+					// update cab location
+					cabMarkerMap.get(allCabs.get(i)).setPosition(
+							allCabs.get(i).getLocation());
 					
-					   if (cabCap>0.6 && cabCap<1.0){
-							
-						   cabMarkerMap.get(allCabs.get(i)).setIcon(
-									BitmapDescriptorFactory
-											.fromResource(R.drawable.cab_yellow));
-							Log.v("haha", "haha");
-							
-						}
+					//update cab cap
+					cabMarkerMap.get(allCabs.get(i)).setSnippet(" Passenger:" + allCabs.get(i).getPassengerCount() +"/" + allCabs.get(i).getMaxCapacity()+ " arriving time:" + (int)time + "m");
+						
+				
+					// update cab color
+					double cabCap = (double) allCabs.get(i).getPassengerCount()
+							/ (double) allCabs.get(i).getMaxCapacity();
+
 					
-					if (cabCap==1.0) {
+					//Check Cap green
+					if (cabCap==0) {
+
+						cabMarkerMap.get(allCabs.get(i)).setIcon(
+								BitmapDescriptorFactory
+										.fromResource(R.drawable.cab_green));
+						// Log.v("haha", "haha");
+
+					}
+					
+					if (cabCap > 0.6 && cabCap < 1.0) {
+
+						cabMarkerMap.get(allCabs.get(i)).setIcon(
+								BitmapDescriptorFactory
+										.fromResource(R.drawable.cab_yellow));
+						// Log.v("haha", "haha");
+
+					}
+
+					if (cabCap == 1.0) {
 
 						cabMarkerMap.get(allCabs.get(i)).setIcon(
 								BitmapDescriptorFactory
 										.fromResource(R.drawable.cab_red));
 
 					}
-					
-				
-				   
-				   
-				
-						
-					
-					
 
 					Log.v("route id...", allCabs.get(i).getRouteId());
-					
+
 					Log.v("update cab locations...", allCabs.get(i)
 							.getLocation().toString());
 					Log.v("update cab status...", Double.toString(cabCap));
 				}
 
-				handler.postDelayed(this, 3000);
+
+			}
+
+		}
 		
+		
+		final Handler handler = new Handler();
+
+		handler.post(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+
+				new UpdateCab().execute();
+				handler.postDelayed(this, 3000);
+
 			}
 		}));
 	}
+	
+	public static int CalculationByDistance(LatLng StartP, LatLng EndP) {
+        int Radius=6371;//radius of earth in Km         
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLon = Math.toRadians(lon2-lon1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult= Radius*c;
+        double km=valueResult/1000;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int kmInDec =  Integer.valueOf(newFormat.format(km));
+        double meter=valueResult%1000;
+        int  meterInDec= Integer.valueOf(newFormat.format(meter));
+        Log.i("Radius Value",""+valueResult+"   KM  "+kmInDec+" Meter   "+meterInDec);
 
+        return kmInDec;
+     }
 }
