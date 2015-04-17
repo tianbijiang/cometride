@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
+import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
@@ -14,6 +15,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 @Singleton
 @Path("/")
@@ -92,6 +94,68 @@ public class CometRideServlet {
         } catch ( Exception e ) {
             return Response.serverError().entity( "An error occurred while updating route " +
                     details.getName() + "." ).build();
+        }
+    }
+
+    @GET
+    @Produces( MediaType.APPLICATION_JSON )
+    @Path( "/admin/users" )
+    public Response getAllUsers() {
+        try {
+            logger.info( "Retrieving users." );
+            UserData[] usersList = controller.retrieveUsersData();
+
+            return Response.ok().entity(usersList).build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity("An error occurred while retrieving users.").build();
+        }
+    }
+
+    @POST
+    @Consumes( MediaType.APPLICATION_JSON )
+    @Path( "/admin/users" )
+    public Response createUser( UserData newData ) {
+        try {
+            logger.info( "Creating user: " + newData.getUserName() );
+            String id = controller.createUser( newData );
+
+            UriBuilder uib = uriInfo.getAbsolutePathBuilder();
+            uib.path( id );
+            return Response.created( uib.build() ).entity( id ).build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while creating user " +
+                    newData.getUserName() + "." ).build();
+        }
+    }
+
+    @PUT
+    @Consumes( MediaType.APPLICATION_JSON )
+    @Path( "/admin/users/{id}" )
+    public Response createUser( UserData newData, @PathParam( "id" ) String userName ) {
+        try {
+            logger.info( "Updating user: " + userName );
+            String id = controller.updateUser( newData, userName );
+
+            UriBuilder uib = uriInfo.getAbsolutePathBuilder();
+            uib.path( id );
+            return Response.ok( uib.build() ).entity( id ).build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while updating user " +
+                    userName + "." ).build();
+        }
+    }
+
+    @DELETE
+    @Path( "/admin/users/{id}" )
+    public Response createUser( @PathParam( "id" ) String userName ) {
+        try {
+            logger.info( "Deleting user: " + userName );
+            controller.deleteUser( userName );
+
+            return Response.ok().build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while updating user " +
+                    userName + "." ).build();
         }
     }
 

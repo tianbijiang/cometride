@@ -6,6 +6,7 @@ import utdallas.ridetrackers.server.datatypes.CabStatus;
 import utdallas.ridetrackers.server.datatypes.LatLng;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
+import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
 
@@ -191,7 +192,7 @@ public class CometRideDatabaseAccess {
 
             while( results.next() ) {
                 Route newDetails = new Route();
-                List<LatLng> waypoints = new ArrayList<LatLng>();
+                List<LatLng> routeWaypoints = new ArrayList<LatLng>();
 
                 try {
                     String waypointQueryStatement = "SELECT route_id, lat, lng, sequence_num FROM ebdb.RouteWaypoints " +
@@ -206,10 +207,35 @@ public class CometRideDatabaseAccess {
                         newWaypoint.setLat( waypointResults.getDouble( "lat" ) );
                         newWaypoint.setLng(waypointResults.getDouble("lng" ) );
 
-                        waypoints.add( newWaypoint );
+                        routeWaypoints.add( newWaypoint );
                     }
 
                     waypointSetupStatement.close();
+                } catch (SQLException ex) {
+                    logger.error("SQLException: " + ex.getMessage());
+                    logger.error("SQLState: " + ex.getSQLState());
+                    logger.error("VendorError: " + ex.getErrorCode());
+                }
+
+                List<LatLng> routeSafepoints = new ArrayList<LatLng>();
+
+                try {
+                    String safepointQueryStatement = "SELECT route_id, lat, lng, sequence_num FROM ebdb.RouteSafepoints " +
+                            "WHERE route_id = '" + results.getString( "route_id" ) + "' ORDER BY sequence_num ASC;";
+
+                    Statement safepointSetupStatement = connection.createStatement();
+                    ResultSet safepointResults = safepointSetupStatement.executeQuery( safepointQueryStatement );
+
+                    while( safepointResults.next() ) {
+                        LatLng newSafepoint = new LatLng();
+
+                        newSafepoint.setLat( safepointResults.getDouble( "lat" ) );
+                        newSafepoint.setLng(safepointResults.getDouble("lng"));
+
+                        routeSafepoints.add( newSafepoint );
+                    }
+
+                    safepointResults.close();
                 } catch (SQLException ex) {
                     logger.error("SQLException: " + ex.getMessage());
                     logger.error("SQLState: " + ex.getSQLState());
@@ -221,7 +247,8 @@ public class CometRideDatabaseAccess {
                 newDetails.setName( results.getString("name") );
                 newDetails.setColor( results.getString("color") );
                 newDetails.setStatus( results.getString("status") );
-                newDetails.setWaypoints( waypoints );
+                newDetails.setWaypoints( routeWaypoints );
+                newDetails.setSafepoints( routeSafepoints );
 
                 routes.add( newDetails );
             }
@@ -242,6 +269,7 @@ public class CometRideDatabaseAccess {
     public void createRoute( RouteDetails newRoute ) {
 
         List<LatLng> waypoints = newRoute.getWaypoints();
+        List<LatLng> safepoints = newRoute.getSafepoints();
 
         String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, color, status) VALUES ( ?, ?, ?, ? );";
         db.executeUpdate( routeInfoStatement, newRoute.getId(), newRoute.getName(), newRoute.getColor(),
@@ -255,6 +283,99 @@ public class CometRideDatabaseAccess {
                     "INSERT INTO ebdb.RouteWaypoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
             db.executeUpdate(wayPointStatement, newRoute.getId(), waypoint.getLat(), waypoint.getLng(), i);
         }
+
+        for( int i=0; i < safepoints.size(); i++ ) {
+            LatLng safepoint = waypoints.get(i);
+            String wayPointStatement = "\n" +
+                    "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
+            db.executeUpdate(wayPointStatement, newRoute.getId(), safepoint.getLat(), safepoint.getLng(), i);
+        }
+    }
+
+
+
+    //
+    // Users
+    //
+
+    public List<UserData> getUsersData() {
+        String queryStatement = "SELECT user_name FROM ebdb.users;";
+
+        List<UserData> usersData = new ArrayList<UserData>();
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection( jdbcUrl );
+            Statement setupStatement = connection.createStatement();
+            ResultSet results = setupStatement.executeQuery( queryStatement );
+
+            while( results.next() ) {
+                UserData userData = new UserData();
+                List<String> userRoles = new ArrayList<String>();
+
+                try {
+                    String rolesQueryStatement = "SELECT role_name FROM ebdb.user_roles WHERE user_name = '" + 
+                            results.getString( "user_name" ) + "';";
+
+                    Statement rolesSetupStatement = connection.createStatement();
+                    ResultSet rolesResults = rolesSetupStatement.executeQuery( rolesQueryStatement );
+
+                    while( rolesResults.next() ) {
+                        userRoles.add( rolesResults.getString( "role_name" ) );
+                    }
+
+                    rolesSetupStatement.close();
+                } catch (SQLException ex) {
+                    logger.error("SQLException: " + ex.getMessage());
+                    logger.error("SQLState: " + ex.getSQLState());
+                    logger.error("VendorError: " + ex.getErrorCode());
+                }
+
+                userData.setUserName( results.getString( "user_name" ) );
+                userData.setUserRoles( userRoles );
+
+                usersData.add( userData );
+            }
+
+            setupStatement.close();
+        } catch (SQLException ex) {
+            logger.error("SQLException: " + ex.getMessage());
+            logger.error("SQLState: " + ex.getSQLState());
+            logger.error("VendorError: " + ex.getErrorCode());
+        } finally {
+            System.out.println("Closing the connection.");
+            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+        }
+
+        return usersData;
+    }
+
+    public void createUser( UserData newData ) {
+        String createStatement = "INSERT INTO ebdb.users ( user_name, user_pass ) VALUES ( ?, ? );";
+        db.executeUpdate( createStatement, newData.getUserName(), newData.getUserPassword() );
+
+        for( String role : newData.getUserRoles() ) {
+            String createRoleStatement = "INSERT INTO ebdb.user_roles ( user_name, role_name ) VALUES ( ?, ? );";
+            db.executeUpdate( createRoleStatement, newData.getUserName(), role );
+        }
+    }
+
+    public void updateUser( UserData updateData ) {
+        String deleteStatement = "DELETE FROM ebdb.users WHERE user_name = '" + userName + "';";
+        db.executeStatement( deleteStatement );
+
+        String createStatement = "INSERT INTO ebdb.users ( user_name, user_pass ) VALUES ( ?, ? );";
+        db.executeUpdate( createStatement, updateData.getUserName(), updateData.getUserPassword() );
+
+        for( String role : updateData.getUserRoles() ) {
+            String createRoleStatement = "INSERT INTO ebdb.user_roles ( user_name, role_name ) VALUES ( ?, ? );";
+            db.executeUpdate( createRoleStatement, updateData.getUserName(), role );
+        }
+    }
+
+    public void deleteUser( String userName ) {
+        String deleteStatement = "DELETE FROM ebdb.users WHERE user_name = '" + userName + "';";
+        db.executeStatement( deleteStatement );
     }
 
 
@@ -272,7 +393,6 @@ public class CometRideDatabaseAccess {
                 "  UNIQUE INDEX `route_id_UNIQUE` (`route_id` ASC));";
         db.executeStatement( routeInfoTableSatement );
 
-
         // Create Route Waypoints Table
         String routeWaypointsTableSatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteWaypoints` (\n" +
                 "  `waypoint_id` INT NOT NULL AUTO_INCREMENT,\n" +
@@ -283,6 +403,17 @@ public class CometRideDatabaseAccess {
                 "  PRIMARY KEY (`waypoint_id`),\n" +
                 "  UNIQUE INDEX `waypoint_id_UNIQUE` (`waypoint_id` ASC));";
         db.executeStatement( routeWaypointsTableSatement );
+
+        // Create Route Safepoints Table
+        String routeSafepointsTableSatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteSafepoints` (\n" +
+                "  `safepoint_id` INT NOT NULL AUTO_INCREMENT,\n" +
+                "  `route_id` VARCHAR(45) NOT NULL,\n" +
+                "  `lat` DOUBLE NOT NULL,\n" +
+                "  `lng` VARCHAR(45) NOT NULL,\n" +
+                "  `sequence_num` INT NOT NULL,\n" +
+                "  PRIMARY KEY (`safepoint_id`),\n" +
+                "  UNIQUE INDEX `safepoint_id_UNIQUE` (`safepoint_id` ASC));";
+        db.executeStatement( routeSafepointsTableSatement );
 
         // Create Route Time Table
         String routeTimeTableStatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteTimes` (\n" +
@@ -335,11 +466,13 @@ public class CometRideDatabaseAccess {
                 "  user_pass         varchar(15) not null\n" +
                 ");";
 
-        String rolesTableCreate = "create table `ebdb`.`user_roles` (\n" +
-                "  user_name         varchar(15) not null,\n" +
-                "  role_name         varchar(15) not null,\n" +
-                "  primary key (user_name, role_name)\n" +
-                ");";
+        String rolesTableCreate = "CREATE TABLE `user_roles` (\n" +
+                "  `user_name` varchar(15) NOT NULL,\n" +
+                "  `role_name` varchar(15) NOT NULL,\n" +
+                "  PRIMARY KEY (`user_name`,`role_name`),\n" +
+                "  CONSTRAINT `user_name` FOREIGN KEY (`user_name`) " +
+                "  REFERENCES `users` (`user_name`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n";
 
         db.executeStatement( userTableCreate );
         db.executeStatement( rolesTableCreate );

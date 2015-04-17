@@ -13,15 +13,17 @@ public class Route {
     protected String name;
     protected String status;
     protected List<LatLng> waypoints;
+    protected List<LatLng> safepoints;
 
     public Route() {}
 
-    public Route(String color, String id, String name, String status, List<LatLng> waypoints) {
+    public Route(String color, String id, String name, String status, List<LatLng> waypoints, List<LatLng> safepoints) {
         this.color = color;
         this.id = id;
         this.name = name;
         this.status = status;
         this.waypoints = waypoints;
+        this.safepoints = safepoints;
     }
 
     public String getColor() {
@@ -62,5 +64,13 @@ public class Route {
 
     public void setWaypoints(List<LatLng> waypoints) {
         this.waypoints = waypoints;
+    }
+
+    public List<LatLng> getSafepoints() {
+        return safepoints;
+    }
+
+    public void setSafepoints(List<LatLng> safepoints) {
+        this.safepoints = safepoints;
     }
 }
