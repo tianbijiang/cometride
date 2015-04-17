@@ -97,6 +97,20 @@ public class CometRideServlet {
         }
     }
 
+    @DELETE
+    @Consumes( MediaType.APPLICATION_JSON )
+    @Path( "/admin/route/{id}" )
+    public Response deleteRoute( @PathParam( "id" ) String id ) {
+        try {
+            logger.info( "Updating route: " + id );
+            controller.deleteRoute(id);
+            return Response.ok().build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while updating route " +
+                    id + "." ).build();
+        }
+    }
+
     @GET
     @Produces( MediaType.APPLICATION_JSON )
     @Path( "/admin/users" )
@@ -121,7 +135,7 @@ public class CometRideServlet {
 
             UriBuilder uib = uriInfo.getAbsolutePathBuilder();
             uib.path( id );
-            return Response.created( uib.build() ).entity( id ).build();
+            return Response.created(uib.build()).entity( id ).build();
         } catch ( Exception e ) {
             return Response.serverError().entity( "An error occurred while creating user " +
                     newData.getUserName() + "." ).build();
@@ -134,11 +148,11 @@ public class CometRideServlet {
     public Response createUser( UserData newData, @PathParam( "id" ) String userName ) {
         try {
             logger.info( "Updating user: " + userName );
-            String id = controller.updateUser( newData, userName );
+            String id = controller.updateUser(newData, userName);
 
             UriBuilder uib = uriInfo.getAbsolutePathBuilder();
             uib.path( id );
-            return Response.ok( uib.build() ).entity( id ).build();
+            return Response.ok(uib.build()).entity( id ).build();
         } catch ( Exception e ) {
             return Response.serverError().entity( "An error occurred while updating user " +
                     userName + "." ).build();

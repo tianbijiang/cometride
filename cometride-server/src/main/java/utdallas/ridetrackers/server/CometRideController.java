@@ -119,8 +119,30 @@ public class CometRideController {
     }
 
     public String updateRoute( String id, RouteDetails createRoute ) {
+        if( createRoute.getId().equals( id ) ) {
 
-        return id;
+            try {
+                db.updateRoute(createRoute);
+            } catch (Exception e) {
+                logger.error( "Failed to update route in DB:\n" + e.getMessage() );
+                // TODO: Throw error with condensed message
+            }
+
+            return id;
+        } else {
+            throw new RuntimeException( "Provided route id does not match update data. Rejecting update!" );
+        }
+    }
+
+
+
+    public void deleteRoute( String routeId ) {
+        try {
+            db.deleteRoute(routeId);
+        } catch (Exception e) {
+            logger.error( "Failed to delete route in DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
     }
 
 

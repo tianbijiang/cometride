@@ -292,6 +292,41 @@ public class CometRideDatabaseAccess {
         }
     }
 
+    public void updateRoute( RouteDetails routeDetails ) {
+
+        String deleteStatement = "DELETE FROM ebdb.RouteInfo WHERE route_id = '" + routeDetails.getId() + "';";
+        db.executeStatement( deleteStatement );
+
+        List<LatLng> waypoints = routeDetails.getWaypoints();
+        List<LatLng> safepoints = routeDetails.getSafepoints();
+
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, color, status) VALUES ( ?, ?, ?, ? );";
+        db.executeUpdate( routeInfoStatement, routeDetails.getId(), routeDetails.getName(), routeDetails.getColor(),
+                routeDetails.getStatus() );
+
+        // TODO: Add Date / Time Handling
+
+        for( int i=0; i < waypoints.size(); i++ ) {
+            LatLng waypoint = waypoints.get(i);
+            String wayPointStatement = "\n" +
+                    "INSERT INTO ebdb.RouteWaypoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
+            db.executeUpdate(wayPointStatement, routeDetails.getId(), waypoint.getLat(), waypoint.getLng(), i);
+        }
+
+        for( int i=0; i < safepoints.size(); i++ ) {
+            LatLng safepoint = waypoints.get(i);
+            String wayPointStatement = "\n" +
+                    "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
+            db.executeUpdate(wayPointStatement, routeDetails.getId(), safepoint.getLat(), safepoint.getLng(), i);
+        }
+    }
+
+
+    public void deleteRoute( String routeId ) {
+        String deleteStatement = "DELETE FROM ebdb.RouteInfo WHERE route_id = '" + routeId + "';";
+        db.executeStatement( deleteStatement );
+    }
+
 
 
     //
@@ -395,13 +430,16 @@ public class CometRideDatabaseAccess {
 
         // Create Route Waypoints Table
         String routeWaypointsTableSatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteWaypoints` (\n" +
-                "  `waypoint_id` INT NOT NULL AUTO_INCREMENT,\n" +
-                "  `route_id` VARCHAR(45) NOT NULL,\n" +
-                "  `lat` DOUBLE NOT NULL,\n" +
-                "  `lng` VARCHAR(45) NOT NULL,\n" +
-                "  `sequence_num` INT NOT NULL,\n" +
+                "  `waypoint_id` int(11) NOT NULL AUTO_INCREMENT,\n" +
+                "  `route_id` varchar(45) NOT NULL,\n" +
+                "  `lat` double NOT NULL,\n" +
+                "  `lng` varchar(45) NOT NULL,\n" +
+                "  `sequence_num` int(11) NOT NULL,\n" +
                 "  PRIMARY KEY (`waypoint_id`),\n" +
-                "  UNIQUE INDEX `waypoint_id_UNIQUE` (`waypoint_id` ASC));";
+                "  UNIQUE KEY `waypoint_id_UNIQUE` (`waypoint_id`),\n" +
+                "  KEY `route_id_idx` (`route_id`),\n" +
+                "  CONSTRAINT `waypoint_route_id` FOREIGN KEY (`route_id`) REFERENCES `ebdb`.`RouteInfo` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n";
         db.executeStatement( routeWaypointsTableSatement );
 
         // Create Route Safepoints Table
@@ -412,7 +450,10 @@ public class CometRideDatabaseAccess {
                 "  `lng` VARCHAR(45) NOT NULL,\n" +
                 "  `sequence_num` INT NOT NULL,\n" +
                 "  PRIMARY KEY (`safepoint_id`),\n" +
-                "  UNIQUE INDEX `safepoint_id_UNIQUE` (`safepoint_id` ASC));";
+                "  UNIQUE INDEX `safepoint_id_UNIQUE` (`safepoint_id` ASC),\n" +
+                "  KEY `route_id_idx` (`route_id`),\n" +
+                "  CONSTRAINT `safepoint_route_id` FOREIGN KEY (`route_id`) REFERENCES `ebdb`.`RouteInfo` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n;";
         db.executeStatement( routeSafepointsTableSatement );
 
         // Create Route Time Table
@@ -461,17 +502,17 @@ public class CometRideDatabaseAccess {
 
 
     public void ensureUserTablesExist() {
-        String userTableCreate = "create table `ebdb`.`users` (\n" +
+        String userTableCreate = "CREATE TABLE IF NOT EXISTS `ebdb`.`users` (\n" +
                 "  user_name         varchar(15) not null primary key,\n" +
                 "  user_pass         varchar(15) not null\n" +
                 ");";
 
-        String rolesTableCreate = "CREATE TABLE `user_roles` (\n" +
+        String rolesTableCreate = "CREATE TABLE IF NOT EXISTS `ebdb`.`user_roles` (\n" +
                 "  `user_name` varchar(15) NOT NULL,\n" +
                 "  `role_name` varchar(15) NOT NULL,\n" +
                 "  PRIMARY KEY (`user_name`,`role_name`),\n" +
                 "  CONSTRAINT `user_name` FOREIGN KEY (`user_name`) " +
-                "  REFERENCES `users` (`user_name`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                "  REFERENCES `ebdb`.`users` (`user_name`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n";
 
         db.executeStatement( userTableCreate );
