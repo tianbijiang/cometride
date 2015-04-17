@@ -1,3 +1,10 @@
+//todo
+//increase point limit
+//login.html prettify
+//report.html prettify
+//draw safepoints
+//create cabtypes
+//manage users
 $(document).ready(function() {
 
     /* Some Constants */
@@ -7,12 +14,38 @@ $(document).ready(function() {
     var GREEN_CAB_IMG = "img/cab_green.png";
     var ORANGE_CAB_IMG = "img/cab_yellow.png";
     var RED_CAB_IMG = "img/cab_red.png";
-    
+    var RETRY_DELAY = 500;
+
     /* Some Element Names */
     var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
+    var editRouteList = $("#navHeaderCollapse #navs #editRoute #editRouteList");
+    var routeListPlaceholder = $(".noroute");
     var colorBtns = $('.create #color, .edit #color');
     var colorBtnCreate = $('.create #color');
     var colorBtnEdit = $('.edit #color');
+    var createBtn = $('.create-btn');
+    var startDrawingBtns = $(".create #btn-draw, .edit #btn-draw");
+    var reverseBtns = $(".create #btn-reverse, .edit #btn-reverse");
+    var finishBtnCreate = $(".create #btn-save");
+    var finishBtnEdit = $(".edit #btn-save");
+    var closeBtns = $(".create #hide-sb, .edit #hide-sb");
+
+    var roundTripBoxCreate = $(".create #roundTrip");
+    var tempFlagCreate = $(".create #temporary-flag");
+    var nameFieldCreate = $(".create #name");
+    var statusOptionCreate = $(".create #status");
+    var activeDaysOptionCreate = $(".create #day-picker button");
+    var startDateFieldCreate = $(".create #start-date");
+    var endDateFieldCreate = $(".create #end-date");
+
+    var roundTripBoxEdit = $(".edit #roundTrip");
+    var tempFlagEdit = $(".edit #temporary-flag");
+    var nameFieldEdit = $(".edit #name");
+    var statusOptionEdit = $(".edit #status");
+    var statusOptionEditOption = $(".edit #status option");
+    var activeDaysOptionEdit = $(".edit #day-picker button");
+    var startDateFieldEdit = $(".edit #start-date");
+    var endDateFieldEdit = $(".edit #end-date");
 
     /* Some Variables for Drawing */
     var map;
@@ -23,6 +56,7 @@ $(document).ready(function() {
     var directionsDisplay;
     var routeColor = "rgb(224, 102, 102)";
     var polylineOptions = {};
+    var refreshTrigger = false;
 
     /* Some Variables for Displaying */
     var datalength = 0;
@@ -34,6 +68,7 @@ $(document).ready(function() {
     var ids = [];
     var cab_ids = [];
     var selectedRoutesTemp = [];
+    var routeObjects = [];
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -60,65 +95,60 @@ $(document).ready(function() {
             ]
         ]
     });
+
     colorBtnCreate.change(function() {
         routeColor = colorBtnCreate.val();
     });
+
     colorBtnEdit.change(function() {
         routeColor = colorBtnEdit.val();
     });
-    $(".create-btn").click(function() {
-        hideRoute();
-    });
-    $(".edit-btn").click(function() {
+
+    createBtn.click(function() {
         hideRoute();
     });
 
-    $("#btn-draw").click(function() {
+    startDrawingBtns.click(function() {
         map.setOptions({
             draggableCursor: "crosshair"
         });
         google.maps.event.addListener(map, "click", function(location) {
-            getLocationInfo(location.latLng, "Location " + locationsAdded);
+            drawRoute(location.latLng, "Location " + locationsAdded);
             locationsAdded++;
         });
     });
 
-    $("#btn-actual-draw").click(function() {
-        polylineOptions = {
-            strokeColor: routeColor
-        };
-
-        getDirections();
-    });
-
-    $("#btn-reverse").click(function() {
+    reverseBtns.click(function() {
         removeRow(points.length - 1);
     });
 
-    $("#btn-save").click(function() {
-        sendRoute();
+    finishBtnCreate.click(function() {
+        sendCreatedRoute();
+        refreshTrigger = true;
+    });
+    finishBtnEdit.click(function() {
+        sendEditedRoute();
+        refreshTrigger = true;
     });
 
-    $(".create #hide-sb").click(function() {
+    closeBtns.click(function() {
         map.setOptions({
             draggableCursor: "default"
         });
-
-        clearPolyLine();
         google.maps.event.clearListeners(map, 'click');
 
-        if (selectedRoutesTemp.length == 0) {
-            showSelectedRoute(ids);
+        clearPolyLine();
+
+        if (refreshTrigger == true) {
+            window.location.reload(true);
         } else {
-            showSelectedRoute(selectedRoutesTemp);
+            if (selectedRoutesTemp.length == 0) {
+                getRoute();
+            } else {
+                showSelectedRoutes(selectedRoutesTemp);
+            }
         }
     });
-
-    // $(".edit #hide-sb").click(function() {
-    //     showSelectedRoute(selectedRoutesTemp);
-    // });
-
-    //$(".noroute").hide();
 
     function initialize() {
         var mapOptions = {
@@ -131,17 +161,17 @@ $(document).ready(function() {
 
         getRoute();
         getCab();
-        loadRouteName();
-    } 
+        getRouteList();
+    }
 
-    function loadRouteName() {
+    function getRouteList() {
         $.getJSON(API_ROUTE_GET, function(data) {
             if (data.length == 0) {
-                //$(".noroute").show();
+                selectRouteList.append($("<option></option>")
+                    .text("No Route Available"));
+                routeListPlaceholder.show();
             } else {
-                // selectRouteList.append($("<option></option>")
-                //     .attr("value", ids)
-                //     .text("Select All Routes"));
+                routeListPlaceholder.hide();
                 for (var i = 0; i < data.length; i++) {
                     var route = data[i];
                     var name = route.name;
@@ -149,16 +179,16 @@ $(document).ready(function() {
                     selectRouteList.append($("<option></option>")
                         .attr("value", id)
                         .text(name));
-                    // $("#navHeaderCollapse #navs #editRoute #editRouteList")
-                    //     .append("<option id=" + id + ">" + id + "</option>");
+                    editRouteList.append("<li class='edit-btn' id='" + id + "'><a href='#'>" + name + "</a></li>");
                 }
             }
-            showSelectedRoutes();
+            displayRouteList();
+            enableEditAfterLoading();
         });
         return false;
     }
 
-    function showSelectedRoutes() {
+    function displayRouteList() {
         $('#selectRouteList').multiselect({
             includeSelectAllOption: true,
             numberDisplayed: 1,
@@ -168,7 +198,7 @@ $(document).ready(function() {
                     selectedRoutes.push($(selected).val());
                 });
                 selectedRoutesTemp = selectedRoutes;
-                showSelectedRoute(selectedRoutes);
+                showSelectedRoutes(selectedRoutes);
             },
             buttonClass: '',
             templates: {
@@ -177,7 +207,7 @@ $(document).ready(function() {
         });
     }
 
-    function getLocationInfo(latlng, locationName) {
+    function drawRoute(latlng, locationName) {
         if (latlng != null) {
             var point = {
                 LatLng: latlng,
@@ -190,32 +220,24 @@ $(document).ready(function() {
 
     function buildPoints() {
         for (var i = 0; i < points.length; i++) {
-            var marker = new google.maps.Marker({
-                position: points[i].LatLng,
-                title: points[i].LocationName
-            });
-            markers.push(marker);
-            marker.setMap(map);
+            getDirections();
         }
     }
 
     function clearPolyLine() {
         points = [];
         buildPoints();
-        clearRouteDetails();
+        clearDrawingRoute();
     }
 
-    function clearRouteDetails() {
+    function clearDrawingRoute() {
         directionsDisplay.setMap(null);
-        //directionsDisplay.setPanel(null);
-        //$("#distance").html("");
-        //$("#duration").html("");
     }
 
     function removeRow(index) {
         points.splice(index, 1);
         buildPoints();
-        clearRouteDetails();
+        //clearDrawingRoute();
     }
 
     function moveRowDown(index) {
@@ -223,7 +245,7 @@ $(document).ready(function() {
         points.splice(index, 1);
         points.splice(index + 1, 0, item);
         buildPoints();
-        clearRouteDetails();
+        clearDrawingRoute();
     }
 
     function moveRowUp(index) {
@@ -231,18 +253,17 @@ $(document).ready(function() {
         points.splice(index, 1);
         points.splice(index - 1, 0, item);
         buildPoints();
-        clearRouteDetails();
+        clearDrawingRoute();
     }
 
     function getDirections() {
-        //var directionsDiv = document.getElementById("directions");
         var directions = new google.maps.DirectionsService();
         directionsDisplay.setMap(map);
-        // build array of waypoints (excluding start and end)
+
         var waypts = [];
         var end = points.length - 1;
         var dest = points[end].LatLng;
-        if (document.getElementById("roundTrip").checked) {
+        if (roundTripBoxCreate.is(":checked")) {
             end = points.length;
             dest = points[0].LatLng;
         }
@@ -260,40 +281,75 @@ $(document).ready(function() {
             waypoints: waypts,
             travelMode: travelMode,
         };
+
         directions.route(request, function(result, status) {
             if (status === google.maps.DirectionsStatus.OK) {
-                //directionsDiv.innerHTML = "";
-                var options = {};
-                options.directions = result;
-                options.map = map;
-                options.polylineOptions = polylineOptions;
-                //directionsDisplay.setDirections(result);
+                var options = {
+                    directions: result,
+                    map: map,
+                    polylineOptions: {
+                        strokeColor: routeColor
+                    },
+                    //suppressMarkers: true,
+                    preserveViewport: true
+                };
+
                 directionsDisplay.setOptions(options);
             } else {
-                // var statusText = getDirectionStatusText(status);
-                // warning.innerHTML = "An error occurred - " + statusText;
+                //alert("Something wrong with Google API. Cannot draw routes now.")
             }
         });
     }
 
-    function getDistance(distance) {
-        if ($("#directionUnits").val() === "Miles") {
-            return Math.round((distance * 0.621371192) / 100) / 10 + " miles";
-        } else {
-            return Math.round(distance / 100) / 10 + " km";
-        }
+    function sendCreatedRoute() {
+        var dataString = collectCreateFormData();
+        sendRoute(dataString);
     }
 
-    function sendRoute() {
-        var name = $(".create #name").val();
+    function sendEditedRoute() {
+        var dataString = collectEditFormData();
+        sendRoute(dataString);
+    }
+
+    function sendRoute(dataString) {
+        if (formValidation()) {
+            $.ajax({
+                contentType: 'application/json',
+                type: "POST",
+                url: API_ROUTE_POST,
+                data: dataString,
+                dataType: "text",
+                cache: false,
+                success: function(data) {
+                    //TODO
+                    alert(dataString);
+                    if (data) {
+                        //alert(data);
+                    } else {
+                        alert("Server error. Please try saving again.");
+                    }
+                },
+                //TODO
+                error: function(xhr, textStatus, error) {
+                    console.log(xhr.statusText);
+                    console.log(textStatus);
+                    console.log(error);
+                }
+            });
+        }
+        return false;
+    }
+
+    function collectCreateFormData() {
+        var name = nameFieldCreate.val();
 
         var color = "rgb(224, 102, 102)";
-        if ($(".create #color").val() != "") {
-            color = $(".create #color").val();
+        if (colorBtnCreate.val() != "") {
+            color = colorBtnCreate.val();
         } //rgb(255,0,0)
         color = colorToHex(color);
 
-        var status = $(".create #status").val();
+        var status = statusOptionCreate.val();
 
         var waypoints = [];
         for (var i = 0; i < points.length; i++) {
@@ -302,11 +358,11 @@ $(document).ready(function() {
                 lng: points[i].LatLng.lng()
             });
         }
-        if (document.getElementById("roundTrip").checked) {
+        if (roundTripBoxCreate.is(":checked")) {
             waypoints[points.length] = waypoints[0];
         }
 
-        var d = $(".create #day-picker button").html();
+        var d = activeDaysOptionCreate.html();
         var days = d.split(", ");
 
         var times = [];
@@ -321,12 +377,12 @@ $(document).ready(function() {
 
         var startDate;
         var endDate;
-        if (!document.getElementById("temporary-flag").checked) {
+        if (!tempFlagCreate.is(":checked")) {
             startDate = "";
             endDate = "";
         } else {
-            startDate = $(".create #start-date").val();
-            endDate = $(".create #end-date").val();
+            startDate = startDateFieldCreate.val();
+            endDate = endDateFieldCreate.val();
         }
 
         var dataString = {
@@ -340,27 +396,73 @@ $(document).ready(function() {
             endDate: endDate
         };
         dataString = JSON.stringify(dataString);
-        alert(dataString);
 
-        $.ajax({
-            contentType: 'application/json',
-            type: "POST",
-            url: API_ROUTE_POST,
-            data: dataString,
-            dataType: "json",
-            cache: false,
-            // beforeSend: function() {
-            //     $("#login").val('Connecting...');
-            // },
-            success: function(data) {
-                if (data) {
-                    alert(data);
-                } else {
-                    alert("Server error.");
-                }
-            }
-        });
-        return false;
+        return dataString;
+    }
+
+    function collectEditFormData() {
+        var name = nameFieldEdit.val();
+
+        var color = "rgb(224, 102, 102)";
+        if (colorBtnEdit.val() != "") {
+            color = colorBtnEdit.val();
+        } //rgb(255,0,0)
+        color = colorToHex(color);
+
+        var status = statusOptionEdit.val();
+
+        var waypoints = [];
+        for (var i = 0; i < points.length; i++) {
+            waypoints.push({
+                lat: points[i].LatLng.lat(),
+                lng: points[i].LatLng.lng()
+            });
+        }
+        if (roundTripBoxEdit.is(":checked")) {
+            waypoints[points.length] = waypoints[0];
+        }
+
+        var d = activeDaysOptionEdit.html();
+        var days = d.split(", ");
+
+        var times = [];
+        for (var i = 0; i < $(".edit #time-picker-edit > div").length; i++) {
+            var start = $(".edit #timepicker-set-" + (i + 1) + " .start-time").val();
+            var end = $(".edit #timepicker-set-" + (i + 1) + " .end-time").val();
+            times.push({
+                start: start,
+                end: end
+            });
+        }
+
+        var startDate;
+        var endDate;
+        if (!tempFlagEdit.is(":checked")) {
+            startDate = "";
+            endDate = "";
+        } else {
+            startDate = startDateFieldEdit.val();
+            endDate = endDateFieldEdit.val();
+        }
+
+        var dataString = {
+            color: color,
+            name: name,
+            status: status,
+            waypoints: waypoints,
+            days: days,
+            times: times,
+            startDate: startDate,
+            endDate: endDate
+        };
+        dataString = JSON.stringify(dataString);
+
+        return dataString;
+    }
+
+    //TODO
+    function formValidation() {
+        return true;
     }
 
     function colorToHex(color) {
@@ -380,6 +482,7 @@ $(document).ready(function() {
     function getRoute() {
         hideRoute();
         $.getJSON(API_ROUTE_GET, function(data) {
+            routeObjects = data;
             datalength = data.length;
             for (var i = 0; i < datalength; i++) {
                 var route = data[i];
@@ -462,7 +565,7 @@ $(document).ready(function() {
         var cab_img;
         if (passengerCount / capacity < 0.6) {
             cab_img = GREEN_CAB_IMG;
-        } else if (passengerCount / capacity == 1) {
+        } else if (passengerCount / capacity >= 1) {
             cab_img = RED_CAB_IMG;
         } else {
             cab_img = ORANGE_CAB_IMG;
@@ -490,6 +593,19 @@ $(document).ready(function() {
         });
     }
 
+    function showSelectedRoutes(selectedId) {
+        hideRoute();
+        for (var k = 0; k < selectedId.length; k++) {
+            //console.log("k"+k+" selectedId[k]"+selectedId[k]);
+            for (var i = 0; i < datalength; i++) {
+                if (ids[i] == selectedId[k]) {
+                    //console.log("i"+i+" ids[i]"+ids[i]);
+                    displayRoute(i);
+                }
+            }
+        }
+    }
+
     function displayRoute(i) {
         dirsService[i] = new google.maps.DirectionsService();
         dirsService[i].route(dirsRequest[i], function(response, status) {
@@ -513,7 +629,7 @@ $(document).ready(function() {
                     setTimeout(function() {
                         displayRoute(i);
                         console.log("delayed" + i);
-                    }, 500);
+                    }, RETRY_DELAY);
                 }
             }
         });
@@ -536,53 +652,53 @@ $(document).ready(function() {
         }
     }
 
-    function showSelectedRoute(selectedId) {
-        hideRoute();
-        for (var k = 0; k < selectedId.length; k++) {
-            //console.log("k"+k+" selectedId[k]"+selectedId[k]);
-            for (var i = 0; i < datalength; i++) {
-                if (ids[i] == selectedId[k]) {
-                    //console.log("i"+i+" ids[i]"+ids[i]);
-                    displayRoute(i);
-                }
-            }
+    function getDistance(distance) {
+        if ($("#directionUnits").val() === "Miles") {
+            return Math.round((distance * 0.621371192) / 100) / 10 + " miles";
+        } else {
+            return Math.round(distance / 100) / 10 + " km";
         }
     }
 
-    function createMarkers() {
-        marker1 = new google.maps.Marker({
-            position: new google.maps.LatLng(32.990709, -96.752627),
-            map: map,
-            title: 'Cab 1',
-            icon: "img/cab_green.png"
-        });
+    function enableEditAfterLoading() {
+        enableEditSidebar();
+        enableEditRoute();
+    }
 
-        marker2 = new google.maps.Marker({
-            position: new google.maps.LatLng(32.987356, -96.746551),
-            map: map,
-            title: 'Cab 2',
-            icon: "img/cab_red.png"
-        });
+    function enableEditRoute() {
+            //TODO
+            $('.edit-btn').click(function() {
+                hideRoute();
+                var id = $(this).attr("id");
+                for (var i = 0; i < ids.length; i++) {
+                    if (ids[i] == id) {
+                        //displayRoute(i);
+                        loadEditInfo(i);
+                        //TODO
+                        //deleteOldRoute(i);
+                    }
+                }
+            });
+        }
+    //TODO
+    function loadEditInfo(i) {
+        var oldName = routeObjects[i].name;
+        var oldColor = routeObjects[i].color;
+        var oldStatus = routeObjects[i].status;
 
-        // setTimeout(function() {
-        //     var lat = marker1.getPosition().lat();
-        //     var lng = marker1.getPosition().lng();
+        nameFieldEdit.val(oldName);
+        colorBtnEdit.spectrum("set", oldColor);
+        // statusOptionEditOption.each(function() {
+        //     alert(this.text);
+        //     this.selected = (this.val() == oldStatus);
+        // });
 
-        //     if (markerIncrementing) {
-        //         lat += 0.00005;
-        //     } else {
-        //         lat -= 0.00005;
-        //     }
-
-
-        //     if (lat > 32.991771) {
-        //         markerIncrementing = false;
-        //     } else if (lat < 32.990709) {
-        //         markerIncrementing = true;
-        //     }
-
-        //     marker1.setPosition(new google.maps.LatLng(lat, lng));
-        //     setTimeout(arguments.callee, 300);
-        // }, 300);
+        //if(routeObjects[i].waypoints[points.length] == routeObjects[i].waypoints[0]) {
+        //}
+        // var daysString;
+        // for(var k = 0; k<routeObjects[i].days.length; k++) {
+        //     daysString+=routeObjects[i].days[k];
+        // }
+        // activeDaysOptionEdit.html(daysString);
     }
 });

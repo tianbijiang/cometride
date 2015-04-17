@@ -56,17 +56,19 @@ $(document).ready(function() {
 
     $(".edit #plus-timepicker").click(function() {
         timepickers_edit++;
-        $(".edit #time-picker").append("<div class='timepicker-set' id='timepicker-set-edit-" + timepickers_edit + "'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");
+        $(".edit #time-picker-edit").append("<div class='timepicker-set' id='timepicker-set-edit-" + timepickers_edit + "'><input class='form-control timepicker start-time' placeholder='Start Time' /><p> to </p><input class='form-control timepicker end-time' placeholder='End Time' /></div>");
         $(".edit .timepicker").timepicker({
-            defaultTime: false
+            defaultTime: false,
+            showMeridian: false
         });
     });
     $(".edit #minus-timepicker").click(function() {
-        $(".edit #time-picker div:last").remove();
+        $(".edit #time-picker-edit div:last").remove();
     });
 
     $(".edit .timepicker").timepicker({
-        defaultTime: false
+        defaultTime: false,
+        showMeridian: false
     });
 
     $('.edit #date-picker').hide();
@@ -117,8 +119,7 @@ $(document).ready(function() {
         containerClass = "container-push", //container open class
         navbarClass = "navbar-pushup",
         pushClass = "push-push", //css class to add pushy capability
-        createBtn = $('.create-btn, .create #hide-sb'), //css classes to toggle the menu
-        editBtn = $('.edit-btn, .edit #hide-sb'),
+        createBtn = $('.create-btn, .create #hide-sb'), //css classes to toggle the menu       
         menuSpeed = 200, //jQuery fallback menu speed
         menuWidth = createPushy.width() + "px"; //jQuery fallback menu width
 
@@ -141,8 +142,11 @@ $(document).ready(function() {
     createBtn.click(function() {
         toggleCreatePushy();
     });
-    editBtn.click(function() {
-        toggleEditPushy();
-    });
 
+    window.enableEditSidebar = function () {
+        var editBtn = $('.edit-btn, .edit #hide-sb');
+        editBtn.click(function() {
+            toggleEditPushy();
+        });
+    }
 });
