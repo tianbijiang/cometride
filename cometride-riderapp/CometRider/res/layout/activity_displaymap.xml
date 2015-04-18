@@ -2,10 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-  
     tools:context="com.utd.cometrider.ui.DisplayMapActivity" >
 
-     <fragment
+    <fragment
         android:id="@+id/map"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -13,25 +12,27 @@
         android:layout_centerHorizontal="true"
         class="com.google.android.gms.maps.SupportMapFragment" />
 
-
-    
-       <com.utd.cometrider.ui.RouteSelectionSpinner android:id="@+id/multi_spinner" 
-         android:layout_marginTop="5dp"  
+    <com.utd.cometrider.ui.RouteSelectionSpinner
+        android:id="@+id/multi_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"
-           />
-    
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="0dp"
+        android:background="@drawable/button"
+  
+        />
 
-       <Button
+
+    <ImageButton
         android:id="@+id/btn_rider"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="5dp"
-        android:text="@string/btn_rider" />
-    
-    
+        android:background="#ff9800"
+        android:contentDescription="@string/img_nav_btn"
+        android:src="@drawable/nav_btn" />
+
 </RelativeLayout>

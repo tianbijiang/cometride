@@ -6,5 +6,6 @@
      <string name="all_routes">Show All Routes</string> 
      <string name="btn_rider">I am interested</string>
         <string name="img_logo">Logo</string>
+         <string name="img_nav_btn">Nav Button</string>
         <color name="white">#FFFFFF</color>
 </resources>

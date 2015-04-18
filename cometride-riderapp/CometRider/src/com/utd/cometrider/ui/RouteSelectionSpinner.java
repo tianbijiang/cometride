@@ -39,8 +39,18 @@ public class RouteSelectionSpinner extends Spinner implements
 	public interface MultiSpinnerListener {
 		// public void onItemsSelected(boolean[] selected);
 		public void displaySelectedRoute(int id);
+		public void diplaySafePointsPerRoute(int id);
+
+		public void displayNavButton();
+
+	//	public void displaySpinner();
 
 		public void setRouteVisibleFalse();
+
+		public void hideNavButton();
+
+		//public void hideSpinner();
+		public void hideAllSafePoints();
 	}
 
 	@Override
@@ -53,9 +63,12 @@ public class RouteSelectionSpinner extends Spinner implements
 
 	@Override
 	public boolean performClick() {
+		if (items.size()>0&& items!=null){
 		AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+	
 		builder.setMultiChoiceItems(
 				items.toArray(new CharSequence[items.size()]), selected, this);
+		
 		builder.setPositiveButton(android.R.string.ok,
 				new DialogInterface.OnClickListener() {
 
@@ -66,11 +79,19 @@ public class RouteSelectionSpinner extends Spinner implements
 				});
 		builder.setOnCancelListener(this);
 		builder.show();
-		return true;
+	
+		return true;	
+		}
+		else{
+			
+			return  true;	
+		}
 	}
 
 	public void setItems(List<String> items, String allText,
 			MultiSpinnerListener listener) {
+		if(items.size()>0&& items!=null){
+		
 		this.items = items;
 		this.defaultText = allText;
 		this.listener = listener;
@@ -84,35 +105,47 @@ public class RouteSelectionSpinner extends Spinner implements
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
 				android.R.layout.simple_spinner_item, new String[] { allText });
 		setAdapter(adapter);
+		}
 	}
 
 	@Override
 	public void onCancel(DialogInterface dialog) {
+
 		udpateRoutes();
 	}
 
 	public void udpateRoutes() {
 
 		if (listener != null) {
+			// listener.hideSpinner();
 			Log.v("Listener2", listener.toString());
 			// Log.v("Listener", listener.toString());
 			StringBuffer spinnerBuffer = new StringBuffer();
 			boolean someUnselected = false;
+			int selectedItem = 0;
 			for (int i = 0; i < items.size(); i++) {
 				if (selected[i] == true) {
+
 					spinnerBuffer.append(items.get(i));
-					spinnerBuffer.append(", ");
+
+					selectedItem++;
+					// spinnerBuffer.append(", ");
 				} else {
 					someUnselected = true;
 				}
+
 			}
 
 			String spinnerText;
 			if (someUnselected) {
 				spinnerText = spinnerBuffer.toString();
 				if (spinnerText.length() > 2)
-					spinnerText = spinnerText.substring(0,
-							spinnerText.length() - 2);
+					if (selectedItem == 1) {
+
+						spinnerText = spinnerBuffer.toString();
+					} else {
+						spinnerText = selectedItem + " routes selected";
+					}
 			} else {
 				spinnerText = defaultText;
 			}
@@ -127,17 +160,33 @@ public class RouteSelectionSpinner extends Spinner implements
 			setAdapter(adapter);
 
 			// this.setItems
-			listener.setRouteVisibleFalse();
-			for (int i = 0; i < items.size(); i++) {
-				if (selected[i] == true) {
+			if (items.size() != 0) {
+				listener.setRouteVisibleFalse();
+				listener.hideAllSafePoints();
 
-					Toast.makeText(getContext(), items.get(i),
-							Toast.LENGTH_SHORT).show();
-					listener.displaySelectedRoute(i);
+				for (int i = 0; i < items.size(); i++) {
+					if (selected[i] == true) {
 
+						// Toast.makeText(getContext(), items.get(i),
+						// Toast.LENGTH_SHORT).show();
+						listener.displaySelectedRoute(i);
+						listener.diplaySafePointsPerRoute(i);
+
+					}
 				}
 
 			}
+
+			if (selectedItem == 1) {
+				// Toast.makeText(getContext(),
+				// "haha",Toast.LENGTH_SHORT).show();
+				listener.displayNavButton();
+
+			} else {
+
+				listener.hideNavButton();
+			}
+
 		}
 	}
 
