@@ -2,7 +2,7 @@
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_3_0.xsd" version="3.0">
     <display-name>RideTrackers-CometRide</display-name>
-	
+
 	<servlet>
         <servlet-name>cometride-server</servlet-name>
         <servlet-class>
@@ -29,8 +29,16 @@
 
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>Wildcard means whole app requires authentication</web-resource-name>
+            <web-resource-name>Public Pages</web-resource-name>
             <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Restrict Admin Pages / API to Admin Role</web-resource-name>
+            <url-pattern>/admin.html</url-pattern>
+            <url-pattern>/api/admin/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
             <http-method>PUT</http-method>

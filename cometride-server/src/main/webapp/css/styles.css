@@ -13,7 +13,6 @@ body {
     overflow-x: hidden;
     font-size: 14px;
 }
-
 /* navbar-default */
 
 .navbar-default {
@@ -35,6 +34,7 @@ body {
 
 .navbar-header-lg .logo {
     height: 70px;
+    width: 250px;
     margin-top: -20px;
     margin-right: -50px;
     display: inline-block;
@@ -110,9 +110,20 @@ body {
 .nav .btn-exp {
     display: none;
 }
-/* dropdown */
+/*.nav li span.multiselect {
+    border-color: transparent;
+    margin-top: 10px;
+}*/
 
-.nav .dropdown.open a {
+.nav li div {
+    border: 0;
+    cursor: pointer;
+}
+.nav #selectRoute {
+    margin-top: 4px;
+}
+/* dropdown */
+/*.nav .dropdown.open a {
     background-color: transparent !important;
 }
 
@@ -133,13 +144,17 @@ body {
 
 .nav .dropdown.open .dropdown-menu li a:hover {
     color: #fff;
-}
+}*/
 /* navbar-default media */
 
 @media only screen and (max-width: 768px) {
     .nav li a {
         color: rgba(0, 0, 0, 0.6);
     }
+    /*.nav li select {
+        color: rgba(0, 0, 0, 0.6);
+        margin-left: 2em;
+    }*/
     .navbar-default .nav li a:hover p,
     .navbar-shrink .nav li a:hover p {
         border-bottom: none;

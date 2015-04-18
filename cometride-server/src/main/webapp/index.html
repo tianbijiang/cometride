@@ -2,7 +2,6 @@
 <html>
 
 <head>
-    <!--TODO: Consider for animation of markers: https://github.com/terikon/marker-animate-unobtrusive#install-->
     <title>CometRide Admin Dashboard</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
@@ -13,6 +12,8 @@
     <link rel="stylesheet" href="css/bootstrap-timepicker.css">
     <link rel="stylesheet" href="css/dropdowns-enhancement.css">
     <link rel="stylesheet" href="css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="css/jquery.dynatable.css">
     <!-- custom css -->
     <link href="css/styles.css" rel="stylesheet">
     <link href="css/popups.css" rel="stylesheet">
@@ -26,14 +27,15 @@
     <script src='js/bootstrap-timepicker.js'></script>
     <script src='js/dropdowns-enhancement.js'></script>
     <script src='js/bootstrap-datepicker.js'></script>
-    <!-- custom css -->
-    <script src="js/script.js"></script>
-    <script src="js/route.draw.js"></script>
-    <!--<script src="js/route.display.js"></script>-->
-    <script src="js/login.js"></script>
+    <script src='js/bootstrap-multiselect.js'></script>
+    <script src='js/jquery.dynatable.js'></script>
+    <!-- custom js -->
+    <script src="js/ui.js"></script>
+    <script src="js/route.js"></script>
 </head>
 
 <body>
+    <!-- Create Route Side Bar -->
     <div class="create pushy pushy-left">
         <h1>Create a Route</h1>
         <div class="form">
@@ -65,7 +67,8 @@
             </div>
             <div id="active-time" class="sb-box">
                 <label for="active-time">
-                    <h4>Active Time</h4></label>
+                    <h4>Active Time</h4>
+                </label>
                 <div id="time-container" class="sb-container">
                     <div class="form-group btn-group" id="day-picker">
                         <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days</button>
@@ -83,8 +86,8 @@
                                 <label for="wednesday">Wednesday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="thusday" name="thusday" value="Thusday">
-                                <label for="thusday">Thusday</label>
+                                <input type="checkbox" id="thursday" name="thursday" value="Thursday">
+                                <label for="thursday">Thursday</label>
                             </li>
                             <li>
                                 <input type="checkbox" id="friday" name="friday" value="Friday">
@@ -129,12 +132,13 @@
                 </div>
             </div>
             <button id="btn-draw" class="btn btn-panel btn-block">Start Drawing</button>
-            <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button>
+            <!-- <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button> -->
             <button id="btn-reverse" class="btn btn-panel half-block">Reverse</button>
-            <button id="btn-save" class="btn btn-panel btn-block">Save</button>
+            <button id="btn-save" class="btn btn-panel half-block">Finish</button>
             <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
         </div>
     </div>
+    <!-- Edit Route Side Bar -->
     <div class="edit pushy pushy-left">
         <h1>Edit a Route</h1>
         <div class="form">
@@ -169,35 +173,35 @@
                     <h4>Active Time</h4></label>
                 <div id="time-container" class="sb-container">
                     <div class="form-group btn-group" id="day-picker">
-                        <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days <span class="caret"></span></button>
+                        <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days</button>
                         <ul class="dropdown-menu">
                             <li>
-                                <input type="checkbox" id="monday">
-                                <label for="monday" name="monday" value="monday">Monday</label>
+                                <input type="checkbox" id="monday1">
+                                <label for="monday1" name="monday" value="monday">Monday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="tuesday">
-                                <label for="tuesday" name="tuesday" value="tuesday">Tuesday</label>
+                                <input type="checkbox" id="tuesday1">
+                                <label for="tuesday1" name="tuesday" value="tuesday">Tuesday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="wednesday">
-                                <label for="wednesday" name="wednesday" value="wednesday">Wednesday</label>
+                                <input type="checkbox" id="wednesday1">
+                                <label for="wednesday1" name="wednesday" value="wednesday">Wednesday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="thusday">
-                                <label for="thusday" name="thusday" value="thusday">Thusday</label>
+                                <input type="checkbox" id="thursday1">
+                                <label for="thursday1" name="thursday" value="thursday">Thursday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="friday">
-                                <label for="friday" name="friday" value="friday">Friday</label>
+                                <input type="checkbox" id="friday1">
+                                <label for="friday1" name="friday" value="friday">Friday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="saturday">
-                                <label for="saturday" name="saturday" value="saturday">Saturday</label>
+                                <input type="checkbox" id="saturday1">
+                                <label for="saturday1" name="saturday" value="saturday">Saturday</label>
                             </li>
                             <li>
-                                <input type="checkbox" id="sunday">
-                                <label for="sunday" name="sunday" value="sunday">Sunday</label>
+                                <input type="checkbox" id="sunday1">
+                                <label for="sunday1" name="sunday" value="sunday">Sunday</label>
                             </li>
                         </ul>
                     </div>
@@ -230,14 +234,13 @@
                     </div>
                 </div>
             </div>
-            <button id="btn-draw" class="btn btn-panel btn-block">Start Drawing</button>
-            <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button>
+            <button id="btn-draw" class="btn btn-panel btn-block">Redraw</button>
+            <!-- <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button> -->
             <button id="btn-reverse" class="btn btn-panel half-block">Reverse</button>
-            <button id="btn-save" class="btn btn-panel btn-block">Save</button>
+            <button id="btn-save" class="btn btn-panel half-block">Finish</button>
             <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
         </div>
     </div>
-    <!-- <div class="site-overlay"></div> -->
     <!-- Navigation -->
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
@@ -250,7 +253,7 @@
                     <span class="icon-bar"></span>
                 </button>
                 <button id="login" class="btn btn-sm btn-flat login-btn">
-                    <a href="#">Admin Login</a>
+                    <a href="admin.html">Admin Login</a>
                 </button>
                 <a href="#">
                     <img class="logo img-responsive" src="img/logo.png" />
@@ -263,40 +266,10 @@
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="navHeaderCollapse">
-                <ul class="nav navbar-nav">
-                    <li class="dropdown">
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <i class="fa fa-taxi"></i> Select a Route <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Route A</a></li>
-                            <li><a href="#">Route B</a></li>
-                            <!-- <li class="divider"></li> -->
-                            <li><a href="#">Route C</a></li>
-                            <li><a href="#">Route D</a></li>
-                        </ul>
-                    </li>
-                    <li class="create-btn">
-                        <a href="#">
-                            <i class="fa fa-paint-brush"></i>
-                            <span class="btn-exp"> Create a route</span>
-                        </a>
-                    </li>
-                    <li class="dropdown">
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <i class="fa fa-pencil-square-o"></i>
-                            <span class="btn-exp"> Edit a route</span> <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li class="edit-btn"><a href="#">Route A</a></li>
-                            <li class="edit-btn"><a href="#">Route B</a></li>
-                            <!-- <li class="divider"></li> -->
-                            <li class="edit-btn"><a href="#">Route C</a></li>
-                            <li class="edit-btn"><a href="#">Route D</a></li>
-                        </ul>
-                    </li>
-                    <li id="login" class="login-lst">
-                        <a href="#">Admin Login</a>
+                <ul class="nav navbar-nav" id="navs">
+                    <li id="selectRoute">
+                        <select id="selectRouteList" multiple="multiple">
+                        </select>
                     </li>
                 </ul>
             </div>
@@ -304,34 +277,10 @@
         </div>
         <!-- /.container-fluid -->
     </nav>
+    <!-- Map Canvas -->
     <div id="container">
         <div id="map-canvas"></div>
     </div>
-    <!-- <div id="light" class="white_content container">
-        <div class="card card-container">
-        <div id="close-login">
-            <i class="fa fa-cross"></i>
-        </div>
-            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
-            <p id="profile-name" class="profile-name-card"></p>
-            <form class="form-signin">
-                <span id="reauth-email" class="reauth-email"></span>
-                <input type="email" id="inputUsername" name="inputUsername" class="form-control" placeholder="Email address" required autofocus>
-                <input type="password" id="inputPassword" name="inputPassword" class="form-control" placeholder="Password" required>
-                <div id="remember" class="checkbox">
-                    <label>
-                        <input type="checkbox" value="remember-me"> Remember me
-                    </label>
-                </div>
-                <button id="actual-login"class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
-            </form>
-            <a href="#" class="forgot-password">
-                Forgot the password?
-            </a>
-            <div id="error"></div>
-        </div>
-    </div>
-    <div id="fade" class="black_overlay"></div> -->
 </body>
 
 </html>

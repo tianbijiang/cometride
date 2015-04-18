@@ -32,18 +32,17 @@ public class RouteSelectionSpinner extends Spinner implements
 		// this.init();
 	}
 
-
 	public void setListener(MultiSpinnerListener listener) {
 		this.listener = listener;
 	}
 
-
 	public interface MultiSpinnerListener {
 		// public void onItemsSelected(boolean[] selected);
 		public void displaySelectedRoute(int id);
+
 		public void setRouteVisibleFalse();
 	}
-	
+
 	@Override
 	public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 		if (isChecked)
@@ -87,13 +86,11 @@ public class RouteSelectionSpinner extends Spinner implements
 		setAdapter(adapter);
 	}
 
-
-
 	@Override
 	public void onCancel(DialogInterface dialog) {
 		udpateRoutes();
 	}
-	
+
 	public void udpateRoutes() {
 
 		if (listener != null) {
@@ -109,8 +106,7 @@ public class RouteSelectionSpinner extends Spinner implements
 					someUnselected = true;
 				}
 			}
-			
-			
+
 			String spinnerText;
 			if (someUnselected) {
 				spinnerText = spinnerBuffer.toString();
@@ -120,11 +116,11 @@ public class RouteSelectionSpinner extends Spinner implements
 			} else {
 				spinnerText = defaultText;
 			}
-			if(spinnerText==""){
-				
-				spinnerText="Select Routes Here";
+			if (spinnerText == "") {
+
+				spinnerText = "Select Routes Here";
 			}
-			
+
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(
 					getContext(), android.R.layout.simple_spinner_item,
 					new String[] { spinnerText });

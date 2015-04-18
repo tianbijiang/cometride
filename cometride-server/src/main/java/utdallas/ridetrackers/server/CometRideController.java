@@ -6,6 +6,7 @@ import utdallas.ridetrackers.server.datatypes.CabStatus;
 import utdallas.ridetrackers.server.datatypes.LatLng;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
+import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
@@ -47,12 +48,18 @@ public class CometRideController {
         testWaypoints.add( new LatLng( 32.991806, -96.753607 ) );
         testWaypoints.add( new LatLng( 32.985559, -96.749478 ) );
 
+        List<LatLng> testSafepoints = new ArrayList<LatLng>();
+        testSafepoints.add( new LatLng( 32.985559, -96.749478 ) );
+        testSafepoints.add( new LatLng( 32.985642, -96.749430 ) );
+        testSafepoints.add( new LatLng( 32.991806, -96.753607 ) );
+
         Route testRoute = new Route(
                 "#900dba",
                 "route1",
                 "Route 1",
                 "ACTIVE",
-                testWaypoints
+                testWaypoints,
+                testSafepoints
         );
 
         routes.add( testRoute );
@@ -65,12 +72,20 @@ public class CometRideController {
         testWaypoints2.add( new LatLng( 32.987716, -96.746244 ) );
         testWaypoints2.add( new LatLng( 32.990111, -96.743875 ) );
 
+        List<LatLng> testSafepoints2 = new ArrayList<LatLng>();
+        testSafepoints2.add( new LatLng( 32.990111, -96.743875 ) );
+        testSafepoints2.add( new LatLng( 32.989424, -96.745462 ) );
+        testSafepoints2.add( new LatLng( 32.991806, -96.753607 ) );
+        testSafepoints2.add( new LatLng( 32.987391, -96.747009 ) );
+        testSafepoints2.add( new LatLng( 32.987716, -96.746244 ) );
+
         Route testRoute2 = new Route(
                 "#edb712",
                 "route2",
                 "Route 2",
                 "ACTIVE",
-                testWaypoints2
+                testWaypoints2,
+                testSafepoints2
         );
 
         routes.add( testRoute2 );
@@ -104,8 +119,30 @@ public class CometRideController {
     }
 
     public String updateRoute( String id, RouteDetails createRoute ) {
+        if( createRoute.getId().equals( id ) ) {
 
-        return id;
+            try {
+                db.updateRoute(createRoute);
+            } catch (Exception e) {
+                logger.error( "Failed to update route in DB:\n" + e.getMessage() );
+                // TODO: Throw error with condensed message
+            }
+
+            return id;
+        } else {
+            throw new RuntimeException( "Provided route id does not match update data. Rejecting update!" );
+        }
+    }
+
+
+
+    public void deleteRoute( String routeId ) {
+        try {
+            db.deleteRoute(routeId);
+        } catch (Exception e) {
+            logger.error( "Failed to delete route in DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
     }
 
 
@@ -194,5 +231,58 @@ public class CometRideController {
 
     public void indicateRiderInterest( InterestedUpdate interestedUpdate ) {
 
+    }
+
+
+    //
+    // Users
+    //
+
+    public UserData[] retrieveUsersData() {
+        List<UserData> usersData = new ArrayList<UserData>();
+        try {
+            usersData.addAll( db.getUsersData() );
+        } catch (Exception e) {
+            logger.error( "Failed to retrieve users data from DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return usersData.toArray( new UserData[]{} );
+    }
+
+    public String createUser( UserData newData ) {
+        try {
+            db.createUser( newData );
+        } catch (Exception e) {
+            logger.error( "Failed to create user in DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return newData.getUserName();
+    }
+
+    public String updateUser( UserData data, String userName ) {
+        if( data.getUserName().equals( userName ) ) {
+
+            try {
+                db.updateUser( data );
+            } catch (Exception e) {
+                logger.error( "Failed to update user in DB:\n" + e.getMessage() );
+                // TODO: Throw error with condensed message
+            }
+
+            return userName;
+        } else {
+            throw new RuntimeException( "Provided user name does not match update data. Rejecting update!" );
+        }
+    }
+
+    public void deleteUser( String userName ) {
+        try {
+            db.deleteUser( userName );
+        } catch (Exception e) {
+            logger.error( "Failed to delete user in DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
     }
 }

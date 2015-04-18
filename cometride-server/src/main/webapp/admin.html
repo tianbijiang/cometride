@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CometRide Admin Dashboard</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <!-- plugin css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link rel='stylesheet' href='css/spectrum.css'>
+    <link rel="stylesheet" href="css/bootstrap-timepicker.css">
+    <link rel="stylesheet" href="css/dropdowns-enhancement.css">
+    <link rel="stylesheet" href="css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="css/jquery.dynatable.css">
+    <!-- custom css -->
+    <link href="css/styles.css" rel="stylesheet">
+    <link href="css/popups.css" rel="stylesheet">
+    <!-- plugin js -->
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script src='js/spectrum.js'></script>
+    <script src='js/bootstrap-timepicker.js'></script>
+    <script src='js/dropdowns-enhancement.js'></script>
+    <script src='js/bootstrap-datepicker.js'></script>
+    <script src='js/bootstrap-multiselect.js'></script>
+    <script src='js/jquery.dynatable.js'></script>
+    <!-- custom js -->
+    <script src="js/ui.js"></script>
+    <script src="js/route.js"></script>
+</head>
+
+<body>
+    <!-- Create Route Side Bar -->
+    <div class="create pushy pushy-left">
+        <h1>Create a Route</h1>
+        <div class="form">
+            <div id="basic-info" class="sb-box">
+                <label for="basic-info">
+                    <h4>Basic Info</h4>
+                </label>
+                <div id="info-container" class="sb-container">
+                    <div class="form-group" id="name-field">
+                        <input class="form-control" name="name" id="name" placeholder="Route Name" />
+                    </div>
+                    <div class="form-group" id="color-picker">
+                        <input class="form-control" type='text' id="color" />
+                        <!-- <label class="control-label" for="color" id="feedback-status"></label> -->
+                    </div>
+                    <div class="form-group" id="status-picker">
+                        <select class="form-control" id="status" name="status">
+                            <option value="N/A">Status</option>
+                            <option value="Available">Available</option>
+                            <option value="NotAvailable">Not Available</option>
+                        </select>
+                        <!-- <label class="control-label" for="status" id="feedback-status"></label> -->
+                    </div>
+                    <div class="form-group" id="round-picker">
+                        <input type="checkbox" id="roundTrip" />
+                        <label class="label" for="roundTrip">Round Trip</label>
+                    </div>
+                </div>
+            </div>
+            <div id="active-time" class="sb-box">
+                <label for="active-time">
+                    <h4>Active Time</h4>
+                </label>
+                <div id="time-container" class="sb-container">
+                    <div class="form-group btn-group" id="day-picker">
+                        <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days</button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <input type="checkbox" id="monday" name="monday" value="Monday">
+                                <label for="monday">Monday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="tuesday" name="tuesday" value="Tuesday">
+                                <label for="tuesday">Tuesday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="wednesday" name="wednesday" value="Wednesday">
+                                <label for="wednesday">Wednesday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="thursday" name="thursday" value="Thursday">
+                                <label for="thursday">Thursday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="friday" name="friday" value="Friday">
+                                <label for="friday">Friday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="saturday" name="saturday" value="Saturday">
+                                <label for="saturday">Saturday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="sunday" name="sunday" value="Sunday">
+                                <label for="sunday">Sunday</label>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="form-group" id="time-picker">
+                        <div class='timepicker-set' id="timepicker-set-1">
+                            <input class='form-control timepicker start-time' placeholder='Start Time' />
+                            <p>to</p>
+                            <input class='form-control timepicker end-time' placeholder='End Time' />
+                        </div>
+                    </div>
+                    <div class="form-group" id="time-picker-buttons">
+                        <button id="plus-timepicker" class="btn btn-panel"><i class="fa fa-plus-circle"></i></button>
+                        <button id="minus-timepicker" class="btn btn-panel"><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div id="active-date" class="sb-box">
+                <label for="active-date">
+                    <h4>Active Date</h4></label>
+                <div id="date-container" class="sb-container">
+                    <div class="form-group">
+                        <input type="checkbox" id="temporary-flag" />
+                        <label class="label" for="temporary-flag">Temporary Route</label>
+                    </div>
+                    <div class="form-group" id="date-picker">
+                        <input type="text" id="start-date" class="form-control" placeholder="Start Date" />
+                        <p>to</p>
+                        <input type="text" id="end-date" class="form-control" placeholder="End Date" />
+                    </div>
+                </div>
+            </div>
+            <button id="btn-draw" class="btn btn-panel btn-block">Start Drawing</button>
+            <!-- <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button> -->
+            <button id="btn-reverse" class="btn btn-panel half-block">Reverse</button>
+            <button id="btn-save" class="btn btn-panel half-block">Finish</button>
+            <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
+        </div>
+    </div>
+    <!-- Edit Route Side Bar -->
+    <div class="edit pushy pushy-left">
+        <h1>Edit a Route</h1>
+        <div class="form">
+            <div id="basic-info" class="sb-box">
+                <label for="basic-info">
+                    <h4>Basic Info</h4>
+                </label>
+                <div id="info-container" class="sb-container">
+                    <div class="form-group" id="name-field">
+                        <input class="form-control" name="name" id="name" placeholder="Route Name" />
+                    </div>
+                    <div class="form-group" id="color-picker">
+                        <input class="form-control" type='text' id="color" />
+                        <!-- <label class="control-label" for="color" id="feedback-status"></label> -->
+                    </div>
+                    <div class="form-group" id="status-picker">
+                        <select class="form-control" id="status" name="status">
+                            <option value="-1">Status</option>
+                            <option value="0">Available</option>
+                            <option value="1">Not Available</option>
+                        </select>
+                        <!-- <label class="control-label" for="status" id="feedback-status"></label> -->
+                    </div>
+                    <div class="form-group" id="round-picker">
+                        <input type="checkbox" id="roundTrip" />
+                        <label class="label" for="roundTrip">Round Trip</label>
+                    </div>
+                </div>
+            </div>
+            <div id="active-time" class="sb-box">
+                <label for="active-time">
+                    <h4>Active Time</h4></label>
+                <div id="time-container" class="sb-container">
+                    <div class="form-group btn-group" id="day-picker">
+                        <button data-toggle="dropdown" class="form-control dropdown-toggle" data-placeholder="Active Days">Active Days</button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <input type="checkbox" id="monday1">
+                                <label for="monday1" name="monday" value="monday">Monday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="tuesday1">
+                                <label for="tuesday1" name="tuesday" value="tuesday">Tuesday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="wednesday1">
+                                <label for="wednesday1" name="wednesday" value="wednesday">Wednesday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="thursday1">
+                                <label for="thursday1" name="thursday" value="thursday">Thursday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="friday1">
+                                <label for="friday1" name="friday" value="friday">Friday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="saturday1">
+                                <label for="saturday1" name="saturday" value="saturday">Saturday</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="sunday1">
+                                <label for="sunday1" name="sunday" value="sunday">Sunday</label>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="form-group" id="time-picker-edit">
+                        <div class='timepicker-set' id="timepicker-set-edit-1">
+                            <input class='form-control timepicker start-time' placeholder='Start Time' />
+                            <p>to</p>
+                            <input class='form-control timepicker end-time' placeholder='End Time' />
+                        </div>
+                    </div>
+                    <div class="form-group" id="time-picker-buttons">
+                        <button id="plus-timepicker" class="btn btn-panel"><i class="fa fa-plus-circle"></i></button>
+                        <button id="minus-timepicker" class="btn btn-panel"><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div id="active-date" class="sb-box">
+                <label for="active-date">
+                    <h4>Active Date</h4>
+                </label>
+                <div id="date-container" class="sb-container">
+                    <div class="form-group">
+                        <input type="checkbox" id="temporary-flag" />
+                        <label class="label" for="temporary-flag">Temporary Route</label>
+                    </div>
+                    <div class="form-group" id="date-picker">
+                        <input type="text" id="start-date-edit" class="form-control" placeholder="Start Date" />
+                        <p>to</p>
+                        <input type="text" id="end-date-edit" class="form-control" placeholder="End Date" />
+                    </div>
+                </div>
+            </div>
+            <button id="btn-draw" class="btn btn-panel btn-block">Redraw</button>
+            <!-- <button id="btn-actual-draw" class="btn btn-panel half-block">Draw</button> -->
+            <button id="btn-reverse" class="btn btn-panel half-block">Reverse</button>
+            <button id="btn-save" class="btn btn-panel half-block">Finish</button>
+            <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
+        </div>
+    </div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header navbar-header-lg pull-right">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navHeaderCollapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <button id="login" class="btn btn-sm btn-flat login-btn">
+                    <a href="logout.jsp">Logout</a>
+                </button>
+                <a href="#">
+                    <img class="logo img-responsive" src="img/logo.png" />
+                </a>
+            </div>
+            <div class="navbar-header navbar-header-sm">
+                <a href="">
+                    <img class="logo img-responsive" src="img/logo.png" />
+                </a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="navHeaderCollapse">
+                <ul class="nav navbar-nav" id="navs">
+                    <li id="selectRoute">
+                        <select id="selectRouteList" multiple="multiple">
+                        </select>
+                    </li>
+                    <li class="create-btn">
+                        <a href="#">
+                            <i class="fa fa-paint-brush"></i>
+                            <span class="btn-exp"> Create a route</span>
+                        </a>
+                    </li>
+                    <li class="dropdown" id="editRoute">
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <i class="fa fa-pencil-square-o"></i>
+                            <span class="btn-exp"> Edit a route</span> <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu" id="editRouteList">
+                            <li class="edit-btn noroute"><a href="#">No Route Available</a></li>
+                        </ul>
+                    </li>
+                    <li id="stats-btn">
+                        <a href="report.html">
+                            <i class="fa fa-sort-amount-desc"></i>
+                            <span class="btn-exp"> View Statistics </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+    <!-- Map Canvas -->
+    <div id="container">
+        <div id="map-canvas"></div>
+    </div>
+</body>
+
+</html>
