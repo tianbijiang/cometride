@@ -1,16 +1,20 @@
 package com.UTD.driverapp;
 import android.app.Activity;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +23,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -27,11 +33,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-public class Driver2 extends Activity implements View.OnClickListener {
+public class Driver2 extends Activity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
     int num = 0;
     int total;
-    TextView tView,tView1;
     ImageButton plus1, minus1;
     String sessionId;
     GPSTracker gps;
@@ -40,22 +45,27 @@ public class Driver2 extends Activity implements View.OnClickListener {
     Cab cab;
     double lat;
     double lng;
+    Switch switch1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver2);
-        tView = (TextView) findViewById(R.id.textView8);
-        tView1 = (TextView) findViewById(R.id.textView7);
         plus1 = (ImageButton) findViewById(R.id.plus);
         minus1 = (ImageButton) findViewById(R.id.minus);
 
         textView10 = (TextView) findViewById(R.id.textView10);
+
         textView7= (TextView) findViewById(R.id.textView7);
         textView8= (TextView) findViewById(R.id.textView8);
         btnPost = (Button) findViewById(R.id.btnPost);
 
         btnPost.setOnClickListener(Driver2.this);
+        switch1 = (Switch) findViewById(R.id.switch1);
+        if (switch1 != null) {
+            switch1.setOnCheckedChangeListener(Driver2.this);
+        }
+
 
         plus1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -65,8 +75,8 @@ public class Driver2 extends Activity implements View.OnClickListener {
                     {
                         num++;
                         total++;
-                        tView1.setText(Integer.toString(total));
-                        tView.setText(Integer.toString(num));
+                        textView7.setText(Integer.toString(total));
+                        textView8.setText(Integer.toString(num));
                     }
                 }
             }
@@ -79,7 +89,7 @@ public class Driver2 extends Activity implements View.OnClickListener {
                     {
                         num--;
 
-                        tView.setText(Integer.toString(num));
+                        textView8.setText(Integer.toString(num));
                     }
                 }
             }
@@ -90,8 +100,8 @@ public class Driver2 extends Activity implements View.OnClickListener {
 
                 total=total+(9-num);
                 num=9;
-                tView1.setText(Integer.toString(total));
-                tView.setText(Integer.toString(num));
+                textView7.setText(Integer.toString(total));
+                textView8.setText(Integer.toString(num));
                 return true;
             }
         });
@@ -100,19 +110,18 @@ public class Driver2 extends Activity implements View.OnClickListener {
             public boolean onLongClick(View v) {
 
                 num=0;
-                tView.setText(Integer.toString(num));
+                textView8.setText(Integer.toString(num));
                 return true;
             }
         });
-
 
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
 
-        tView = (TextView) findViewById(R.id.textView8);
-        tView1 = (TextView) findViewById(R.id.textView7);
+        textView8 = (TextView) findViewById(R.id.textView8);
+        textView7 = (TextView) findViewById(R.id.textView7);
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_VOLUME_UP:
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -123,8 +132,8 @@ public class Driver2 extends Activity implements View.OnClickListener {
                             {
                                 num++;
                                 total++;
-                                tView1.setText(Integer.toString(total));
-                                tView.setText(Integer.toString(num));
+                                textView7.setText(Integer.toString(total));
+                                textView8.setText(Integer.toString(num));
                             }
                         }
                     });
@@ -139,7 +148,7 @@ public class Driver2 extends Activity implements View.OnClickListener {
                             {
                                 num--;
 
-                                tView.setText(Integer.toString(num));
+                                textView8.setText(Integer.toString(num));
                             }
                         }
                     });
@@ -231,46 +240,84 @@ public class Driver2 extends Activity implements View.OnClickListener {
         return result;
     }
 
-    public boolean isConnected(){
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Activity.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected())
-            return true;
-        else
-            return false;
-    }
-
-    public void onClick(View view) {
+       public void onClick(View view) {
 
         switch(view.getId()){
             case R.id.btnPost:
-                if(!validate())
-                    Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
+
                 // call AsynTask to perform network operation on separate thread
-                gps = new GPSTracker(Driver2.this);
 
-                // check if GPS enabled
-                if (gps.canGetLocation()) {
+                final Handler handler = new Handler();
 
-                    lat = gps.getLatitude();
-                    lng = gps.getLongitude();
+                handler.post(new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        gps = new GPSTracker(Driver2.this);
 
-                    // \n is for new line
-                    Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + lat + "\nLong: " + lng, Toast.LENGTH_LONG).show();
-                } else {
-                    // can't get location
-                    // GPS or Network is not enabled
-                    // Ask user to enable GPS/network in settings
-                    gps.showSettingsAlert();
-                }
-                new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/cab");
+                        // check if GPS enabled
+                        if (gps.canGetLocation()) {
+
+                            lat = gps.getLatitude();
+                            lng = gps.getLongitude();
+
+                            // \n is for new line
+                            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + lat + "\nLong: " + lng, Toast.LENGTH_LONG).show();
+                        } else {
+                            // can't get location
+                            // GPS or Network is not enabled
+                            // Ask user to enable GPS/network in settings
+                            gps.showSettingsAlert();
+                        }
+                new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/driver/cab");
+                        handler.postDelayed(this, 3000);
+
+                    }
+                }));
                 break;
         }
 
     }
+
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        Toast.makeText(this, "The Switch is " + (isChecked ? "on" : "off"),
+                Toast.LENGTH_SHORT).show();
+        if(isChecked) {
+            final Handler handler = new Handler();
+
+            handler.post(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    gps = new GPSTracker(Driver2.this);
+
+                    // check if GPS enabled
+                    if (gps.canGetLocation()) {
+
+                        lat = gps.getLatitude();
+                        lng = gps.getLongitude();
+
+                        // \n is for new line
+                        Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + lat + "\nLong: " + lng, Toast.LENGTH_LONG).show();
+                    } else {
+                        // can't get location
+                        // GPS or Network is not enabled
+                        // Ask user to enable GPS/network in settings
+                        gps.showSettingsAlert();
+                    }
+                    new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/driver/cab");
+                    handler.postDelayed(this, 3000);
+
+                }
+            }));
+
+        } else {
+            Intent sevenIntent = new Intent(getApplicationContext(), Options.class);
+            startActivityForResult(sevenIntent, 0);
+        }
+    }
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
+
             sessionId="hello";
             cab = new Cab();
             cab.setcabSessionId(sessionId);
@@ -278,6 +325,7 @@ public class Driver2 extends Activity implements View.OnClickListener {
             cab.setlng(lng);
             cab.setpassengerCount(Integer.parseInt(textView8.getText().toString()));
             cab.setpassengerTotal(Integer.parseInt(textView7.getText().toString()));
+
 
             return POST(urls[0],cab);
         }
@@ -288,16 +336,7 @@ public class Driver2 extends Activity implements View.OnClickListener {
         }
     }
 
-    private boolean validate(){
-        if(textView10.getText().toString().trim().equals(""))
-            return false;
-        else if(textView8.getText().toString().trim().equals(""))
-            return false;
-        else if(textView7.getText().toString().trim().equals(""))
-            return false;
-        else
-            return true;
-    }
+
     private static String convertInputStreamToString(InputStream inputStream) throws IOException{
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";

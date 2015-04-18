@@ -97,7 +97,8 @@
         android:text="@string/continue_button"
         android:background="#ffc75c14"
         android:shadowColor="#b7ec6314"
-        android:textColor="#ffffffff" />
+        android:textColor="#ffffffff"
+        android:onClick="OpenDriver"/>
 
 
 </LinearLayout>

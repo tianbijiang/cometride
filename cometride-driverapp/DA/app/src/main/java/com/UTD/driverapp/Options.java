@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -27,7 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-public class Options extends Activity implements View.OnClickListener {
+public class Options extends Activity  {
     Button btnPost;
     Cab cab;
 
@@ -35,31 +36,6 @@ public class Options extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_options);
-        final RadioButton seven = (RadioButton) findViewById(R.id.radioButton1);
-        final RadioButton nine = (RadioButton) findViewById(R.id.radioButton2);
-
-        Button proceed = (Button) findViewById(R.id.next);
-        proceed.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-
-                if(seven.isChecked()) {
-                    Intent sevenIntent = new Intent(getApplicationContext(), Driver.class);
-                    startActivityForResult(sevenIntent, 0);
-                } else if (nine.isChecked()) {
-                    Intent nineIntent = new Intent(getApplicationContext(), Driver2.class);
-                    startActivityForResult(nineIntent, 0);
-                }else{
-                    Toast.makeText(getApplicationContext(), "Choose a Cab Type", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-        btnPost = (Button) findViewById(R.id.next);
-        btnPost.setOnClickListener(Options.this);
-
     }
 
 
@@ -85,20 +61,18 @@ public class Options extends Activity implements View.OnClickListener {
         return super.onOptionsItemSelected(item);
     }
 
-
-
-  /*  public void OpenDriver(View v)
+    public void OpenDriver(View v)
     {
         final RadioButton seven = (RadioButton) findViewById(R.id.radioButton1);
         final RadioButton nine = (RadioButton) findViewById(R.id.radioButton2);
-
         Button proceed = (Button) findViewById(R.id.next);
         proceed.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-
+                new HttpPostTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
+                new HttpGetTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
                 if(seven.isChecked()) {
                     Intent sevenIntent = new Intent(getApplicationContext(), Driver.class);
                     startActivityForResult(sevenIntent, 0);
@@ -108,10 +82,9 @@ public class Options extends Activity implements View.OnClickListener {
                 }else{
                     Toast.makeText(getApplicationContext(), "Choose a Cab Type", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
-    }*/
+    }
     public static String POST(String url, Cab cab){
 
         InputStream inputStream = null;
@@ -168,37 +141,53 @@ public class Options extends Activity implements View.OnClickListener {
         // 11. return result
         return result;
     }
+    public static String GET(String url){
+        InputStream inputStream = null;
+        String result = "";
+        try {
 
-    public boolean isConnected(){
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Activity.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected())
-            return true;
-        else
-            return false;
-    }
+            // create HttpClient
+            HttpClient httpclient = new DefaultHttpClient();
 
-    public void onClick(View view) {
+            // make GET request to the given URL
+            HttpResponse httpResponse = httpclient.execute(new HttpGet(url));
 
-        switch(view.getId()){
-            case R.id.btnPost:
-                if(!validate())
-                    Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
-                // call AsynTask to perform network operation on separate thread
+            // receive response as inputStream
+            inputStream = httpResponse.getEntity().getContent();
 
-                new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/session");
-                break;
+            // convert inputstream to string
+            if(inputStream != null)
+                result = convertInputStreamToString(inputStream);
+            else
+                result = "Did not work!";
+
+        } catch (Exception e) {
+            Log.d("InputStream", e.getLocalizedMessage());
         }
 
+        return result;
     }
-    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+
+
+    private class HttpGetTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+
+            return GET(urls[0]);
+            // onPostExecute displays the results of the AsyncTask.
+        }
+            @Override
+            protected void onPostExecute (String result){
+                Toast.makeText(getBaseContext(), "Received!" + result, Toast.LENGTH_LONG).show();
+            }
+    }
+    private class HttpPostTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             cab = new Cab();
             cab.setStatus("OnDuty");
-            cab.setmaxCapacity(9);
-            cab.setrouteId("1");
-
+            cab.setmaxCapacity(100);
+            cab.setrouteId("10");
 
             return POST(urls[0],cab);
         }
@@ -209,16 +198,7 @@ public class Options extends Activity implements View.OnClickListener {
         }
     }
 
-    private boolean validate(){
-       /* if(Spinner.getText().toString().trim().equals(""))
-            return false;
-        else if(textView8.getText().toString().trim().equals(""))
-            return false;
-        else if(textView7.getText().toString().trim().equals(""))
-            return false;
-        else*/
-            return true;
-    }
+
     private static String convertInputStreamToString(InputStream inputStream) throws IOException {
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";
