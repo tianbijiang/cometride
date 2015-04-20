@@ -66,26 +66,26 @@ public class DatabaseExecutor {
         return result;
     }
 
-    public ResultSet executeQuery( String queryString ) {
-        logger.info( "Running query: " + queryString );
-        Connection connection = null;
-        ResultSet results = null;
-
-        try {
-            connection = DriverManager.getConnection( jdbcUrl );
-            Statement setupStatement = connection.createStatement();
-            results = setupStatement.executeQuery( queryString );
-            setupStatement.close();
-        } catch (SQLException ex) {
-            logger.error("SQLException: " + ex.getMessage());
-            logger.error("SQLState: " + ex.getSQLState());
-            logger.error("VendorError: " + ex.getErrorCode());
-            // TODO: Throw error with condensed message
-        } finally {
-            System.out.println("Closing the connection.");
-            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
-        }
-        return results;
-    }
+//    public ResultSet executeQuery( String queryString ) {
+//        logger.info( "Running query: " + queryString );
+//        Connection connection = null;
+//        ResultSet results = null;
+//
+//        try {
+//            connection = DriverManager.getConnection( jdbcUrl );
+//            Statement setupStatement = connection.createStatement();
+//            results = setupStatement.executeQuery( queryString );
+//            setupStatement.close();
+//        } catch (SQLException ex) {
+//            logger.error("SQLException: " + ex.getMessage());
+//            logger.error("SQLState: " + ex.getSQLState());
+//            logger.error("VendorError: " + ex.getErrorCode());
+//            // TODO: Throw error with condensed message
+//        } finally {
+//            System.out.println("Closing the connection.");
+//            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+//        }
+//        return results;
+//    }
 
 }

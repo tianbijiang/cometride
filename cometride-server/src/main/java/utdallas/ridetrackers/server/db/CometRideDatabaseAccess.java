@@ -3,6 +3,7 @@ package utdallas.ridetrackers.server.db;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
+import utdallas.ridetrackers.server.datatypes.CabType;
 import utdallas.ridetrackers.server.datatypes.LatLng;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
@@ -64,7 +65,7 @@ public class CometRideDatabaseAccess {
     // Driver/Cab Updates
     //
 
-    public List<CabStatus> retrieveCurrentCabStatuses() throws SQLException {
+    public List<CabStatus> retrieveCurrentCabStatuses() {
         List<CabStatus> statusList = new ArrayList<CabStatus>();
 
         String queryStatement = "SELECT cab_session_id, cabStatus.lat, cabStatus.lng, max_capacity, cabStatus.passenger_count, route_id, duty_status \n" +
@@ -112,7 +113,7 @@ public class CometRideDatabaseAccess {
         return statusList;
     }
 
-    public CabStatus retrieveCabStatus( String cabId ) throws SQLException {
+    public CabStatus retrieveCabStatus( String cabId ) {
         String queryStatement = "SELECT cab_session_id, cabStatus.lat, cabStatus.lng, max_capacity, cabStatus.passenger_count, route_id, duty_status \n" +
                 "FROM ebdb.CabSession cabSession JOIN \n" +
                 "\t( SELECT cab_session_id cabId, lat, lng, passenger_count, MAX( submission_time ) submission_time " +
@@ -154,10 +155,70 @@ public class CometRideDatabaseAccess {
         return resultStatus;
     }
 
+    public List<CabType> retrieveCabTypes() {
+        List<CabType> cabTypes = new ArrayList<CabType>();
+        String cabQuery = "SELECT * FROM ebdb.CabTypes;";
+
+        logger.info( "Running query: " + cabQuery );
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection( jdbcUrl );
+            Statement setupStatement = connection.createStatement();
+            ResultSet results = setupStatement.executeQuery( cabQuery );
+            results.first();
+
+            while ( results.next() ) {
+                CabType cabType = new CabType();
+                cabType.setTypeId( results.getString( "type_id" ) );
+                cabType.setTypeName( results.getString( "type_name" ) );
+                cabType.setMaximumCapacity( results.getInt( "max_capacity" ) );
+
+                cabTypes.add( cabType );
+            }
+
+            setupStatement.close();
+        } catch (SQLException ex) {
+            logger.error("SQLException: " + ex.getMessage());
+            logger.error("SQLState: " + ex.getSQLState());
+            logger.error("VendorError: " + ex.getErrorCode());
+        } finally {
+            System.out.println("Closing the connection.");
+            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+        }
+
+
+        return cabTypes;
+    }
+
+    public void createCabType( CabType newCabType ) {
+        String insertStatement = "INSERT INTO ebdb.CabTypes ( type_id, type_name, max_capacity ) " +
+                "VALUES ( ?, ?, ? );";
+
+        db.executeUpdate( insertStatement, newCabType.getTypeId(), newCabType.getTypeName(),
+                newCabType.getMaximumCapacity() );
+    }
+
+    public void deleteCabType( String typeName ) {
+        String deleteStatement = "DELETE FROM ebdb.CabTypes WHERE type_id = '" + typeName + "';";
+        db.executeStatement( deleteStatement );
+    }
+
+
     public void createCabSession( CabSession cabSession ) {
         String insertStatement = "INSERT INTO CabSession (cab_session_id, duty_status, route_id, max_capacity) " +
                 "VALUES (?, ?, ?, ?)";
 
+        db.executeUpdate( insertStatement, cabSession.getCabSessionId(), cabSession.getDutyStatus(),
+                cabSession.getRouteId(), cabSession.getMaxCapacity() );
+    }
+
+    public void updateCabSession( CabSession cabSession ) {
+        String deleteStatement = "DELETE FROM CabSession WHERE cab_session_id = '" + cabSession + "';";
+        db.executeUpdate( deleteStatement );
+
+        String insertStatement = "INSERT INTO CabSession (cab_session_id, duty_status, route_id, max_capacity) " +
+                "VALUES (?, ?, ?, ?)";
         db.executeUpdate( insertStatement, cabSession.getCabSessionId(), cabSession.getDutyStatus(),
                 cabSession.getRouteId(), cabSession.getMaxCapacity() );
     }
@@ -180,7 +241,7 @@ public class CometRideDatabaseAccess {
 
     public List<Route> getRouteDetails() {
         // TODO: Enhance select statement with time info
-        String queryStatement = "SELECT route_id, name, color, status FROM ebdb.RouteInfo;";
+        String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo;";
 
         List<Route> routes = new ArrayList<Route>();
         Connection connection = null;
@@ -245,6 +306,7 @@ public class CometRideDatabaseAccess {
 
                 newDetails.setId( results.getString("route_id") );
                 newDetails.setName( results.getString("name") );
+                newDetails.setShortName( results.getString("short_name") );
                 newDetails.setColor( results.getString("color") );
                 newDetails.setStatus( results.getString("status") );
                 newDetails.setWaypoints( routeWaypoints );
@@ -271,9 +333,9 @@ public class CometRideDatabaseAccess {
         List<LatLng> waypoints = newRoute.getWaypoints();
         List<LatLng> safepoints = newRoute.getSafepoints();
 
-        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, color, status) VALUES ( ?, ?, ?, ? );";
-        db.executeUpdate( routeInfoStatement, newRoute.getId(), newRoute.getName(), newRoute.getColor(),
-                newRoute.getStatus() );
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ? );";
+        db.executeUpdate( routeInfoStatement, newRoute.getId(), newRoute.getName(), newRoute.getShortName(),
+                newRoute.getColor(), newRoute.getStatus() );
 
         // TODO: Add Date / Time Handling
 
@@ -300,9 +362,9 @@ public class CometRideDatabaseAccess {
         List<LatLng> waypoints = routeDetails.getWaypoints();
         List<LatLng> safepoints = routeDetails.getSafepoints();
 
-        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, color, status) VALUES ( ?, ?, ?, ? );";
-        db.executeUpdate( routeInfoStatement, routeDetails.getId(), routeDetails.getName(), routeDetails.getColor(),
-                routeDetails.getStatus() );
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ? );";
+        db.executeUpdate( routeInfoStatement, routeDetails.getId(), routeDetails.getName(), routeDetails.getShortName(),
+                routeDetails.getColor(), routeDetails.getStatus() );
 
         // TODO: Add Date / Time Handling
 
@@ -419,13 +481,15 @@ public class CometRideDatabaseAccess {
     private void createTables() {
 
         // Create Route Info Table
-        String routeInfoTableSatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteInfo` (\n" +
-                "  `route_id` VARCHAR(45) NOT NULL,\n" +
-                "  `name` VARCHAR(45) NOT NULL,\n" +
-                "  `color` VARCHAR(45) NOT NULL,\n" +
-                "  `status` VARCHAR(45) NOT NULL,\n" +
+        String routeInfoTableSatement = "CREATE TABLE IF NOT EXISTS `RouteInfo` (\n" +
+                "  `route_id` varchar(45) NOT NULL,\n" +
+                "  `name` varchar(45) NOT NULL,\n" +
+                "  `color` varchar(45) NOT NULL,\n" +
+                "  `status` varchar(45) NOT NULL,\n" +
+                "  `short_name` varchar(45) NOT NULL,\n" +
                 "  PRIMARY KEY (`route_id`),\n" +
-                "  UNIQUE INDEX `route_id_UNIQUE` (`route_id` ASC));";
+                "  UNIQUE KEY `route_id_UNIQUE` (`route_id`)\n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n";
         db.executeStatement( routeInfoTableSatement );
 
         // Create Route Waypoints Table
@@ -498,6 +562,15 @@ public class CometRideDatabaseAccess {
                 "  PRIMARY KEY (`cab_status_id`),\n" +
                 "  UNIQUE INDEX `cabStatusId_UNIQUE` (`cab_status_id` ASC)); ";
         db.executeStatement( cabStatusTableStatement );
+
+        String cabTypesTableStatement = "CREATE TABLE IF NOT EXISTS `CabTypes` (\n" +
+                "  `type_name` varchar(45) NOT NULL,\n" +
+                "  `max_capacity` int(11) NOT NULL,\n" +
+                "  `type_id` varchar(45) NOT NULL,\n" +
+                "  PRIMARY KEY (`type_id`),\n" +
+                "  UNIQUE KEY `type_id_UNIQUE` (`type_id`)\n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=latin1;\n";
+        db.executeStatement( cabTypesTableStatement );
     }
 
 

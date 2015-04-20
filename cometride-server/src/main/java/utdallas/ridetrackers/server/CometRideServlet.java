@@ -4,6 +4,7 @@ import com.sun.jersey.spi.resource.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
+import utdallas.ridetrackers.server.datatypes.CabType;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.admin.UserData;
@@ -145,7 +146,7 @@ public class CometRideServlet {
     @PUT
     @Consumes( MediaType.APPLICATION_JSON )
     @Path( "/admin/users/{id}" )
-    public Response createUser( UserData newData, @PathParam( "id" ) String userName ) {
+    public Response updateUser( UserData newData, @PathParam( "id" ) String userName ) {
         try {
             logger.info( "Updating user: " + userName );
             String id = controller.updateUser(newData, userName);
@@ -161,7 +162,7 @@ public class CometRideServlet {
 
     @DELETE
     @Path( "/admin/users/{id}" )
-    public Response createUser( @PathParam( "id" ) String userName ) {
+    public Response deleteUser( @PathParam( "id" ) String userName ) {
         try {
             logger.info( "Deleting user: " + userName );
             controller.deleteUser( userName );
@@ -207,6 +208,52 @@ public class CometRideServlet {
         }
     }
 
+    @GET
+    @Produces( MediaType.APPLICATION_JSON )
+    @Path( "/cabtypes" )
+    public Response getAllCabTypes() {
+        try {
+            logger.info( "Retrieving cab types." );
+            CabType[] cabTypesList = controller.getCabTypes();
+
+            return Response.ok().entity(cabTypesList).build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity("An error occurred while retrieving cab types.").build();
+        }
+    }
+
+    @POST
+    @Consumes( MediaType.APPLICATION_JSON )
+    @Path( "/admin/cabtypes" )
+    public Response createCabType( CabType newType ) {
+        try {
+            logger.info( "Creating cab type: " + newType.getTypeName() );
+            String id = controller.createCabType( newType );
+
+            UriBuilder uib = uriInfo.getAbsolutePathBuilder();
+            uib.path( id );
+            return Response.created(uib.build()).entity( id ).build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while creating cab type " +
+                    newType.getTypeName() + "." ).build();
+        }
+    }
+
+    @DELETE
+    @Path( "/admin/cabtypes/{id}" )
+    public Response deleteCabType( @PathParam( "id" ) String typeName ) {
+        try {
+            logger.info( "Deleting user: " + typeName );
+            controller.deleteCabType( typeName );
+
+            return Response.ok().build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while removing cab type " +
+                    typeName + "." ).build();
+        }
+    }
+
+
 
     //
     //  Driver
@@ -230,9 +277,9 @@ public class CometRideServlet {
     @PUT
     @Consumes( MediaType.APPLICATION_JSON )
     @Path( "/driver/session/{id}" )
-    public Response updateDriverStatus( CabSession statusUpdate ) {
+    public Response updateDriverStatus( @PathParam( "id" ) String sessionId, CabSession statusUpdate ) {
         try {
-            String id = controller.updateDriverStatus( statusUpdate );
+            String id = controller.updateDriverStatus( sessionId, statusUpdate );
 
             UriBuilder uib = uriInfo.getAbsolutePathBuilder();
             uib.path(id);
