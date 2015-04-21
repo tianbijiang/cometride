@@ -159,7 +159,7 @@
 
 .pushy {
     position: fixed;
-    width: 300px;
+    width: 400px;
     height: 100%;
     top: 0;
     z-index: 9999;
@@ -235,13 +235,23 @@
 }
 
 #btn-reverse {
-    background-color: rgba(255, 165, 0, 0.8);
+    background-color: orange;
     border: orange;
 }
 
 #btn-save {
     background-color: #0099CC;
     border: #0099CC;
+}
+
+#btn-reverse-points {
+    background-color: orange;
+    border: orange;
+}
+
+#btn-draw-points {
+    background-color: red;
+    border: red;
 }
 
 #btn-actual-draw:hover,
@@ -259,6 +269,16 @@
 #btn-save:hover,
 #btn-save:focus {
     background-color: #0099CC;
+    color: #fff;
+}
+
+#btn-reverse-points:hover,
+#btn-reverse-points:focus {
+    color: #fff;
+}
+
+#btn-draw-points:hover,
+#btn-draw-points:focus {
     color: #fff;
 }
 
@@ -307,11 +327,11 @@
 /* Menu Movement */
 
 .pushy-left {
-    -webkit-transform: translate3d(-300px, 0, 0);
-    -moz-transform: translate3d(-300px, 0, 0);
-    -ms-transform: translate3d(-300px, 0, 0);
-    -o-transform: translate3d(-300px, 0, 0);
-    transform: translate3d(-300px, 0, 0);
+    -webkit-transform: translate3d(-400px, 0, 0);
+    -moz-transform: translate3d(-400px, 0, 0);
+    -ms-transform: translate3d(-400px, 0, 0);
+    -o-transform: translate3d(-400px, 0, 0);
+    transform: translate3d(-400px, 0, 0);
 }
 
 .pushy-open {
@@ -324,11 +344,11 @@
 
 .container-push,
 .push-push {
-    -webkit-transform: translate3d(300px, 0, 0);
-    -moz-transform: translate3d(300px, 0, 0);
-    -ms-transform: translate3d(300px, 0, 0);
-    -o-transform: translate3d(300px, 0, 0);
-    transform: translate3d(300px, 0, 0);
+    -webkit-transform: translate3d(400px, 0, 0);
+    -moz-transform: translate3d(400px, 0, 0);
+    -ms-transform: translate3d(400px, 0, 0);
+    -o-transform: translate3d(400px, 0, 0);
+    transform: translate3d(400px, 0, 0);
 }
 
 .navbar-pushup {

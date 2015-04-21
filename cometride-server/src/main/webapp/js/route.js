@@ -1,10 +1,12 @@
 //todo
+//tags over routes/cabs/safepoints
+//fix safe points misplace bug
+//create cabtypes
+//manage users
 //increase point limit
 //login.html prettify
 //report.html prettify
-//draw safepoints
-//create cabtypes
-//manage users
+
 $(document).ready(function() {
 
     /* Some Constants */
@@ -15,6 +17,7 @@ $(document).ready(function() {
     var ORANGE_CAB_IMG = "img/cab_yellow.png";
     var RED_CAB_IMG = "img/cab_red.png";
     var RETRY_DELAY = 500;
+    var SAFE_IMG = "img/safe_point.png";
 
     /* Some Element Names */
     var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
@@ -26,6 +29,8 @@ $(document).ready(function() {
     var createBtn = $('.create-btn');
     var startDrawingBtns = $(".create #btn-draw, .edit #btn-draw");
     var reverseBtns = $(".create #btn-reverse, .edit #btn-reverse");
+    var drawPtBtns = $(".create #btn-draw-points, .edit #btn-draw-points");
+    var reversePtBtns = $(".create #btn-reverse-points, .edit #btn-reverse-points");
     var finishBtnCreate = $(".create #btn-save");
     var finishBtnEdit = $(".edit #btn-save");
     var closeBtns = $(".create #hide-sb, .edit #hide-sb");
@@ -50,13 +55,15 @@ $(document).ready(function() {
     /* Some Variables for Drawing */
     var map;
     var center = new google.maps.LatLng(32.9860365, -96.7518621);
-    var points = [];
-    var markers = [];
+    var points = []; //storing waypoints
+    var markers = []; //storing cab markers at the time of loading page
+    var safePts = []; //storing safe points for sending route
     var locationsAdded = 1;
     var directionsDisplay;
     var routeColor = "rgb(224, 102, 102)";
     var polylineOptions = {};
     var refreshTrigger = false;
+    var currentEditId;
 
     /* Some Variables for Displaying */
     var datalength = 0;
@@ -69,6 +76,8 @@ $(document).ready(function() {
     var cab_ids = [];
     var selectedRoutesTemp = [];
     var routeObjects = [];
+    var safePts2 = []; //safe points for getting route
+    var safePtsDisplay = []; //safe points for displaying route
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -119,7 +128,20 @@ $(document).ready(function() {
     });
 
     reverseBtns.click(function() {
-        removeRow(points.length - 1);
+        removeRow(points, points.length - 1);
+        buildPoints();
+    });
+
+    drawPtBtns.click(function() {
+        google.maps.event.clearListeners(map, 'click');
+        google.maps.event.addListener(map, "click", function(location) {
+            drawSafePoint(location.latLng);
+        });
+    });
+
+    reversePtBtns.click(function() {
+        safePts[safePts.length - 1].setMap(null);
+        removeRow(safePts, safePts.length - 1);
     });
 
     finishBtnCreate.click(function() {
@@ -137,7 +159,7 @@ $(document).ready(function() {
         });
         google.maps.event.clearListeners(map, 'click');
 
-        clearPolyLine();
+        clearAfterDrawing();
 
         if (refreshTrigger == true) {
             window.location.reload(true);
@@ -224,20 +246,26 @@ $(document).ready(function() {
         }
     }
 
-    function clearPolyLine() {
+    function clearAfterDrawing() {
         points = [];
         buildPoints();
         clearDrawingRoute();
+        clearDrawingSafepoints();
     }
 
     function clearDrawingRoute() {
         directionsDisplay.setMap(null);
     }
 
-    function removeRow(index) {
-        points.splice(index, 1);
-        buildPoints();
-        //clearDrawingRoute();
+    function clearDrawingSafepoints() {
+        for (var k = 0; k < safePts.length; k++) {
+            safePts[k].setMap(null);
+        }
+        safePts = [];
+    }
+
+    function removeRow(array, index) {
+        array.splice(index, 1);
     }
 
     function moveRowDown(index) {
@@ -303,15 +331,6 @@ $(document).ready(function() {
 
     function sendCreatedRoute() {
         var dataString = collectCreateFormData();
-        sendRoute(dataString);
-    }
-
-    function sendEditedRoute() {
-        var dataString = collectEditFormData();
-        sendRoute(dataString);
-    }
-
-    function sendRoute(dataString) {
         if (formValidation()) {
             $.ajax({
                 contentType: 'application/json',
@@ -329,7 +348,44 @@ $(document).ready(function() {
                         alert("Server error. Please try saving again.");
                     }
                 },
+                error: function(xhr, textStatus, error) {
+                    console.log(xhr.statusText);
+                    console.log(textStatus);
+                    console.log(error);
+                }
+            });
+        }
+        return false;
+    }
+
+    function deleteEditingRoute() {
+        $.ajax({
+            contentType: 'application/json',
+            type: "DELETE",
+            url: API_ROUTE_POST + "/" + currentEditId,
+            success: function(data) {
                 //TODO
+                alert("DELETED!");
+            }
+        });
+        return false;
+    }
+
+    function sendEditedRoute() {
+        var dataString = collectEditFormData();
+        if (formValidation()) {
+            //deleteEditingRoute();
+            $.ajax({
+                contentType: 'application/json',
+                type: "PUT",
+                url: API_ROUTE_POST + "/" + currentEditId,
+                data: dataString,
+                dataType: "text",
+                cache: false,
+                success: function(data) {
+                    //TODO
+                    alert("EDITED!");
+                },
                 error: function(xhr, textStatus, error) {
                     console.log(xhr.statusText);
                     console.log(textStatus);
@@ -385,6 +441,14 @@ $(document).ready(function() {
             endDate = endDateFieldCreate.val();
         }
 
+        var safepoints = [];
+        for (var i = 0; i < safePts.length; i++) {
+            safepoints.push({
+                lat: safePts[i].getPosition().lat(),
+                lng: safePts[i].getPosition().lng()
+            });
+        }
+
         var dataString = {
             color: color,
             name: name,
@@ -393,7 +457,8 @@ $(document).ready(function() {
             days: days,
             times: times,
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            safepoints: safepoints
         };
         dataString = JSON.stringify(dataString);
 
@@ -445,7 +510,16 @@ $(document).ready(function() {
             endDate = endDateFieldEdit.val();
         }
 
+        var safepoints = [];
+        for (var i = 0; i < safePts.length; i++) {
+            safepoints.push({
+                lat: safePts[i].getPosition().lat(),
+                lng: safePts[i].getPosition().lng()
+            });
+        }
+
         var dataString = {
+            id: currentEditId,
             color: color,
             name: name,
             status: status,
@@ -453,7 +527,8 @@ $(document).ready(function() {
             days: days,
             times: times,
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            safepoints: safepoints
         };
         dataString = JSON.stringify(dataString);
 
@@ -510,6 +585,8 @@ $(document).ready(function() {
                         endPoint = newlatlng;
                     }
                 }
+
+                safePts2.push(route.safepoints);
 
                 dirsRequest.push({
                     origin: startPoint,
@@ -623,6 +700,7 @@ $(document).ready(function() {
                 dirsDisplay[i].setDirections(response);
 
                 displayCab(i);
+                displaySafePoint(i);
 
             } else {
                 if (status == "OVER_QUERY_LIMIT") {
@@ -642,6 +720,20 @@ $(document).ready(function() {
         }
     }
 
+    function displaySafePoint(i) {
+        var pts = safePts2[i];
+        safePtsDisplay[i] = pts;
+        for (var k = 0; k < pts.length; k++) {
+            console.log("display " + pts[k].lat + " " + pts[k].lng);
+            safePtsDisplay[i][k] = new google.maps.Marker({
+                position: new google.maps.LatLng(pts[k].lat, pts[k].lng),
+                map: map,
+                title: 'Safe Point',
+                icon: SAFE_IMG
+            });
+        }
+    }
+
     function hideRoute() {
         for (var i = 0; i < datalength; i++) {
             dirsDisplay[i].setMap(null);
@@ -649,6 +741,14 @@ $(document).ready(function() {
         for (var m = 0; m < numberOfCabs; m++) {
             //console.log(markers[m]);
             markers[m].setMap(null);
+        }
+        if (safePtsDisplay.length > 0) {
+            for (var l = 0; l < safePtsDisplay.length; l++) {
+                var pts = safePtsDisplay[l];
+                for (var k = 0; k < pts.length; k++) {
+                    safePtsDisplay[l][k].setMap(null);
+                }
+            }
         }
     }
 
@@ -666,39 +766,52 @@ $(document).ready(function() {
     }
 
     function enableEditRoute() {
-            //TODO
             $('.edit-btn').click(function() {
                 hideRoute();
                 var id = $(this).attr("id");
                 for (var i = 0; i < ids.length; i++) {
                     if (ids[i] == id) {
-                        //displayRoute(i);
+                        currentEditId = id;
                         loadEditInfo(i);
-                        //TODO
-                        //deleteOldRoute(i);
                     }
                 }
             });
         }
-    //TODO
+        //TODO
     function loadEditInfo(i) {
         var oldName = routeObjects[i].name;
         var oldColor = routeObjects[i].color;
         var oldStatus = routeObjects[i].status;
+        var oldWaypoints = routeObjects[i].waypoints;
 
         nameFieldEdit.val(oldName);
         colorBtnEdit.spectrum("set", oldColor);
-        // statusOptionEditOption.each(function() {
-        //     alert(this.text);
-        //     this.selected = (this.val() == oldStatus);
-        // });
+        routeColor = oldColor;
+        statusOptionEditOption.each(function() {
+            this.selected = ($(this).val() == oldStatus);
+        });
 
-        //if(routeObjects[i].waypoints[points.length] == routeObjects[i].waypoints[0]) {
-        //}
+        if (oldWaypoints[oldWaypoints.length - 1].lat == oldWaypoints[0].lat) {
+            roundTripBoxEdit.prop('checked', true);
+        }
+
         // var daysString;
         // for(var k = 0; k<routeObjects[i].days.length; k++) {
         //     daysString+=routeObjects[i].days[k];
         // }
         // activeDaysOptionEdit.html(daysString);
+    }
+
+    function drawSafePoint(latlng) {
+        if (latlng != null) {
+            console.log("draw " + latlng.lat(), latlng.lng() + " " + latlng.lat(), latlng.lng());
+            safePts[safePts.length] = new google.maps.Marker({
+                position: new google.maps.LatLng(latlng.lat(), latlng.lng()),
+                map: map,
+                title: 'Safe Point',
+                icon: SAFE_IMG
+            });
+            //safePts[safePts.length - 1].setMap(map);
+        }
     }
 });
