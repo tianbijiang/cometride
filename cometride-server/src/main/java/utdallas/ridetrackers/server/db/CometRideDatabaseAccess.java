@@ -2,16 +2,16 @@ package utdallas.ridetrackers.server.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import utdallas.ridetrackers.server.datatypes.CabStatus;
-import utdallas.ridetrackers.server.datatypes.CabType;
-import utdallas.ridetrackers.server.datatypes.LatLng;
-import utdallas.ridetrackers.server.datatypes.Route;
+import utdallas.ridetrackers.server.datatypes.*;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
 
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,15 +34,15 @@ public class CometRideDatabaseAccess {
 
     public CometRideDatabaseAccess() {
         dbName = System.getProperty("RDS_DB_NAME");
-        logger.info( "RDS_DB_NAME: " + dbName );
+//        logger.info( "RDS_DB_NAME: " + dbName );
         userName = System.getProperty("RDS_USERNAME");
-        logger.info( "RDS_USERNAME: " + userName );
+//        logger.info( "RDS_USERNAME: " + userName );
         password = System.getProperty("RDS_PASSWORD");
-        logger.info( "RDS_PASSWORD: " + password );
+//        logger.info( "RDS_PASSWORD: " + password );
         hostname = System.getProperty("RDS_HOSTNAME");
-        logger.info( "RDS_HOSTNAME: " + hostname );
+//        logger.info( "RDS_HOSTNAME: " + hostname );
         port = System.getProperty("RDS_PORT");
-        logger.info( "RDS_PORT: " + port );
+//        logger.info( "RDS_PORT: " + port );
 
         jdbcUrl = "jdbc:mysql://" + hostname + ":" +
                 port + "/" + dbName + "?user=" + userName + "&password=" + password;
@@ -71,7 +71,9 @@ public class CometRideDatabaseAccess {
         String queryStatement = "SELECT cab_session_id, cabStatus.lat, cabStatus.lng, max_capacity, cabStatus.passenger_count, route_id, duty_status \n" +
                 "FROM ebdb.CabSession cabSession JOIN \n" +
                 "\t( SELECT cab_session_id cabId, lat, lng, passenger_count FROM ebdb.CabStatus t1 \n" +
-                "\tJOIN ( SELECT cab_session_id id, MAX( submission_time ) subtime FROM ebdb.CabStatus GROUP BY cab_session_id ) t2 \n" +
+                "\tJOIN ( SELECT cab_session_id id, MAX( submission_time ) subtime FROM ebdb.CabStatus " +
+                "\tWHERE submission_time BETWEEN DATE_SUB( NOW(), INTERVAL 1 MINUTE ) AND NOW()" +
+                "\tGROUP BY cab_session_id ) t2 \n" +
                 "\tON t1.cab_session_id = t2.id AND t1.submission_time = t2.subtime ) cabStatus \n" +
                 "ON cabStatus.cabId =  cabSession.cab_session_id;";
         // TODO: Add the ability to include / exclude inactive cabs
@@ -240,8 +242,14 @@ public class CometRideDatabaseAccess {
     //
 
     public List<Route> getRouteDetails() {
-        // TODO: Enhance select statement with time info
-        String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo;";
+        String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo info JOIN\n" +
+                "\t( ( SELECT route_id id FROM ebdb.RouteTimes WHERE\n" +
+                "\t( start_time < NOW() AND end_time < DATE_ADD( NOW(), INTERVAL 30 MINUTE ) )\n" +
+                "\tOR ( start_time IS NULL AND end_time IS NULL ) ) routeTime JOIN \n" +
+                "    ( SELECT route_id id FROM ebdb.RouteDates WHERE\n" +
+                "\t( start_date < NOW() AND end_date > NOW() )\n" +
+                "\tOR ( start_date IS NULL AND end_date IS NULL ) ) routeDate\n" +
+                "    ON routeDate.id = routeTime.id ) ON info.route_id = routeTime.id GROUP BY route_id;";
 
         List<Route> routes = new ArrayList<Route>();
         Connection connection = null;
@@ -305,8 +313,8 @@ public class CometRideDatabaseAccess {
 
 
                 newDetails.setId( results.getString("route_id") );
-                newDetails.setName( results.getString("name") );
-                newDetails.setShortName( results.getString("short_name") );
+                newDetails.setName(results.getString("name"));
+                newDetails.setShortName(results.getString("short_name"));
                 newDetails.setColor( results.getString("color") );
                 newDetails.setStatus( results.getString("status") );
                 newDetails.setWaypoints( routeWaypoints );
@@ -328,16 +336,14 @@ public class CometRideDatabaseAccess {
         return routes;
     }
 
-    public void createRoute( RouteDetails newRoute ) {
+    public void createRoute( RouteDetails newRoute ) throws ParseException {
 
         List<LatLng> waypoints = newRoute.getWaypoints();
         List<LatLng> safepoints = newRoute.getSafepoints();
 
-        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ? );";
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ?, ? );";
         db.executeUpdate( routeInfoStatement, newRoute.getId(), newRoute.getName(), newRoute.getShortName(),
                 newRoute.getColor(), newRoute.getStatus() );
-
-        // TODO: Add Date / Time Handling
 
         for( int i=0; i < waypoints.size(); i++ ) {
             LatLng waypoint = waypoints.get(i);
@@ -352,9 +358,42 @@ public class CometRideDatabaseAccess {
                     "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
             db.executeUpdate(wayPointStatement, newRoute.getId(), safepoint.getLat(), safepoint.getLng(), i);
         }
+
+        java.sql.Date startSqlDate = null;
+        java.sql.Date endSqlDate = null;
+        if( newRoute.getStartDate() != null && newRoute.getEndDate() != null ) {
+            startSqlDate = new java.sql.Date(newRoute.getStartDate().getTime());
+            endSqlDate = new java.sql.Date(newRoute.getEndDate().getTime());
+        }
+        String dateCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
+                "VALUES ( ?, ?, ? );";
+        db.executeUpdate( dateCreationStatement, newRoute.getId(), startSqlDate, endSqlDate );
+
+        String timeCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
+                "VALUES ( ?, ?, ? );";
+        if( newRoute.getTimes().size() == 0 ) {
+            db.executeUpdate(timeCreationStatement, newRoute.getId(), null, null);
+        } else {
+            for (TimeRange range : newRoute.getTimes()) {
+                java.sql.Time startSqlTime = null;
+                java.sql.Time endSqlTime = null;
+
+                if (range.getStart() != null && range.getEnd() != null) {
+                    DateFormat formatter = new SimpleDateFormat("hh:mma");
+                    java.util.Date startTime = formatter.parse(range.getStart());
+                    java.util.Date endTime = formatter.parse(range.getEnd());
+
+                    startSqlTime = new java.sql.Time(startTime.getTime());
+                    endSqlTime = new java.sql.Time(endTime.getTime());
+                }
+                db.executeUpdate(timeCreationStatement, newRoute.getId(), startSqlTime, endSqlTime);
+            }
+        }
+
+        // TODO: Add Day of Week
     }
 
-    public void updateRoute( RouteDetails routeDetails ) {
+    public void updateRoute( RouteDetails routeDetails ) throws ParseException {
 
         String deleteStatement = "DELETE FROM ebdb.RouteInfo WHERE route_id = '" + routeDetails.getId() + "';";
         db.executeStatement( deleteStatement );
@@ -362,7 +401,7 @@ public class CometRideDatabaseAccess {
         List<LatLng> waypoints = routeDetails.getWaypoints();
         List<LatLng> safepoints = routeDetails.getSafepoints();
 
-        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ? );";
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ?, ? );";
         db.executeUpdate( routeInfoStatement, routeDetails.getId(), routeDetails.getName(), routeDetails.getShortName(),
                 routeDetails.getColor(), routeDetails.getStatus() );
 
@@ -381,6 +420,35 @@ public class CometRideDatabaseAccess {
                     "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
             db.executeUpdate(wayPointStatement, routeDetails.getId(), safepoint.getLat(), safepoint.getLng(), i);
         }
+
+        java.sql.Date startSqlDate = null;
+        java.sql.Date endSqlDate = null;
+        if( routeDetails.getStartDate() != null && routeDetails.getEndDate() != null ) {
+            startSqlDate = new java.sql.Date(routeDetails.getStartDate().getTime());
+            endSqlDate = new java.sql.Date(routeDetails.getEndDate().getTime());
+        }
+        String dateCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
+                "VALUES ( ?, ?, ? );";
+        db.executeUpdate( dateCreationStatement, routeDetails.getId(), startSqlDate, endSqlDate );
+
+        String timeCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
+                "VALUES ( ?, ?, ? );";
+        for( TimeRange range : routeDetails.getTimes() ) {
+            java.sql.Time startSqlTime = null;
+            java.sql.Time endSqlTime = null;
+
+            if( range.getStart() != null && range.getEnd()!= null ) {
+                DateFormat formatter = new SimpleDateFormat("hh:mma");
+                java.util.Date startTime = formatter.parse( range.getStart() );
+                java.util.Date endTime = formatter.parse( range.getEnd() );
+
+                startSqlTime = new java.sql.Time( startTime.getTime() );
+                endSqlTime = new java.sql.Time( endTime.getTime() );
+            }
+            db.executeUpdate( timeCreationStatement, routeDetails.getId(), startSqlTime, endSqlTime );
+        }
+
+        // TODO: Add Day of Week
     }
 
 
@@ -521,23 +589,29 @@ public class CometRideDatabaseAccess {
         db.executeStatement( routeSafepointsTableSatement );
 
         // Create Route Time Table
-        String routeTimeTableStatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteTimes` (\n" +
-                "  `route_times_id` INT NOT NULL AUTO_INCREMENT,\n" +
-                "  `route_id` VARCHAR(45) NOT NULL,\n" +
-                "  `start_time` TIME NOT NULL,\n" +
-                "  `end_time` TIME NOT NULL,\n" +
+        String routeTimeTableStatement = "CREATE TABLE IF NOT EXISTS `RouteTimes` (\n" +
+                "  `route_times_id` int(11) NOT NULL AUTO_INCREMENT,\n" +
+                "  `route_id` varchar(45) NOT NULL,\n" +
+                "  `start_time` time DEFAULT NULL,\n" +
+                "  `end_time` time DEFAULT NULL,\n" +
                 "  PRIMARY KEY (`route_times_id`),\n" +
-                "  UNIQUE INDEX `route_times_id_UNIQUE` (`route_times_id` ASC));";
+                "  UNIQUE KEY `route_times_id_UNIQUE` (`route_times_id`),\n" +
+                "  KEY `time_route_id_idx` (`route_id`),\n" +
+                "  CONSTRAINT `time_route_id` FOREIGN KEY (`route_id`) REFERENCES `RouteDates` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                ") ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;\n";
         db.executeStatement( routeTimeTableStatement );
 
         // Create Route Dates Table
-        String routeDateTableStatement = "CREATE TABLE IF NOT EXISTS `ebdb`.`RouteDates` (\n" +
-                "  `route_dates_id` INT NOT NULL AUTO_INCREMENT,\n" +
-                "  `route_id` VARCHAR(45) NOT NULL,\n" +
-                "  `start_date` DATE NOT NULL,\n" +
-                "  `end_date` DATE NOT NULL,\n" +
+        String routeDateTableStatement = "CREATE TABLE IF NOT EXISTS `RouteDates` (\n" +
+                "  `route_dates_id` int(11) NOT NULL AUTO_INCREMENT,\n" +
+                "  `route_id` varchar(45) NOT NULL,\n" +
+                "  `start_date` date DEFAULT NULL,\n" +
+                "  `end_date` date DEFAULT NULL,\n" +
                 "  PRIMARY KEY (`route_dates_id`),\n" +
-                "  UNIQUE INDEX `route_times_id_UNIQUE` (`route_dates_id` ASC));";
+                "  UNIQUE KEY `route_times_id_UNIQUE` (`route_dates_id`),\n" +
+                "  KEY `dates_route_id_idx` (`route_id`),\n" +
+                "  CONSTRAINT `dates_route_id` FOREIGN KEY (`route_id`) REFERENCES `RouteInfo` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                ") ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;\n";
         db.executeStatement( routeDateTableStatement );
 
         //Create Cab Session Table

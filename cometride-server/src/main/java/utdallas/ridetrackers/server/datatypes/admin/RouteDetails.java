@@ -19,15 +19,12 @@ public class RouteDetails extends Route {
     private Date startDate;
     private Date endDate;
 
-    // TODO: Represent route active times with TimeWindow table that has keys back to routes
-    // TODO: Query against start and end times to find active routes
-
     public RouteDetails() {}
 
-    public RouteDetails(String color, String id, String name, String status, List<LatLng> waypoints,
-                        List<LatLng> safepoints, List<String> days, List<TimeRange> times,
-                        Date startDate, Date endDate) {
-        super(color, id, name, status, waypoints, safepoints);
+    public RouteDetails(String color, String id, String name, String shortName, String status,
+                        List<LatLng> waypoints, List<LatLng> safepoints, List<String> days,
+                        List<TimeRange> times, Date startDate, Date endDate) {
+        super(color, id, name, shortName, status, waypoints, safepoints);
         this.days = days;
         this.times = times;
         this.startDate = startDate;
