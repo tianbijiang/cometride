@@ -51,6 +51,7 @@ public class RouteSelectionSpinner extends Spinner implements
 
 		//public void hideSpinner();
 		public void hideAllSafePoints();
+		public void hideNavRoute();
 	}
 
 	@Override
@@ -163,6 +164,7 @@ public class RouteSelectionSpinner extends Spinner implements
 			if (items.size() != 0) {
 				listener.setRouteVisibleFalse();
 				listener.hideAllSafePoints();
+			
 
 				for (int i = 0; i < items.size(); i++) {
 					if (selected[i] == true) {
@@ -171,6 +173,7 @@ public class RouteSelectionSpinner extends Spinner implements
 						// Toast.LENGTH_SHORT).show();
 						listener.displaySelectedRoute(i);
 						listener.diplaySafePointsPerRoute(i);
+						listener.hideNavRoute();
 
 					}
 				}
