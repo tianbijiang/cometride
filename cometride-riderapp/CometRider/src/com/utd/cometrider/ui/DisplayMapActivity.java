@@ -38,7 +38,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
-
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
@@ -59,6 +58,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.utd.cometrider.R;
 import com.utd.cometrider.controller.Cab;
+import com.utd.cometrider.controller.GPSLocation;
 import com.utd.cometrider.controller.HttpConnection;
 import com.utd.cometrider.controller.JsonReader;
 import com.utd.cometrider.controller.PathJSONParser;
@@ -87,11 +87,11 @@ public class DisplayMapActivity extends FragmentActivity implements
 	HashMap<Cab, Marker> cabMarkerMap;
 	HashMap<Route, ArrayList<Marker>> safePointsRouteMap;
 	LocationManager mLocationManager;
-	LatLng myLocation;
+	//LatLng myLocation;
 	ImageButton navButton;
 	int navFlag = 0;
 	int selectedRoute = 0;
-
+	GPSLocation myLocation;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -118,7 +118,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 			googleMap.setMyLocationEnabled(true);
 			UiSettings setting = googleMap.getUiSettings();
 			setting.setZoomControlsEnabled(true);
-			setting.setMapToolbarEnabled(false);
+		//	setting.setMapToolbarEnabled(false);
 
 			// route selection drop-down
 			routeSelectionSpinner = new RouteSelectionSpinner(context);
@@ -132,7 +132,12 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 					Toast.makeText(context, "Start Navigation...",
 							Toast.LENGTH_SHORT).show();
-                    
+					
+				
+					myLocation = new GPSLocation(context); 
+					
+					if(myLocation.canGetLocation()){
+					
 					navButton.setVisibility(View.INVISIBLE);
 					for (int i = 0; i < navPolyLines.size(); i++) {
 						navPolyLines.get(i).setVisible(false);
@@ -142,7 +147,13 @@ public class DisplayMapActivity extends FragmentActivity implements
 					}
 
 				}
-
+				else{
+					
+					myLocation.showSettingsAlert();
+					
+				}
+					
+				}
 			});
 
 		} else {
@@ -229,46 +240,53 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 		@Override
 		protected Void doInBackground(Void... params) {
-
-			LocationManager locManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-			Criteria cri = new Criteria();
-
-			Location loc = locManager.getLastKnownLocation(locManager
-					.getBestProvider(cri, true));
-
-			myLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
-
-			// LatLng nearestSaftPoint = new LatLng(0, 0);
-
-			ArrayList<LatLng> safePointsPerRoute = new ArrayList<LatLng>();
-			ArrayList<Double> distances = new ArrayList<Double>();
-
-			safePointsPerRoute = allRoutes.get(selectedRoute).getSafepoints();
-
-			for (int i = 0; i < safePointsPerRoute.size(); i++) {
-			
-				String s = getDistance(myLocation.latitude,
-						myLocation.longitude,
-						safePointsPerRoute.get(i).latitude,
-						safePointsPerRoute.get(i).longitude);
-
-				double distance = Double.parseDouble(s.substring(0,
-						s.length() - 3));
-				distances.add(distance);
-			}
-
-			int minIndex = distances.indexOf(Collections.min(distances));
-
-			String url = getMapsApiDirectionsUrl(myLocation,
-					safePointsPerRoute.get(minIndex));
-			// Log.v("safe", safePointsPerRoute.get(minIndex).toString());
-
-			ReadGoogleMapAPIURL readURL = new ReadGoogleMapAPIURL();
-
-			readURL.execute(url);
-
+              
 		
+			
+			if(myLocation.getLocation()!=null){
+		//	myLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
+	
+			// LatLng nearestSaftPoint = new LatLng(0, 0);
+			
+				ArrayList<LatLng> safePointsPerRoute = new ArrayList<LatLng>();
+				ArrayList<Double> distances = new ArrayList<Double>();
 
+				safePointsPerRoute = allRoutes.get(selectedRoute)
+						.getSafepoints();
+				if (safePointsPerRoute.size() > 0 && safePointsPerRoute != null) {
+					for (int i = 0; i < safePointsPerRoute.size(); i++) {
+
+						String s = getDistance(myLocation.getLatitude(),
+								myLocation.getLongitude(),
+								safePointsPerRoute.get(i).latitude,
+								safePointsPerRoute.get(i).longitude);
+
+						double distance = Double.parseDouble(s.substring(0,
+								s.length() - 3));
+						distances.add(distance);
+					}
+
+					int minIndex = distances
+						.indexOf(Collections.min(distances));
+
+					String url = getMapsApiDirectionsUrl(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()),
+						safePointsPerRoute.get(minIndex));
+					// Log.v("safe",
+					// safePointsPerRoute.get(minIndex).toString());
+
+					ReadGoogleMapAPIURL readURL = new ReadGoogleMapAPIURL();
+
+					readURL.execute(url);
+			
+			}
+			}
+			else{
+				
+				//Toast.makeText(getApplicationContext(), "Location service is off",
+					//	Toast.LENGTH_SHORT).show();
+				
+			}
+			
 			return null;
 		}
 
@@ -399,7 +417,8 @@ public class DisplayMapActivity extends FragmentActivity implements
 					route.setWaypoints(waypoints);
 
 					route.setSafepoints(safepoints);
-					if (waypoints.size() != 0) {
+					
+					if (waypoints.size()!= 0) {
 						allRoutes.add(route);
 						selectedRoutes.add(route.getName());
 					}
@@ -412,31 +431,48 @@ public class DisplayMapActivity extends FragmentActivity implements
 			}
 
 			for (int n = 0; n < allRoutes.size(); n++) {
-				Log.v("id", allRoutes.get(n).getId());
-				Log.v("color", allRoutes.get(n).getColor());
-				Log.v("WP", allRoutes.get(n).getWaypoints().toString());
-				Log.v("SP", allRoutes.get(n).getSafepoints().toString());
+			//	Log.v("id", allRoutes.get(n).getId());
+				//Log.v("color", allRoutes.get(n).getColor());
+				//Log.v("WP", allRoutes.get(n).getWaypoints().toString());
+			//	Log.v("SP", allRoutes.get(n).getSafepoints().toString());
 			}
-			Log.v("all route size", Integer.toString(allRoutes.size()));
+		//	Log.v("all route size", Integer.toString(allRoutes.size()));
 			return null;
 		}
 
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 
+			
+			if(allCabs.size()>0&&allCabs!=null){
 			initCabInfo();
+			//googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+					//allCabs.get(0).getLocation(), 16));
+			
+			LatLng UTLatLng= new LatLng(32.984563,-96.745930);
+			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+					UTLatLng, 16));	
+			UpdateCabInfo.update(allCabs, cabMarkerMap);
+			}else{
+				
+			LatLng UTLatLng= new LatLng(32.984563,-96.745930);
+				googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+						UTLatLng, 16));	
+				
+			}
+			
+			
 			displayAllSafePoints();
 			hideAllSafePoints();
 			
 			
-			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-					allCabs.get(0).getLocation(), 16));
+		
 
-			Log.v("allCabs", allCabs.toString());
-			Log.v("cabMarkerMap", cabMarkerMap.toString());
+			//Log.v("allCabs", allCabs.toString());
+			//Log.v("cabMarkerMap", cabMarkerMap.toString());
 
 			// if (myLocation!=null){
-			UpdateCabInfo.update(allCabs, cabMarkerMap);
+		
 
 			// }
 
@@ -514,7 +550,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 				+ startPoint.longitude;
 		String destination = "destination=" + endPoint.latitude + ","
 				+ endPoint.longitude;
-		String mode = "&walking";
+		String mode = "&mode=walking";
 		String output = "json";
 		url += "https://maps.googleapis.com/maps/api/directions/" + output
 				+ "?" + origin + "&" + destination + mode;
@@ -604,11 +640,10 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 				if (navFlag == 0) {
 
-					polyLineOptions.color(Color.parseColor(allRoutes.get(
-							numberOfRoutes).getColor()));
+					polyLineOptions.color(Color.parseColor(allRoutes.get(numberOfRoutes).getColor()));
 				} else {
 
-					polyLineOptions.color(Color.BLUE);
+					polyLineOptions.color(Color.parseColor("#000000"));
 
 				}
 				// Log.v("color", Integer.toString(routes.size()));
@@ -635,6 +670,9 @@ public class DisplayMapActivity extends FragmentActivity implements
 	@Override
 	public void displaySelectedRoute(int id) {
 
+		googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+				allRoutes.get(id).getWaypoints().get(0), 16));	
+		
 		selectedRoute = id;
 		
 		if(routePolyLines!=null &&routePolyLines.size()>0 ){
@@ -661,6 +699,14 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 	}
 
+	
+	public void hideNavRoute(){
+		
+		if(navPolyLines.size()>0&&navPolyLines!=null){
+		navPolyLines.get(0).setVisible(false);
+		}
+	}
+	
 	public void hideNavButton() {
 		navButton.setVisibility(View.INVISIBLE);
 
