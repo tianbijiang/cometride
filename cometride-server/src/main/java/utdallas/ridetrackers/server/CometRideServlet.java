@@ -42,7 +42,19 @@ public class CometRideServlet {
     @GET
     @Produces( MediaType.APPLICATION_JSON )
     @Path( "/route" )
-    public Response getRoutes() {
+    public Response getCurrentRoutes() {
+        try {
+            Route[] routes = controller.getCurrentRoutes();
+            return Response.ok().entity( routes ).build();
+        } catch ( Exception e ) {
+            return Response.serverError().entity( "An error occurred while querying for routes." ).build();
+        }
+    }
+
+    @GET
+    @Produces( MediaType.APPLICATION_JSON )
+    @Path( "/admin/route" )
+    public Response getAllRoutes() {
         try {
             Route[] routes = controller.getAllRoutes();
             return Response.ok().entity( routes ).build();

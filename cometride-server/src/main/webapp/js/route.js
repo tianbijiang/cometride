@@ -11,7 +11,7 @@ $(document).ready(function() {
 
     /* Some Constants */
     var API_ROUTE_GET = "api/route";
-    var API_ROUTE_POST = "api/admin/route";
+    var API_ROUTE_ADMIN = "api/admin/route";
     var API_CAB = "api/cab";
     var GREEN_CAB_IMG = "img/cab_green.png";
     var ORANGE_CAB_IMG = "img/cab_yellow.png";
@@ -22,6 +22,7 @@ $(document).ready(function() {
     /* Some Element Names */
     var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
     var editRouteList = $("#navHeaderCollapse #navs #editRoute #editRouteList");
+    var showInactiveCheck = $("#navHeaderCollapse #navs #showAllRoutes #showAllRoutesCheck");
     var routeListPlaceholder = $(".noroute");
     var colorBtns = $('.create #color, .edit #color');
     var colorBtnCreate = $('.create #color');
@@ -38,6 +39,7 @@ $(document).ready(function() {
     var roundTripBoxCreate = $(".create #roundTrip");
     var tempFlagCreate = $(".create #temporary-flag");
     var nameFieldCreate = $(".create #name");
+    var shortNameFieldCreate = $(".create #shortname");
     var statusOptionCreate = $(".create #status");
     var activeDaysOptionCreate = $(".create #day-picker button");
     var startDateFieldCreate = $(".create #start-date");
@@ -46,6 +48,7 @@ $(document).ready(function() {
     var roundTripBoxEdit = $(".edit #roundTrip");
     var tempFlagEdit = $(".edit #temporary-flag");
     var nameFieldEdit = $(".edit #name");
+    var shortNameFieldEdit = $(".edit #shortname");
     var statusOptionEdit = $(".edit #status");
     var statusOptionEditOption = $(".edit #status option");
     var activeDaysOptionEdit = $(".edit #day-picker button");
@@ -172,6 +175,11 @@ $(document).ready(function() {
         }
     });
 
+    showInactiveCheck.click(function() {
+        getRoute();
+        getRouteList();
+    });
+
     function initialize() {
         var mapOptions = {
             zoom: 16,
@@ -187,7 +195,8 @@ $(document).ready(function() {
     }
 
     function getRouteList() {
-        $.getJSON(API_ROUTE_GET, function(data) {
+        var getUrl = showInactiveCheck.is( ':checked' ) === true ? API_ROUTE_ADMIN : API_ROUTE_GET;
+        $.getJSON(getUrl, function(data) {
             if (data.length == 0) {
                 selectRouteList.append($("<option></option>")
                     .text("No Route Available"));
@@ -335,7 +344,7 @@ $(document).ready(function() {
             $.ajax({
                 contentType: 'application/json',
                 type: "POST",
-                url: API_ROUTE_POST,
+                url: API_ROUTE_ADMIN,
                 data: dataString,
                 dataType: "text",
                 cache: false,
@@ -362,7 +371,7 @@ $(document).ready(function() {
         $.ajax({
             contentType: 'application/json',
             type: "DELETE",
-            url: API_ROUTE_POST + "/" + currentEditId,
+            url: API_ROUTE_ADMIN + "/" + currentEditId,
             success: function(data) {
                 //TODO
                 alert("DELETED!");
@@ -378,7 +387,7 @@ $(document).ready(function() {
             $.ajax({
                 contentType: 'application/json',
                 type: "PUT",
-                url: API_ROUTE_POST + "/" + currentEditId,
+                url: API_ROUTE_ADMIN + "/" + currentEditId,
                 data: dataString,
                 dataType: "text",
                 cache: false,
@@ -398,6 +407,7 @@ $(document).ready(function() {
 
     function collectCreateFormData() {
         var name = nameFieldCreate.val();
+        var shortname = shortNameFieldCreate.val();
 
         var color = "rgb(224, 102, 102)";
         if (colorBtnCreate.val() != "") {
@@ -452,6 +462,7 @@ $(document).ready(function() {
         var dataString = {
             color: color,
             name: name,
+            shortName: shortname,
             status: status,
             waypoints: waypoints,
             days: days,
@@ -467,6 +478,7 @@ $(document).ready(function() {
 
     function collectEditFormData() {
         var name = nameFieldEdit.val();
+        var shortname = shortNameFieldEdit.val();
 
         var color = "rgb(224, 102, 102)";
         if (colorBtnEdit.val() != "") {
@@ -522,6 +534,7 @@ $(document).ready(function() {
             id: currentEditId,
             color: color,
             name: name,
+            shortName: shortname,
             status: status,
             waypoints: waypoints,
             days: days,
@@ -556,7 +569,8 @@ $(document).ready(function() {
 
     function getRoute() {
         hideRoute();
-        $.getJSON(API_ROUTE_GET, function(data) {
+        var getUrl = showInactiveCheck.is( ':checked' ) === true ? API_ROUTE_ADMIN : API_ROUTE_GET;
+        $.getJSON(getUrl, function(data) {
             routeObjects = data;
             datalength = data.length;
             for (var i = 0; i < datalength; i++) {
@@ -780,11 +794,13 @@ $(document).ready(function() {
         //TODO
     function loadEditInfo(i) {
         var oldName = routeObjects[i].name;
+        var oldShortName = routeObjects[i].shortName;
         var oldColor = routeObjects[i].color;
         var oldStatus = routeObjects[i].status;
         var oldWaypoints = routeObjects[i].waypoints;
 
         nameFieldEdit.val(oldName);
+        shortNameFieldEdit.val(oldShortName);
         colorBtnEdit.spectrum("set", oldColor);
         routeColor = oldColor;
         statusOptionEditOption.each(function() {

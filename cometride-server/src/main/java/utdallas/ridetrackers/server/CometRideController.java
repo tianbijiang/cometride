@@ -39,10 +39,18 @@ public class CometRideController {
     //  Routes
     //
 
+    public Route[] getCurrentRoutes() {
+        List<Route> routes = new ArrayList<Route>();
+
+        routes.addAll( db.getCurrentRouteDetails() );
+
+        return routes.toArray( new Route[]{} );
+    }
+
     public Route[] getAllRoutes() {
         List<Route> routes = new ArrayList<Route>();
 
-        routes.addAll( db.getRouteDetails() );
+        routes.addAll( db.getAllRouteDetails() );
 
         return routes.toArray( new Route[]{} );
     }

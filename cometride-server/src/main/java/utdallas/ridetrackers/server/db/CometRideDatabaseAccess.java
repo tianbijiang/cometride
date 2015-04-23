@@ -241,15 +241,103 @@ public class CometRideDatabaseAccess {
     // Routes
     //
 
-    public List<Route> getRouteDetails() {
+    public List<Route> getCurrentRouteDetails() {
         String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo info JOIN\n" +
                 "\t( ( SELECT route_id id FROM ebdb.RouteTimes WHERE\n" +
-                "\t( start_time < NOW() AND end_time < DATE_ADD( NOW(), INTERVAL 30 MINUTE ) )\n" +
+                "\t( start_time < DATE_ADD( NOW(), INTERVAL 10 MINUTE ) AND end_time > NOW() )\n" +
                 "\tOR ( start_time IS NULL AND end_time IS NULL ) ) routeTime JOIN \n" +
                 "    ( SELECT route_id id FROM ebdb.RouteDates WHERE\n" +
                 "\t( start_date < NOW() AND end_date > NOW() )\n" +
                 "\tOR ( start_date IS NULL AND end_date IS NULL ) ) routeDate\n" +
                 "    ON routeDate.id = routeTime.id ) ON info.route_id = routeTime.id GROUP BY route_id;";
+
+        List<Route> routes = new ArrayList<Route>();
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection( jdbcUrl );
+            Statement setupStatement = connection.createStatement();
+            ResultSet results = setupStatement.executeQuery( queryStatement );
+
+            while( results.next() ) {
+                Route newDetails = new Route();
+                List<LatLng> routeWaypoints = new ArrayList<LatLng>();
+
+                try {
+                    String waypointQueryStatement = "SELECT route_id, lat, lng, sequence_num FROM ebdb.RouteWaypoints " +
+                            "WHERE route_id = '" + results.getString( "route_id" ) + "' ORDER BY sequence_num ASC;";
+
+                    Statement waypointSetupStatement = connection.createStatement();
+                    ResultSet waypointResults = waypointSetupStatement.executeQuery( waypointQueryStatement );
+
+                    while( waypointResults.next() ) {
+                        LatLng newWaypoint = new LatLng();
+
+                        newWaypoint.setLat( waypointResults.getDouble( "lat" ) );
+                        newWaypoint.setLng(waypointResults.getDouble("lng" ) );
+
+                        routeWaypoints.add( newWaypoint );
+                    }
+
+                    waypointSetupStatement.close();
+                } catch (SQLException ex) {
+                    logger.error("SQLException: " + ex.getMessage());
+                    logger.error("SQLState: " + ex.getSQLState());
+                    logger.error("VendorError: " + ex.getErrorCode());
+                }
+
+                List<LatLng> routeSafepoints = new ArrayList<LatLng>();
+
+                try {
+                    String safepointQueryStatement = "SELECT route_id, lat, lng, sequence_num FROM ebdb.RouteSafepoints " +
+                            "WHERE route_id = '" + results.getString( "route_id" ) + "' ORDER BY sequence_num ASC;";
+
+                    Statement safepointSetupStatement = connection.createStatement();
+                    ResultSet safepointResults = safepointSetupStatement.executeQuery( safepointQueryStatement );
+
+                    while( safepointResults.next() ) {
+                        LatLng newSafepoint = new LatLng();
+
+                        newSafepoint.setLat( safepointResults.getDouble( "lat" ) );
+                        newSafepoint.setLng(safepointResults.getDouble("lng"));
+
+                        routeSafepoints.add( newSafepoint );
+                    }
+
+                    safepointResults.close();
+                } catch (SQLException ex) {
+                    logger.error("SQLException: " + ex.getMessage());
+                    logger.error("SQLState: " + ex.getSQLState());
+                    logger.error("VendorError: " + ex.getErrorCode());
+                }
+
+
+                newDetails.setId( results.getString("route_id") );
+                newDetails.setName(results.getString("name"));
+                newDetails.setShortName(results.getString("short_name"));
+                newDetails.setColor( results.getString("color") );
+                newDetails.setStatus( results.getString("status") );
+                newDetails.setWaypoints( routeWaypoints );
+                newDetails.setSafepoints( routeSafepoints );
+
+                routes.add( newDetails );
+            }
+
+            setupStatement.close();
+        } catch (SQLException ex) {
+            logger.error("SQLException: " + ex.getMessage());
+            logger.error("SQLState: " + ex.getSQLState());
+            logger.error("VendorError: " + ex.getErrorCode());
+        } finally {
+            System.out.println("Closing the connection.");
+            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+        }
+
+        return routes;
+    }
+
+    public List<Route> getAllRouteDetails() {
+        String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo info;";
 
         List<Route> routes = new ArrayList<Route>();
         Connection connection = null;
@@ -369,8 +457,9 @@ public class CometRideDatabaseAccess {
                 "VALUES ( ?, ?, ? );";
         db.executeUpdate( dateCreationStatement, newRoute.getId(), startSqlDate, endSqlDate );
 
-        String timeCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
+        String timeCreationStatement = "INSERT INTO ebdb.RouteTimes ( route_id, start_time, end_time ) " +
                 "VALUES ( ?, ?, ? );";
+
         if( newRoute.getTimes().size() == 0 ) {
             db.executeUpdate(timeCreationStatement, newRoute.getId(), null, null);
         } else {
@@ -431,7 +520,7 @@ public class CometRideDatabaseAccess {
                 "VALUES ( ?, ?, ? );";
         db.executeUpdate( dateCreationStatement, routeDetails.getId(), startSqlDate, endSqlDate );
 
-        String timeCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
+        String timeCreationStatement = "INSERT INTO ebdb.RouteTimes ( route_id, start_date, end_date ) " +
                 "VALUES ( ?, ?, ? );";
         for( TimeRange range : routeDetails.getTimes() ) {
             java.sql.Time startSqlTime = null;
@@ -597,7 +686,7 @@ public class CometRideDatabaseAccess {
                 "  PRIMARY KEY (`route_times_id`),\n" +
                 "  UNIQUE KEY `route_times_id_UNIQUE` (`route_times_id`),\n" +
                 "  KEY `time_route_id_idx` (`route_id`),\n" +
-                "  CONSTRAINT `time_route_id` FOREIGN KEY (`route_id`) REFERENCES `RouteDates` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                "  CONSTRAINT `time_route_id` FOREIGN KEY (`route_id`) REFERENCES `ebdb`.`RouteInfo` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
                 ") ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;\n";
         db.executeStatement( routeTimeTableStatement );
 
@@ -610,7 +699,7 @@ public class CometRideDatabaseAccess {
                 "  PRIMARY KEY (`route_dates_id`),\n" +
                 "  UNIQUE KEY `route_times_id_UNIQUE` (`route_dates_id`),\n" +
                 "  KEY `dates_route_id_idx` (`route_id`),\n" +
-                "  CONSTRAINT `dates_route_id` FOREIGN KEY (`route_id`) REFERENCES `RouteInfo` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
+                "  CONSTRAINT `dates_route_id` FOREIGN KEY (`route_id`) REFERENCES `ebdb`.`RouteInfo` (`route_id`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +
                 ") ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;\n";
         db.executeStatement( routeDateTableStatement );
 
