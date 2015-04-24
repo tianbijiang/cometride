@@ -13,17 +13,20 @@ public class Route {
     protected String name;
     protected String shortName;
     protected String status;
+    protected String navigationType;
     protected List<LatLng> waypoints;
     protected List<LatLng> safepoints;
 
     public Route() {}
 
-    public Route(String color, String id, String name, String shortName, String status, List<LatLng> waypoints, List<LatLng> safepoints) {
+    public Route(String color, String id, String name, String shortName,
+                 String status, String navigationType, List<LatLng> waypoints, List<LatLng> safepoints) {
         this.color = color;
         this.id = id;
         this.name = name;
         this.shortName = shortName;
         this.status = status;
+        this.navigationType = navigationType;
         this.waypoints = waypoints;
         this.safepoints = safepoints;
     }
@@ -66,6 +69,14 @@ public class Route {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getNavigationType() {
+        return navigationType;
+    }
+
+    public void setNavigationType(String navigationType) {
+        this.navigationType = navigationType;
     }
 
     public List<LatLng> getWaypoints() {

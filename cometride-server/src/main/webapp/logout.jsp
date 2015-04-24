@@ -9,7 +9,10 @@
 
 User '<%=request.getRemoteUser()%>' has been logged out.
 
-<% session.invalidate(); %>
-
-<br/><br/>
-<a href="index.html">Click here to go to test servlet</a>
+<%
+   session.invalidate();
+   // New location to be redirected
+   String site = new String("index.html");
+   response.setStatus(response.SC_MOVED_TEMPORARILY);
+   response.setHeader("Location", site);
+%>

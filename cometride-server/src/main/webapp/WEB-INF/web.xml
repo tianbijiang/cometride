@@ -79,7 +79,6 @@
         <auth-method>FORM</auth-method>
         <form-login-config>
             <form-login-page>/login.html</form-login-page>
-            <error-code>404</error-code>
             <form-error-page>/login-failed.html</form-error-page>
         </form-login-config>
     </login-config>

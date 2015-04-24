@@ -1,0 +1,43 @@
+
+@media screen {
+body {
+	background-color:#d9d8d4; }
+	
+p {
+	font:1.5em Arial, Helvetica, sans-serif;
+	margin:0;
+	padding:0;
+	color:#76571b;	}
+
+h3 {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 0.95em;
+	margin-bottom:3px;
+	color:#333; }
+	
+a { text-decoration:none; }
+a:link, a:visited { color:#008542; }
+a:active, a:hover { color:#c75b12; }
+a img { border:0; }
+
+
+
+#loginbox {
+	border:1px solid #cac9c7;
+	width:342px;
+	background:#fff; }
+#loginbox p { 
+	line-height:1.5em; }
+	
+
+
+/* login form */
+form {
+	text-align:right;
+	width:300px; }
+form input.input-box { border:1px solid #cac9c7; }
+form input.input-box:focus { border:1px solid #348FBC; }
+
+
+}
+

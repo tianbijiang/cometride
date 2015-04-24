@@ -1,18 +1,52 @@
-<form method="POST" action="j_security_check">
-    <table>
-        <tr>
-            <td colspan="2">Login to the Tomcat-Demo application:</td>
-        </tr>
-        <tr>
-            <td>Name:</td>
-            <td><input type="text" name="j_username" /></td>
-        </tr>
-        <tr>
-            <td>Password:</td>
-            <td><input type="password" name="j_password"/ ></td>
-        </tr>
-        <tr>
-            <td colspan="2"><input type="submit" value="Go" /></td>
-        </tr>
-    </table>
-</form>
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CometRide Admin Login</title>
+<link href="./css/caspage.css" type="text/css" rel="stylesheet">
+<meta name="viewport" content="width=device-width; initial-scale=.8; maximum-scale=2; user-scalable=1;">
+<style type="text/css"></style>
+</head>
+
+<body >
+
+<table width="100%" style="height:100%;">
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+<div id="loginbox">
+
+<table width="100%" cellpadding="20" cellspacing="0" border="0">
+  <tbody><tr>
+    <td style="background-color:#c75b12; text-align:center;background-opacity:0.5"><img src="./img/cometride-logo-white.png" width="230" height="75"></td>
+  </tr>
+  <form method="POST" action="j_security_check">
+  <tr style="background-color:#efefef;">
+    <td>
+    <p style="text-align:center;">Administrator Login</p></br>
+    <h3>
+    <label for="user">User ID:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+    <input name="j_username" type="text" id="login" size="23">
+    </h3>
+	<h3>
+	<label for="pass">Password:&nbsp;</label>
+	<input name="j_password" type="password"   size="23">
+	</h3></br>
+    <a href="" target="_blank" onclick="alert( 'I'm sorry. I can't let you do that right now. Recovery function under construction.');">Recover Password</a><br><br>
+	
+<input align="right" name="submit" type="submit"  value="Login"></input>
+    </form>
+    </td>
+  </tr>
+  </form>
+  
+</tbody></table>
+
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

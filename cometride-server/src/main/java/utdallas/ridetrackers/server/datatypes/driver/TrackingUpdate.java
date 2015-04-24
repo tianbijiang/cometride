@@ -12,7 +12,7 @@ public class TrackingUpdate {
     private Double lat;
     private Double lng;
     private int passengerCount;
-    private int passengerTotal;
+    private int passengersAdded;
     private Timestamp timestamp;
 
     public TrackingUpdate() {}
@@ -21,14 +21,14 @@ public class TrackingUpdate {
                           Double lat,
                           Double lng,
                           int passengerCount,
-                          int passengerTotal,
+                          int passengersAdded,
                           Timestamp timestamp) {
 
         this.cabSessionId = cabSessionId;
         this.lat = lat;
         this.lng = lng;
         this.passengerCount = passengerCount;
-        this.passengerTotal = passengerTotal;
+        this.passengersAdded = passengersAdded;
         this.timestamp = timestamp;
     }
 
@@ -64,12 +64,12 @@ public class TrackingUpdate {
         this.passengerCount = passengerCount;
     }
 
-    public int getPassengerTotal() {
-        return passengerTotal;
+    public int getPassengersAdded() {
+        return passengersAdded;
     }
 
-    public void setPassengerTotal(int passengerTotal) {
-        this.passengerTotal = passengerTotal;
+    public void setPassengersAdded(int passengersAdded) {
+        this.passengersAdded = passengersAdded;
     }
 
     public Timestamp getTimestamp() {

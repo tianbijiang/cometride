@@ -21,10 +21,8 @@ public class RouteDetails extends Route {
 
     public RouteDetails() {}
 
-    public RouteDetails(String color, String id, String name, String shortName, String status,
-                        List<LatLng> waypoints, List<LatLng> safepoints, List<String> days,
-                        List<TimeRange> times, Date startDate, Date endDate) {
-        super(color, id, name, shortName, status, waypoints, safepoints);
+    public RouteDetails(String color, String id, String name, String shortName, String status, String navigationType, List<LatLng> waypoints, List<LatLng> safepoints, List<String> days, List<TimeRange> times, Date startDate, Date endDate) {
+        super(color, id, name, shortName, status, navigationType, waypoints, safepoints);
         this.days = days;
         this.times = times;
         this.startDate = startDate;

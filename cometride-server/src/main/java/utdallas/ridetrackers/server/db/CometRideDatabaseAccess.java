@@ -228,10 +228,10 @@ public class CometRideDatabaseAccess {
     public void persistTrackingUpdate( TrackingUpdate trackingUpdate) {
 
         String insertStatement = "INSERT INTO CabStatus (cab_session_id, lat, lng, passenger_count, " +
-                "passenger_total, submission_time) VALUES (?, ?, ?, ?, ?, ?)";
+                "passengers_added, submission_time) VALUES (?, ?, ?, ?, ?, ?)";
 
         db.executeUpdate(insertStatement, trackingUpdate.getCabSessionId(), trackingUpdate.getLat(),
-                trackingUpdate.getLng(), trackingUpdate.getPassengerCount(), trackingUpdate.getPassengerTotal(),
+                trackingUpdate.getLng(), trackingUpdate.getPassengerCount(), trackingUpdate.getPassengersAdded(),
                 trackingUpdate.getTimestamp());
     }
 
@@ -337,7 +337,7 @@ public class CometRideDatabaseAccess {
     }
 
     public List<Route> getAllRouteDetails() {
-        String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo info;";
+        String queryStatement = "SELECT route_id, name, short_name, color, status, navigation_type FROM ebdb.RouteInfo info;";
 
         List<Route> routes = new ArrayList<Route>();
         Connection connection = null;
@@ -405,6 +405,7 @@ public class CometRideDatabaseAccess {
                 newDetails.setShortName(results.getString("short_name"));
                 newDetails.setColor( results.getString("color") );
                 newDetails.setStatus( results.getString("status") );
+                newDetails.setNavigationType( results.getString("navigation_type" ) );
                 newDetails.setWaypoints( routeWaypoints );
                 newDetails.setSafepoints( routeSafepoints );
 
@@ -429,9 +430,9 @@ public class CometRideDatabaseAccess {
         List<LatLng> waypoints = newRoute.getWaypoints();
         List<LatLng> safepoints = newRoute.getSafepoints();
 
-        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ?, ? );";
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status, navigation_type) VALUES ( ?, ?, ?, ?, ?, ? );";
         db.executeUpdate( routeInfoStatement, newRoute.getId(), newRoute.getName(), newRoute.getShortName(),
-                newRoute.getColor(), newRoute.getStatus() );
+                newRoute.getColor(), newRoute.getStatus(), newRoute.getNavigationType() );
 
         for( int i=0; i < waypoints.size(); i++ ) {
             LatLng waypoint = waypoints.get(i);
@@ -490,9 +491,9 @@ public class CometRideDatabaseAccess {
         List<LatLng> waypoints = routeDetails.getWaypoints();
         List<LatLng> safepoints = routeDetails.getSafepoints();
 
-        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status) VALUES ( ?, ?, ?, ?, ? );";
+        String routeInfoStatement = "INSERT INTO ebdb.RouteInfo (route_id, name, short_name, color, status, navigation_type) VALUES ( ?, ?, ?, ?, ?, ? );";
         db.executeUpdate( routeInfoStatement, routeDetails.getId(), routeDetails.getName(), routeDetails.getShortName(),
-                routeDetails.getColor(), routeDetails.getStatus() );
+                routeDetails.getColor(), routeDetails.getStatus(), routeDetails.getNavigationType() );
 
         // TODO: Add Date / Time Handling
 
@@ -643,6 +644,7 @@ public class CometRideDatabaseAccess {
                 "  `name` varchar(45) NOT NULL,\n" +
                 "  `color` varchar(45) NOT NULL,\n" +
                 "  `status` varchar(45) NOT NULL,\n" +
+                "  `navigation_type` varchar(45) NOT NULL,\n" +
                 "  `short_name` varchar(45) NOT NULL,\n" +
                 "  PRIMARY KEY (`route_id`),\n" +
                 "  UNIQUE KEY `route_id_UNIQUE` (`route_id`)\n" +
@@ -720,7 +722,7 @@ public class CometRideDatabaseAccess {
                 "  `lat` DOUBLE NOT NULL,\n" +
                 "  `lng` DOUBLE NOT NULL,\n" +
                 "  `passenger_count` INT NOT NULL,\n" +
-                "  `passenger_total` INT NOT NULL,\n" +
+                "  `passengers_added` INT NOT NULL,\n" +
                 "  `submission_time` TIMESTAMP NOT NULL,\n" +
                 "  PRIMARY KEY (`cab_status_id`),\n" +
                 "  UNIQUE INDEX `cabStatusId_UNIQUE` (`cab_status_id` ASC)); ";
@@ -756,3 +758,6 @@ public class CometRideDatabaseAccess {
     }
 
 }
+
+//    SELECT count(*), DATE( submission_time ) as day, HOUR( submission_time ) as hour FROM ebdb.cabstatus GROUP BY DAY( submission_time ), HOUR( submission_time );
+//    SELECT count(*), SUM( passengers_added ), DATE( submission_time ) as day, HOUR( submission_time ) as hour FROM ebdb.cabstatus GROUP BY DAY( submission_time ), HOUR( submission_time );
