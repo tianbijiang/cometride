@@ -72,7 +72,7 @@ public class CometRideDatabaseAccess {
                 "FROM ebdb.CabSession cabSession JOIN \n" +
                 "\t( SELECT cab_session_id cabId, lat, lng, passenger_count FROM ebdb.CabStatus t1 \n" +
                 "\tJOIN ( SELECT cab_session_id id, MAX( submission_time ) subtime FROM ebdb.CabStatus " +
-                "\tWHERE submission_time BETWEEN DATE_SUB( NOW(), INTERVAL 1 MINUTE ) AND NOW()" +
+                "\tWHERE submission_time BETWEEN DATE_SUB( NOW(), INTERVAL 30 SECOND ) AND NOW()" +
                 "\tGROUP BY cab_session_id ) t2 \n" +
                 "\tON t1.cab_session_id = t2.id AND t1.submission_time = t2.subtime ) cabStatus \n" +
                 "ON cabStatus.cabId =  cabSession.cab_session_id;";
@@ -428,6 +428,10 @@ public class CometRideDatabaseAccess {
 
     public void createRoute( RouteDetails newRoute ) throws ParseException {
 
+        if( newRoute.getNavigationType() == null ) {
+            newRoute.setNavigationType( "DRIVING" );
+        }
+
         List<LatLng> waypoints = newRoute.getWaypoints();
         List<LatLng> safepoints = newRoute.getSafepoints();
 
@@ -645,7 +649,7 @@ public class CometRideDatabaseAccess {
                 "  `name` varchar(45) NOT NULL,\n" +
                 "  `color` varchar(45) NOT NULL,\n" +
                 "  `status` varchar(45) NOT NULL,\n" +
-                "  `navigation_type` varchar(45) NOT NULL,\n" +
+                "  `navigation_type` varchar(45) NOT NULL DEFAULT 'DRIVING',\n" +
                 "  `short_name` varchar(45) NOT NULL,\n" +
                 "  PRIMARY KEY (`route_id`),\n" +
                 "  UNIQUE KEY `route_id_UNIQUE` (`route_id`)\n" +
