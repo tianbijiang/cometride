@@ -29,6 +29,12 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".DriverLogin"
+            android:label="@string/title_activity_driver_login"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
             android:name=".Options"
             android:label="@string/title_activity_options"
             android:configChanges="orientation"
@@ -37,12 +43,6 @@
         <activity
             android:name=".Driver"
             android:label="@string/title_activity_driver"
-            android:configChanges="orientation"
-            android:screenOrientation="portrait">
-        </activity>
-        <activity
-            android:name=".Driver2"
-            android:label="@string/title_activity_driver2"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>

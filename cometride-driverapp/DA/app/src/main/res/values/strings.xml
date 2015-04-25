@@ -17,6 +17,7 @@
     <string name="route4"> University Village Phase 1 to 3</string>
     <string name="route5"> University Village Phase 4 to 7</string>
     <string name="title_activity_driver">Driver</string>
+    <string name="title_activity_driver_login">DriverLogin</string>
     <string name="total_riders_today">Total Riders Today:</string>
     <string name="line">----</string>
     <string name="title_activity_driver2">Driver2</string>

@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
 
             public void run() {
 
-                Intent nextIntent = new Intent(getApplicationContext(), Options.class);
+                Intent nextIntent = new Intent(getApplicationContext(), DriverLogin.class);
                 startActivityForResult(nextIntent, 0);
 
             }
@@ -61,8 +61,4 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void OpenOptions(View view){
-        Intent intent  =new Intent(this, Options.class);
-        startActivity(intent);
-    }
 }

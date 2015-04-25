@@ -2,40 +2,77 @@ package com.UTD.driverapp;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
+
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Options extends Activity  {
-    Button btnPost;
+
     Cab cab;
+    int capacity=9;
+    String routeId;
+    String sessionId;
+    String typeId;
+    JSONArray jAllRoutes = null;
+    List<String> selectedRoutes = new ArrayList<String>();
+    List<String> selectedCabTypes = new ArrayList<String>();
+    ArrayList<Route> allRoutes = new ArrayList<Route>();
+    List<Route> allCabTypes = new ArrayList<Route>();
+    HttpContext context = new BasicHttpContext();
+    CookieStore cookieStore = new BasicCookieStore();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_options);
+        context.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+        Intent intent= getIntent();
+        String name = intent.getExtras().getString("cookie-name");
+        String value=intent.getExtras().getString("cookie-value");
+        String domain=intent.getExtras().getString("cookie-domain");
+        BasicClientCookie cookie = new BasicClientCookie( name, value );
+        cookie.setDomain(domain);
+        cookieStore.addCookie( cookie );
+        Log.d("name",name);
+        Log.d("value",value);
+        Log.v( "cookie-name", cookieStore.getCookies().get( 0 ).getName());
+        Log.v("cookie-value", cookieStore.getCookies().get( 0 ).getValue());
+
+        new GetAllRoutes().execute();
+        new GetCabTypes().execute();
     }
 
 
@@ -63,29 +100,28 @@ public class Options extends Activity  {
 
     public void OpenDriver(View v)
     {
-        final RadioButton seven = (RadioButton) findViewById(R.id.radioButton1);
-        final RadioButton nine = (RadioButton) findViewById(R.id.radioButton2);
+
         Button proceed = (Button) findViewById(R.id.next);
         proceed.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                new HttpPostTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
-                new HttpGetTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
-                if(seven.isChecked()) {
-                    Intent sevenIntent = new Intent(getApplicationContext(), Driver.class);
-                    startActivityForResult(sevenIntent, 0);
-                } else if (nine.isChecked()) {
-                    Intent nineIntent = new Intent(getApplicationContext(), Driver2.class);
-                    startActivityForResult(nineIntent, 0);
-                }else{
-                    Toast.makeText(getApplicationContext(), "Choose a Cab Type", Toast.LENGTH_SHORT).show();
+                Spinner spinner = (Spinner)findViewById(R.id.Spinnercabroute);
+                String text = spinner.getSelectedItem().toString();
+                for (int i = 0; i < allRoutes.size(); i++) {
+                    if(allRoutes.get(i).getName().equals(text))
+                    {
+                        routeId=allRoutes.get(i).getId();
+                    }
+
                 }
+                new HttpPostTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
+
             }
         });
     }
-    public static String POST(String url, Cab cab){
+    public String POST(String url, Cab cab){
 
         InputStream inputStream = null;
         String result = "";
@@ -123,7 +159,9 @@ public class Options extends Activity  {
             httpPost.setHeader("Content-type", "application/json");
 
             // 8. Execute POST request to the given URL
-            HttpResponse httpResponse = httpclient.execute(httpPost);
+            Log.v( "holaa", ( (CookieStore) context.getAttribute(ClientContext.COOKIE_STORE)).getCookies().get( 0 ).getName());
+            Log.v("cookie-value", ( (CookieStore) context.getAttribute(ClientContext.COOKIE_STORE)).getCookies().get( 0 ).getValue());
+            HttpResponse httpResponse = httpclient.execute(httpPost, context);
 
             // 9. receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();
@@ -141,53 +179,17 @@ public class Options extends Activity  {
         // 11. return result
         return result;
     }
-    public static String GET(String url){
-        InputStream inputStream = null;
-        String result = "";
-        try {
 
-            // create HttpClient
-            HttpClient httpclient = new DefaultHttpClient();
-
-            // make GET request to the given URL
-            HttpResponse httpResponse = httpclient.execute(new HttpGet(url));
-
-            // receive response as inputStream
-            inputStream = httpResponse.getEntity().getContent();
-
-            // convert inputstream to string
-            if(inputStream != null)
-                result = convertInputStreamToString(inputStream);
-            else
-                result = "Did not work!";
-
-        } catch (Exception e) {
-            Log.d("InputStream", e.getLocalizedMessage());
-        }
-
-        return result;
-    }
-
-
-    private class HttpGetTask extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... urls) {
-
-            return GET(urls[0]);
-            // onPostExecute displays the results of the AsyncTask.
-        }
-            @Override
-            protected void onPostExecute (String result){
-                Toast.makeText(getBaseContext(), "Received!" + result, Toast.LENGTH_LONG).show();
-            }
-    }
     private class HttpPostTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
             cab = new Cab();
-            cab.setStatus("OnDuty");
-            cab.setmaxCapacity(100);
-            cab.setrouteId("10");
+
+            cab.setStatus("ON-DUTY");
+            cab.setmaxCapacity(capacity);
+            cab.setrouteId(routeId);
+            Log.v("routeId",routeId);
+
 
             return POST(urls[0],cab);
         }
@@ -195,6 +197,18 @@ public class Options extends Activity  {
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
+            sessionId=result;
+
+            Log.v("session",sessionId);
+            Intent intent = new Intent(getApplicationContext(), Driver.class);
+            intent.putExtra("capacity",capacity);
+            intent.putExtra("sessionid", sessionId);
+            intent.putExtra( "cookie-name", cookieStore.getCookies().get( 0 ).getName() );
+            intent.putExtra( "cookie-value", cookieStore.getCookies().get( 0 ).getValue() );
+            intent.putExtra( "cookie-domain", cookieStore.getCookies().get( 0 ).getDomain() );
+            Log.v( "cookie-name", cookieStore.getCookies().get( 0 ).getName());
+            Log.v("cookie-value", cookieStore.getCookies().get( 0 ).getValue());
+            startActivity(intent);
         }
     }
 
@@ -210,5 +224,78 @@ public class Options extends Activity  {
         return result;
 
     }
+    private class GetCabTypes extends AsyncTask<Void, Void, Void> {
 
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            try {
+                jAllRoutes = JsonReader.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/cabtypes");
+                for (int i = 0; i < jAllRoutes.length(); i++) {
+                    Route route = new Route();
+                    JSONObject r = jAllRoutes.getJSONObject(i);
+                    String typeName = r.getString("typeName");
+                    String typeId = r.getString("typeId");
+                    int maximumCapacity = r.getInt("maximumCapacity");
+                    route.setCapacity(maximumCapacity);
+                    route.setName(typeName);
+                    route.setTypeId(typeId);
+                  //  allCabTypes.add(route.getCapacity());
+                    selectedCabTypes.add(route.getTypeName());
+                }
+            } catch (IOException e) {
+                e.getMessage();
+            } catch (JSONException e) {
+                e.getMessage();
+            }
+            for (int n = 0; n < allRoutes.size(); n++) {
+              Log.v("name", allRoutes.get(n).getName());
+             // Log.v("capacity", allRoutes.get(n).getCapacity());
+
+            }
+            return null;
+        }
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            final Spinner sp=(Spinner) findViewById(R.id.Spinnercabtype);
+            ArrayAdapter<String> adp= new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,selectedCabTypes);
+            sp.setAdapter(adp);
+
+        }
+    }
+    private class GetAllRoutes extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            try {
+                jAllRoutes = JsonReader.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/route");
+                for (int i = 0; i < jAllRoutes.length(); i++) {
+                    Route route = new Route();
+                    JSONObject r = jAllRoutes.getJSONObject(i);
+                    String id = r.getString("id");
+                    String name = r.getString("name");
+                    route.setId(id);
+                    route.setName(name);
+                    allRoutes.add(route);
+                    selectedRoutes.add(route.getName());
+                }
+            } catch (IOException e) {
+                e.getMessage();
+            } catch (JSONException e) {
+                e.getMessage();
+            }
+            for (int n = 0; n < allRoutes.size(); n++) {
+                Log.v("id", allRoutes.get(n).getId());
+                Log.v("name", allRoutes.get(n).getName());
+
+            }
+            return null;
+        }
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            final Spinner sp=(Spinner) findViewById(R.id.Spinnercabroute);
+            ArrayAdapter<String> adp= new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,selectedRoutes);
+            sp.setAdapter(adp);
+
+        }
+    }
 }

@@ -41,12 +41,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:entries="@array/cabroutes"
         android:textSize="25sp"
+
         android:spinnerMode="dropdown"
-        android:touchscreenBlocksFocus="true"
-        android:transitionGroup="true"
-        style="@style/Base.Widget.AppCompat.Spinner" />
+        android:theme="@android:style/TextAppearance.DeviceDefault.Widget.TextView.SpinnerItem" />
 
     <Space
         android:layout_width="match_parent"
@@ -60,37 +58,20 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textSize="25sp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="1">
-
-        <RadioGroup
-            android:id="@+id/radioGrp"
-            android:layout_width="fill_parent"
+        <Spinner
+            android:id="@+id/Spinnercabtype"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_gravity="top"
+            android:textSize="25sp"
 
-            <RadioButton
-                android:id="@+id/radioButton1"
-                android:layout_width="wrap_content"
-                android:layout_height="63dp"
-                android:text="@string/seven_seater" />
+            android:spinnerMode="dropdown"
+            />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
 
-            <RadioButton
-                android:id="@+id/radioButton2"
-                android:layout_width="wrap_content"
-                android:layout_height="61dp"
-                android:text="@string/nine_seater" />
-        </RadioGroup>
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="20dp" />
-
-    <Button
+        <Button
         android:id="@+id/next"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
