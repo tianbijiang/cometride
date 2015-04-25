@@ -38,6 +38,8 @@
         <web-resource-collection>
             <web-resource-name>Restrict Admin Pages / API to Admin Role</web-resource-name>
             <url-pattern>/admin.html</url-pattern>
+            <url-pattern>/usrmng.html</url-pattern>
+            <url-pattern>/report.html</url-pattern>
             <url-pattern>/api/admin/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>

@@ -5,14 +5,15 @@
     <title>CometRide Admin Dashboard -- Report</title>
     <link href="css/jquery.dynatable.css" rel="stylesheet">
     
-   <script src="js/jquery-1.7.2.min.js"></script> 
+   <script src="js/jquery.min.js"></script>
    <script src="js/jquery.dynatable.js"></script>
-    <script src='js/report.js'></script>
+   <script src='js/report.js'></script>
  
 </head>
 
+<!--
 <body>
-   <table id="my-final-table">
+<table id="my-final-table">
   <thead>
     <th data-dynatable-column="cabId">Cab Id</th>
     <th data-dynatable-column="location">Location</th>
@@ -36,7 +37,40 @@
   </thead>
   <tbody>
   </tbody>
-</table>   
+</table>
+-->
+<select id="route-list" name="year">
+</select>
+<table id="hourly-riders-table">
+    <thead>
+    <th data-dynatable-column="route">Date</th>
+    <th data-dynatable-column="route">Hour</th>
+    <!--<th data-dynatable-column="route">Weather</th>-->
+    <th data-dynatable-column="route">7 AM</th>
+    <th data-dynatable-column="route">8 AM</th>
+    <th data-dynatable-column="route">9 AM</th>
+    <th data-dynatable-column="route">7-10 Total</th>
+    <th data-dynatable-column="route">10 AM</th>
+    <th data-dynatable-column="route">11 AM</th>
+    <th data-dynatable-column="route">12 PM</th>
+    <th data-dynatable-column="route">10-1 Total</th>
+    <th data-dynatable-column="route">1 PM</th>
+    <th data-dynatable-column="route">2 PM</th>
+    <th data-dynatable-column="route">3 PM</th>
+    <th data-dynatable-column="route">1-4 Total</th>
+    <th data-dynatable-column="route">4 PM</th>
+    <th data-dynatable-column="route">5 PM</th>
+    <th data-dynatable-column="route">6 PM</th>
+    <th data-dynatable-column="route">4-7 Total</th>
+    <th data-dynatable-column="route">7 PM</th>
+    <th data-dynatable-column="route">8 PM</th>
+    <th data-dynatable-column="route">9 PM</th>
+    <th data-dynatable-column="route">7-10 Total</th>
+    <th data-dynatable-column="route">Day Total</th>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
  
 
 

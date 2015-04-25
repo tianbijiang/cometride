@@ -14,6 +14,7 @@ import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import javax.xml.ws.soap.MTOM;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +28,7 @@ public class CometRideServlet {
     @Context
     UriInfo uriInfo;
 
-    private final CometRideController controller;
+    final CometRideController controller;
 
 
     public CometRideServlet() {
@@ -335,8 +336,15 @@ public class CometRideServlet {
 
 
     //
-    //  Admin
+    //  Metrics
     //
+
+    @GET
+    @Produces( MediaType.APPLICATION_JSON )
+    @Path( "/admin/metrics/monthlyriders" )
+    public Response getMothlyRidersReport() {
+        return Response.ok().build();
+    }
 
     // TODO: Auth support
 

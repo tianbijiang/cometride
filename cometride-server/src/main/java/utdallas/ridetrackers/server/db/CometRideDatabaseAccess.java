@@ -242,7 +242,7 @@ public class CometRideDatabaseAccess {
     //
 
     public List<Route> getCurrentRouteDetails() {
-        String queryStatement = "SELECT route_id, name, short_name, color, status FROM ebdb.RouteInfo info JOIN\n" +
+        String queryStatement = "SELECT route_id, name, short_name, color, status, navigation_type FROM ebdb.RouteInfo info JOIN\n" +
                 "\t( ( SELECT route_id id FROM ebdb.RouteTimes WHERE\n" +
                 "\t( start_time < DATE_ADD( NOW(), INTERVAL 10 MINUTE ) AND end_time > NOW() )\n" +
                 "\tOR ( start_time IS NULL AND end_time IS NULL ) ) routeTime JOIN \n" +
@@ -317,6 +317,7 @@ public class CometRideDatabaseAccess {
                 newDetails.setShortName(results.getString("short_name"));
                 newDetails.setColor( results.getString("color") );
                 newDetails.setStatus( results.getString("status") );
+                newDetails.setNavigationType( results.getString("navigation_type") );
                 newDetails.setWaypoints( routeWaypoints );
                 newDetails.setSafepoints( routeSafepoints );
 
@@ -741,13 +742,13 @@ public class CometRideDatabaseAccess {
 
     public void ensureUserTablesExist() {
         String userTableCreate = "CREATE TABLE IF NOT EXISTS `ebdb`.`users` (\n" +
-                "  user_name         varchar(15) not null primary key,\n" +
-                "  user_pass         varchar(15) not null\n" +
+                "  user_name         varchar(30) not null primary key,\n" +
+                "  user_pass         varchar(30) not null\n" +
                 ");";
 
         String rolesTableCreate = "CREATE TABLE IF NOT EXISTS `ebdb`.`user_roles` (\n" +
-                "  `user_name` varchar(15) NOT NULL,\n" +
-                "  `role_name` varchar(15) NOT NULL,\n" +
+                "  `user_name` varchar(30) NOT NULL,\n" +
+                "  `role_name` varchar(30) NOT NULL,\n" +
                 "  PRIMARY KEY (`user_name`,`role_name`),\n" +
                 "  CONSTRAINT `user_name` FOREIGN KEY (`user_name`) " +
                 "  REFERENCES `ebdb`.`users` (`user_name`) ON DELETE CASCADE ON UPDATE NO ACTION\n" +

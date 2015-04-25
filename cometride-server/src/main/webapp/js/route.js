@@ -602,11 +602,13 @@ $(document).ready(function() {
 
                 safePts2.push(route.safepoints);
 
+                var travelMode = route.navigationType === 'WALKING' ? google.maps.TravelMode['WALKING'] : google.maps.TravelMode['DRIVING'];
+
                 dirsRequest.push({
                     origin: startPoint,
                     destination: endPoint,
                     waypoints: wps,
-                    travelMode: google.maps.TravelMode['DRIVING']
+                    travelMode: travelMode
                 });
 
                 displayRoute(i);
