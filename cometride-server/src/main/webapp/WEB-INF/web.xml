@@ -47,7 +47,7 @@
         </web-resource-collection>
 
         <auth-constraint>
-            <role-name>cometride-admin</role-name>
+            <role-name>administrator</role-name>
         </auth-constraint>
 
         <user-data-constraint>
@@ -67,8 +67,8 @@
         </web-resource-collection>
 
         <auth-constraint>
-            <role-name>cometride-admin</role-name>
-            <role-name>cometride-driver</role-name>
+            <role-name>administrator</role-name>
+            <role-name>driver</role-name>
         </auth-constraint>
 
         <user-data-constraint>

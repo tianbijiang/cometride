@@ -75,8 +75,7 @@ public class CometRideDatabaseAccess {
                 "\tWHERE submission_time BETWEEN DATE_SUB( NOW(), INTERVAL 30 SECOND ) AND NOW()" +
                 "\tGROUP BY cab_session_id ) t2 \n" +
                 "\tON t1.cab_session_id = t2.id AND t1.submission_time = t2.subtime ) cabStatus \n" +
-                "ON cabStatus.cabId =  cabSession.cab_session_id;";
-        // TODO: Add the ability to include / exclude inactive cabs
+                "ON cabStatus.cabId =  cabSession.cab_session_id AND duty_status = 'ON-DUTY';";
 
         logger.info( "Running query: " + queryStatement );
         Connection connection = null;
@@ -121,9 +120,6 @@ public class CometRideDatabaseAccess {
                 "\t( SELECT cab_session_id cabId, lat, lng, passenger_count, MAX( submission_time ) submission_time " +
                 "FROM ebdb.CabStatus WHERE cab_session_id = '" + cabId + "' ) cabStatus \n" +
                 "ON cabStatus.cabId =  cabSession.cab_session_id;";
-
-        // TODO: Protect this from injection             ^^^^^
-        // TODO: Add the ability to include / exclude inactive cabs
 
         logger.info( "Running query: " + queryStatement );
         Connection connection = null;
@@ -216,13 +212,8 @@ public class CometRideDatabaseAccess {
     }
 
     public void updateCabSession( CabSession cabSession ) {
-        String deleteStatement = "DELETE FROM CabSession WHERE cab_session_id = '" + cabSession + "';";
-        db.executeUpdate( deleteStatement );
-
-        String insertStatement = "INSERT INTO CabSession (cab_session_id, duty_status, route_id, max_capacity) " +
-                "VALUES (?, ?, ?, ?)";
-        db.executeUpdate( insertStatement, cabSession.getCabSessionId(), cabSession.getDutyStatus(),
-                cabSession.getRouteId(), cabSession.getMaxCapacity() );
+        String insertStatement = "UPDATE `ebdb`.`CabSession` SET `duty_status`=? WHERE `cab_session_id`=?;";
+        db.executeUpdate( insertStatement, cabSession.getDutyStatus(), cabSession.getCabSessionId() );
     }
 
     public void persistTrackingUpdate( TrackingUpdate trackingUpdate) {

@@ -96,7 +96,7 @@ public class DriverEmulatorUV1 {
 
         final WebResource sessionResource = client.resource( "http://cometride.elasticbeanstalk.com/api/driver/session" );
         Map<String, Object> sessionData = new HashMap<String, Object>();
-        sessionData.put( "dutyStatus", "ON_DUTY" );
+        sessionData.put( "dutyStatus", "ON-DUTY" );
         sessionData.put( "maxCapacity", maxPassengers );
         sessionData.put( "routeId", "route-282ea864-5e32-4c0b-b165-8c8432c229de" );
 
