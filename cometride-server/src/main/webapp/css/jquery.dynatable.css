@@ -8,20 +8,6 @@
  *
  * Date: Tue Jan 02 2014
  */
-th a {
-  color: #fff;
-  text-decoration: none;
-}
-th a:hover {
-  color: #fff;
-  text-decoration: none;
-}
-table td {
-   border: 1px solid black;
-}
-th{
-  background-color:#71AF5A;
-}
 .dynatable-search {
   float: right;
   margin-bottom: 10px;
