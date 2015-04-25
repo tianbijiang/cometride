@@ -32,7 +32,7 @@ $(document).ready(function() {
                 cache: false,
                 success: function(data) {
                     //TODO
-                    alert("CREATED");
+//                    alert("CREATED");
                     //window.location.reload(true);
                     clearCabType();
                     getCabType();
@@ -80,7 +80,7 @@ $(document).ready(function() {
             url: API_CABTYPE_ADMIN + "/" + currentDeletingCabId,
             success: function(data) {
                 //TODO
-                alert("DELETED");
+//                alert("DELETED");
                 //window.location.reload(true);
                 clearCabType();
                 getCabType();

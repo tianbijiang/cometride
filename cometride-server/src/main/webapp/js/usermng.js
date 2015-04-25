@@ -17,6 +17,7 @@ $(document).ready(function() {
     newRoles.multiselect({
         numberDisplayed: 1,
         onChange: function(option, checked, select) {
+            selectedRoles = [];
             $('#newRoles :selected').each(function(i, selected) {
                 selectedRoles.push($(selected).val());
             });
@@ -45,7 +46,7 @@ $(document).ready(function() {
                 cache: false,
                 success: function(data) {
                     //TODO
-                    alert("CREATED");
+//                    alert("CREATED");
                     //window.location.reload(true);
                     clearUser();
                     getUser();
@@ -98,7 +99,7 @@ $(document).ready(function() {
             url: API_USER_ADMIN + "/" + currentDeletingUserName,
             success: function(data) {
                 //TODO
-                alert("DELETED");
+//                alert("DELETED");
                 //window.location.reload(true);
                 clearUser();
                 getUser();
