@@ -65,6 +65,9 @@ public class DriverEmulatorRutford {
         locations.add( new LatLng(32.992779, -96.751582) );
         locations.add( new LatLng(32.992752, -96.751839) );
 
+        final PassengerTracker tracker = new PassengerTracker();
+        final int maxPassengers = 8;
+
         System.out.println( "Locations loaded!" );
 
         ApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
@@ -94,7 +97,7 @@ public class DriverEmulatorRutford {
         final WebResource sessionResource = client.resource( "http://cometride.elasticbeanstalk.com/api/driver/session" );
         Map<String, Object> sessionData = new HashMap<String, Object>();
         sessionData.put( "dutyStatus", "ON_DUTY" );
-        sessionData.put( "maxCapacity", 8 );
+        sessionData.put( "maxCapacity", maxPassengers );
         sessionData.put( "routeId", "route-282ea864-5e32-4c0b-b165-8c8432c229de" );
 
         final String sessionId = sessionResource.entity(sessionData).type(MediaType.APPLICATION_JSON).
@@ -116,12 +119,25 @@ public class DriverEmulatorRutford {
                 LatLng location = locations.remove( 0 );
                 locations.add( locations.size() -1, location );
 
+                int passengers = tracker.getPassengers();
+                while( Math.random() < 0.25 && passengers < maxPassengers ) {
+                    passengers++;
+                }
+                if( Math.random() < 0.3 && passengers > 0 ) {
+                    passengers--;
+                }
+                int passengersAdded = passengers - tracker.getPassengers() > 0 ? passengers - tracker.getPassengers() : 0;
+
 
                 update.put("cabSessionId",sessionId2);
                 update.put("lat", location.getLat());
                 update.put("lng", location.getLng());
-                update.put("passengerCount", 4);
-                update.put("passengersAdded", 1);
+                update.put("passengerCount", passengers);
+                update.put("passengersAdded", passengersAdded );
+
+                tracker.setPassengers( passengers );
+
+                System.out.println( "Sending: " + passengers + "," + passengersAdded );
 
                 ClientResponse response = locationResource.entity( update ).type(MediaType.APPLICATION_JSON).
                         post(ClientResponse.class);
@@ -139,5 +155,21 @@ public class DriverEmulatorRutford {
 
         timer.cancel();
         timer.purge();
+    }
+
+    private static class PassengerTracker {
+        private int passengers;
+
+        private PassengerTracker() {
+            passengers = 0;
+        }
+
+        private int getPassengers() {
+            return passengers;
+        }
+
+        private void setPassengers(int passengers) {
+            this.passengers = passengers;
+        }
     }
 }

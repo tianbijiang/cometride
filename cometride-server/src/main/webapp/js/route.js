@@ -60,6 +60,7 @@ $(document).ready(function() {
     var center = new google.maps.LatLng(32.9860365, -96.7518621);
     var points = []; //storing waypoints
     var markers = []; //storing cab markers at the time of loading page
+    var markerMap = {};
     var safePts = []; //storing safe points for sending route
     var locationsAdded = 1;
     var directionsDisplay;
@@ -644,6 +645,7 @@ $(document).ready(function() {
                     title: 'Cab ' + (m + 1),
                     icon: cab_img
                 });
+                markerMap[cab_id] = markers[m];
 
                 displayCab(m);
             }
@@ -668,8 +670,12 @@ $(document).ready(function() {
 
     function updateCab() {
         $.getJSON(API_CAB, function(data) {
-            for (var m = 0; m < numberOfCabs; m++) {
+            for (var m = 0; m < data.length; m++) {
                 var cab = data[m];
+
+                var cab_id = cab.cabId;
+
+                var route_id = cab.routeId;
 
                 var passengerCount = cab.passengerCount;
                 var capacity = cab.maxCapacity;
@@ -680,8 +686,21 @@ $(document).ready(function() {
                 var lat = cab.location.lat;
                 var lng = cab.location.lng;
 
-                markers[m].setPosition(new google.maps.LatLng(lat, lng));
-                markers[m].setIcon(cab_img);
+                if( !( cab_id in markerMap ) ) {
+                    cab_ids.push(route_id);
+                    markers[markers.length] = new google.maps.Marker({
+                        position: new google.maps.LatLng(lat, lng),
+                        map: map,
+                        title: 'Cab ' + (m + 1),
+                        icon: cab_img
+                    });
+                    markerMap[cab_id] = markers[markers.length-1];
+
+                    displayCab(m);
+                } else {
+                    markerMap[cab_id].setPosition(new google.maps.LatLng(lat, lng));
+                    markerMap[cab_id].setIcon(cab_img);
+                }
             }
         });
     }
