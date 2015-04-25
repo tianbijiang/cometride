@@ -16,7 +16,8 @@
     <link rel="stylesheet" href="css/jquery.timepicker.css">
     <!-- custom css -->
     <link href="css/styles.css" rel="stylesheet">
-    <link href="css/popups.css" rel="stylesheet">
+    <link href="css/route.css" rel="stylesheet">
+    <link href="css/popup.css" rel="stylesheet">
     <!-- plugin js -->
     <script src="//code.jquery.com/jquery-1.10.2.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -32,6 +33,9 @@
     <!-- custom js -->
     <script src="js/ui.js"></script>
     <script src="js/route.js"></script>
+    <script src="js/popup.js"></script>
+    <script src='js/usermng.js'></script>
+    <script src='js/cabmng.js'></script>
 </head>
 
 <body>
@@ -302,8 +306,21 @@
                             <span class="btn-exp"> View Statistics</span>
                         </a>
                     </li>
+                    <li id="usermng-btn">
+                        <a href="#" data-toggle="tooltip" data-placement="bottom" title="Manage users">
+                            <i class="fa fa-user"></i>
+                            <span class="btn-exp"> Manage Users</span>
+                        </a>
+                    </li>
+                    <li id="cabmng-btn">
+                        <a href="#" data-toggle="tooltip" data-placement="bottom" title="Manage Cab Types">
+                            <i class="fa fa-taxi"></i>
+                            <span class="btn-exp"> Manage Cab Types</span>
+                        </a>
+                    </li>
                     <li id="showAllRoutes">
-                        Show Inactive Routes<input type="checkbox" id="showAllRoutesCheck">
+                        Show Inactive Routes
+                        <input type="checkbox" id="showAllRoutesCheck">
                     </li>
                 </ul>
             </div>
@@ -314,6 +331,81 @@
     <!-- Map Canvas -->
     <div id="container">
         <div id="map-canvas"></div>
+    </div>
+    <!-- Popup -->
+    <div id="usermng-popup" class="popup panel panel-default">
+        <div class="panel-heading">
+            <h4>Manager Users<a href="#" id="usermng-popup-close-btn" class="pull-right">
+                <i class="fa fa-times"></i>
+            </a></h4>
+        </div>
+        <div class="panel-body">
+            <div class="row col-md-10 col-md-offset-1">
+                <table id="usertable" class="table custab table-striped table-bordered" cellspacing="0">
+                    <thead>
+                        <th>User Name</th>
+                        <th>User Roles</th>
+                        <th class="text-center">Actions</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row col-md-10 col-md-offset-1">
+                <div class="form-group">
+                    <label for="newUserName">User Name: </label>
+                    <input id="newUserName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="newPw">Password: </label>
+                    <input id="newPw" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="newRoles">Roles: </label>
+                    <select id="newRoles" class="form-control" multiple="multiple">
+                        <option value="cometride-admin">cometride-admin</option>
+                        <option value="driver">driver</option>
+                    </select>
+                </div>
+                <a href="#" id="createNewUser" class="btn btn-primary pull-right"><b>+</b> Create New User</a>
+            </div>
+        </div>
+    </div>
+    <div id="cabmng-popup" class="popup panel panel-default">
+        <div class="panel-heading">
+            <h4>Manager Cab Types<a href="#" id="cabmng-popup-close-btn" class="pull-right">
+                <i class="fa fa-times"></i>
+            </a></h4>
+        </div>
+        <div class="panel-body">
+            <div class="row col-md-10 col-md-offset-1">
+                <table id="cabtable" class="table custab table-striped table-bordered" cellspacing="0">
+                    <thead>
+                        <th>Type ID</th>
+                        <th>Type Name</th>
+                        <th>Max Capacity</th>
+                        <th class="text-center">Actions</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row col-md-10 col-md-offset-1">
+                <div class="form-group">
+                    <label for="newTypeId">Type Id: </label>
+                    <input id="newTypeId" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="newTypeName">Type Name: </label>
+                    <input id="newTypeName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="newCapacity">Max Capacity: </label>
+                    <input id="newCapacity" class="form-control" />
+                </div>
+                <a href="#" id="createNewCab" class="btn btn-primary pull-right"><b>+</b> Create Cab Type</a>
+            </div>
+        </div>
     </div>
 </body>
 

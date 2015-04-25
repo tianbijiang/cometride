@@ -16,7 +16,6 @@ android:orientation="horizontal" >
     android:background="#ffffffff"
     android:scaleType="centerInside"
     android:src="@drawable/cometridelogo"
-    android:onClick="OpenOptions"
     android:contentDescription="@string/click_image" />
 
 </LinearLayout>
