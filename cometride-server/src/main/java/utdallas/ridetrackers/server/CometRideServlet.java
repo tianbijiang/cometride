@@ -241,6 +241,7 @@ public class CometRideServlet {
     public Response createCabType( CabType newType ) {
         try {
             logger.info( "Creating cab type: " + newType.getTypeName() );
+            newType.setTypeId( newType.getTypeName().toLowerCase().replaceAll("\\s","") );
             String id = controller.createCabType( newType );
 
             UriBuilder uib = uriInfo.getAbsolutePathBuilder();
