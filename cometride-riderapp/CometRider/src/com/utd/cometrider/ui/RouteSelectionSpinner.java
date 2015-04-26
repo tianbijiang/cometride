@@ -120,6 +120,7 @@ public class RouteSelectionSpinner extends Spinner implements
 		if (listener != null) {
 			// listener.hideSpinner();
 			Log.v("Listener2", listener.toString());
+			listener.hideNavRoute();
 			// Log.v("Listener", listener.toString());
 			StringBuffer spinnerBuffer = new StringBuffer();
 			boolean someUnselected = false;
@@ -164,7 +165,7 @@ public class RouteSelectionSpinner extends Spinner implements
 			if (items.size() != 0) {
 				listener.setRouteVisibleFalse();
 				listener.hideAllSafePoints();
-			
+				
 
 				for (int i = 0; i < items.size(); i++) {
 					if (selected[i] == true) {
@@ -173,7 +174,7 @@ public class RouteSelectionSpinner extends Spinner implements
 						// Toast.LENGTH_SHORT).show();
 						listener.displaySelectedRoute(i);
 						listener.diplaySafePointsPerRoute(i);
-						listener.hideNavRoute();
+						
 
 					}
 				}

@@ -11,6 +11,24 @@ public class Route {
 	private String status;
 	private ArrayList<LatLng> waypoints;
 	private ArrayList<LatLng> safepoints;
+	private String navigationType;
+	private String shortName;
+
+	public String getNavigationType() {
+		return navigationType;
+	}
+
+	public void setNavigationType(String navigationType) {
+		this.navigationType = navigationType;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
 
 	public ArrayList<LatLng> getSafepoints() {
 		return safepoints;

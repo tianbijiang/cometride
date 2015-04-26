@@ -86,12 +86,15 @@ public class DisplayMapActivity extends FragmentActivity implements
 	GoogleMap googleMap;
 	HashMap<Cab, Marker> cabMarkerMap;
 	HashMap<Route, ArrayList<Marker>> safePointsRouteMap;
+	HashMap<String, String> shortNameMap;
+	HashMap<String, Boolean> routeSelectedMap;
 	LocationManager mLocationManager;
-	//LatLng myLocation;
+	// LatLng myLocation;
 	ImageButton navButton;
 	int navFlag = 0;
 	int selectedRoute = 0;
 	GPSLocation myLocation;
+	SupportMapFragment fm;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -105,20 +108,10 @@ public class DisplayMapActivity extends FragmentActivity implements
 			setContentView(R.layout.activity_displaymap);
 
 			// get all cab information from server
-			new GetAllCabInfo().execute();
-
-
-			// Load map
-			SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager()
-					.findFragmentById(R.id.map);
-
-			googleMap = fm.getMap();
-
-			// enable the My Location layer on the Map
-			googleMap.setMyLocationEnabled(true);
-			UiSettings setting = googleMap.getUiSettings();
-			setting.setZoomControlsEnabled(true);
-		//	setting.setMapToolbarEnabled(false);
+		//	new GetAllCabInfo().execute();
+			new GetAllRoutes().execute();
+		
+			// setting.setMapToolbarEnabled(false);
 
 			// route selection drop-down
 			routeSelectionSpinner = new RouteSelectionSpinner(context);
@@ -132,33 +125,33 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 					Toast.makeText(context, "Start Navigation...",
 							Toast.LENGTH_SHORT).show();
-					
-				
-					myLocation = new GPSLocation(context); 
-					
-					if(myLocation.canGetLocation()){
-					
-					navButton.setVisibility(View.INVISIBLE);
-					for (int i = 0; i < navPolyLines.size(); i++) {
-						navPolyLines.get(i).setVisible(false);
-					}
-					if (allRoutes.get(selectedRoute).getSafepoints().size() != 0) {
-						new NavigationTask().execute();
+
+					myLocation = new GPSLocation(context);
+
+					if (myLocation.canGetLocation()) {
+
+						navButton.setVisibility(View.INVISIBLE);
+						for (int i = 0; i < navPolyLines.size(); i++) {
+							navPolyLines.get(i).setVisible(false);
+						}
+						if (allRoutes.get(selectedRoute).getSafepoints().size() != 0) {
+							new NavigationTask().execute();
+						}
+
+					} else {
+
+						myLocation.showSettingsAlert();
+
 					}
 
-				}
-				else{
-					
-					myLocation.showSettingsAlert();
-					
-				}
-					
 				}
 			});
 
 		} else {
 
-			Toast.makeText(this, "Please activate the internet connection and location service",
+			Toast.makeText(
+					this,
+					"Please activate the internet connection and location service",
 					Toast.LENGTH_SHORT).show();
 			// finish();
 
@@ -177,34 +170,47 @@ public class DisplayMapActivity extends FragmentActivity implements
 			return true;
 	}
 
-
-	private void initCabInfo() {
-		if (googleMap != null) {
-
-			cabMarkerMap = new HashMap<Cab, Marker>();
-
-			for (int i = 0; i < allCabs.size(); i++) {
-
-				cabLocationMarkers.add(googleMap
-						.addMarker(new MarkerOptions()
-								.position(allCabs.get(i).getLocation())
-								.title(allCabs.get(i).getRouteId())
-								.snippet(
-										"From "
-												+ allCabs.get(i).getRouteId()
-												+ "\n"
-												+ allCabs.get(i)
-														.getPassengerCount()
-												+ "/"
-												+ allCabs.get(i)
-														.getMaxCapacity())
-								.icon(BitmapDescriptorFactory
-										.fromResource(R.drawable.cab_green))));
-
-				cabMarkerMap.put(allCabs.get(i), cabLocationMarkers.get(i));
-			}
-		}
-	}
+//	private void initCabInfo() {
+//		if (googleMap != null) {
+//
+//			cabMarkerMap = new HashMap<Cab, Marker>();
+//
+//			for (int i = 0; i < allCabs.size(); i++) {
+//				for (int j = 0; j < allRoutes.size(); j++) {
+//					
+//					if(allCabs.get(i).getRouteId().equals(allRoutes.get(j).getId())){
+//					cabLocationMarkers
+//							.add(googleMap
+//									.addMarker(new MarkerOptions()
+//											.position(
+//													allCabs.get(i)
+//															.getLocation())
+//											.title(allRoutes
+//													.get(j)
+//													.getShortName())
+//											.snippet(
+//													"From "
+//															+ allRoutes
+//																	.get(j)
+//																	.getShortName()
+//																	
+//															+ "\n"
+//															+ allCabs
+//																	.get(i)
+//																	.getPassengerCount()
+//															+ "/"
+//															+ allCabs
+//																	.get(i)
+//																	.getMaxCapacity())
+//											.icon(BitmapDescriptorFactory
+//													.fromResource(R.drawable.cab_green))));
+//
+//					cabMarkerMap.put(allCabs.get(i), cabLocationMarkers.get(i));
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	private void displayAllSafePoints() {
 		if (googleMap != null) {
@@ -214,25 +220,26 @@ public class DisplayMapActivity extends FragmentActivity implements
 			for (int i = 0; i < allRoutes.size(); i++) {
 
 				safePoints = new ArrayList<Marker>();
-				
-				if(allRoutes.get(i).getSafepoints().size()>0){
-				for (int j = 0; j < allRoutes.get(i).getSafepoints().size(); j++) {
-					safePoints.add(googleMap.addMarker(new MarkerOptions()
-							.position(allRoutes.get(i).getSafepoints().get(j))
-							.title("Safe Waiting Point for "
-									+ allRoutes.get(i).getName())
-							.icon(BitmapDescriptorFactory
-									.fromResource(R.drawable.safe))));
-					
-				
-				}
-				
-				
-				safePointsRouteMap.put(allRoutes.get(i), safePoints);
+
+				if (allRoutes.get(i).getSafepoints().size() > 0) {
+					for (int j = 0; j < allRoutes.get(i).getSafepoints().size(); j++) {
+						safePoints
+								.add(googleMap.addMarker(new MarkerOptions()
+										.position(
+												allRoutes.get(i)
+														.getSafepoints().get(j))
+										.title("Safe Waiting Point for "
+												+ allRoutes.get(i)
+														.getShortName())
+										.icon(BitmapDescriptorFactory
+												.fromResource(R.drawable.safe))));
+
+					}
+
+					safePointsRouteMap.put(allRoutes.get(i), safePoints);
 				}
 			}
-			
-			
+
 		}
 	}
 
@@ -240,14 +247,13 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 		@Override
 		protected Void doInBackground(Void... params) {
-              
-		
-			
-			if(myLocation.getLocation()!=null){
-		//	myLocation = new LatLng(loc.getLatitude(), loc.getLongitude());
-	
-			// LatLng nearestSaftPoint = new LatLng(0, 0);
-			
+
+			if (myLocation.getLocation() != null) {
+				// myLocation = new LatLng(loc.getLatitude(),
+				// loc.getLongitude());
+
+				// LatLng nearestSaftPoint = new LatLng(0, 0);
+
 				ArrayList<LatLng> safePointsPerRoute = new ArrayList<LatLng>();
 				ArrayList<Double> distances = new ArrayList<Double>();
 
@@ -267,87 +273,26 @@ public class DisplayMapActivity extends FragmentActivity implements
 					}
 
 					int minIndex = distances
-						.indexOf(Collections.min(distances));
+							.indexOf(Collections.min(distances));
 
-					String url = getMapsApiDirectionsUrl(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()),
-						safePointsPerRoute.get(minIndex));
+					String url = getMapsApiDirectionsUrl(
+							new LatLng(myLocation.getLatitude(),
+									myLocation.getLongitude()),
+							safePointsPerRoute.get(minIndex));
 					// Log.v("safe",
 					// safePointsPerRoute.get(minIndex).toString());
 
 					ReadGoogleMapAPIURL readURL = new ReadGoogleMapAPIURL();
 
 					readURL.execute(url);
-			
-			}
-			}
-			else{
-				
-				//Toast.makeText(getApplicationContext(), "Location service is off",
-					//	Toast.LENGTH_SHORT).show();
-				
-			}
-			
-			return null;
-		}
-
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-
-		}
-
-	}
-
-	private class GetAllCabInfo extends AsyncTask<Void, Void, Void> {
-
-		@Override
-		protected Void doInBackground(Void... params) {
-
-			try {
-
-				jAllCabs = JsonReader
-						.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/cab");
-				for (int i = 0; i < jAllCabs.length(); i++) {
-					Cab cab = new Cab();
-					JSONObject c = jAllCabs.getJSONObject(i);
-					String routeId = c.getString("routeId");
-					int maxCapacity = c.getInt("maxCapacity");
-					int passengerCount = c.getInt("passengerCount");
-					String status = c.getString("status");
-					cab.setRouteId(routeId);
-					cab.setMaxCapacity(maxCapacity);
-					cab.setPassengerCount(passengerCount);
-					cab.setStatus(status);
-
-					// JSONObject l = c.getJSONObject("location");
-					// ArrayList<LatLng> locations = new ArrayList<LatLng>();
-
-					JSONObject position = c.getJSONObject("location");
-
-					double lat = Double.parseDouble(position.getString("lat"));
-					double lng = Double.parseDouble(position.getString("lng"));
-
-					LatLng p = new LatLng(lat, lng);
-
-					// locations.add(p);
-
-					cab.setLocation(p);
-					allCabs.add(cab);
 
 				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} else {
 
-			for (int n = 0; n < allCabs.size(); n++) {
-				Log.v("Cab Locations", allCabs.get(n).getLocation().toString());
-				// Log.v("color", allRoutes.get(n).getColor());
+				// Toast.makeText(getApplicationContext(),
+				// "Location service is off",
+				// Toast.LENGTH_SHORT).show();
 
-				// Log.v("WP", allRoutes.get(n).getWaypoints().toString());
-				// Log.v("color", allRoutes.get(n).getColor().toString())
 			}
 
 			return null;
@@ -356,11 +301,77 @@ public class DisplayMapActivity extends FragmentActivity implements
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 
-			new GetAllRoutes().execute();
-
 		}
 
 	}
+
+//	private class GetAllCabInfo extends AsyncTask<Void, Void, Void> {
+//
+//		@Override
+//		protected Void doInBackground(Void... params) {
+//
+//			try {
+//
+//				jAllCabs = JsonReader
+//						.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/cab");
+//				for (int i = 0; i < jAllCabs.length(); i++) {
+//					Cab cab = new Cab();
+//					JSONObject c = jAllCabs.getJSONObject(i);
+//					String routeId = c.getString("routeId");
+//					int maxCapacity = c.getInt("maxCapacity");
+//					int passengerCount = c.getInt("passengerCount");
+//					String status = c.getString("status");
+//					cab.setRouteId(routeId);
+//					cab.setMaxCapacity(maxCapacity);
+//					cab.setPassengerCount(passengerCount);
+//					cab.setStatus(status);
+//
+//					// JSONObject l = c.getJSONObject("location");
+//					// ArrayList<LatLng> locations = new ArrayList<LatLng>();
+//
+//					JSONObject position = c.getJSONObject("location");
+//
+//					double lat = Double.parseDouble(position.getString("lat"));
+//					double lng = Double.parseDouble(position.getString("lng"));
+//
+//					LatLng p = new LatLng(lat, lng);
+//
+//					// locations.add(p);
+//
+//					cab.setLocation(p);
+//					allCabs.add(cab);
+//
+//				}
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (JSONException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//			for (int n = 0; n < allCabs.size(); n++) {
+//				Log.v("Cab Locations", allCabs.get(n).getLocation().toString());
+//				// Log.v("color", allRoutes.get(n).getColor());
+//
+//				// Log.v("WP", allRoutes.get(n).getWaypoints().toString());
+//				// Log.v("color", allRoutes.get(n).getColor().toString())
+//			}
+//
+//			return null;
+//		}
+//
+//		protected void onPostExecute(Void result) {
+//			super.onPostExecute(result);
+//
+//		
+//			
+//			
+//		
+//
+//		}
+//
+//	}
 
 	private class GetAllRoutes extends AsyncTask<Void, Void, Void> {
 
@@ -370,15 +381,27 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 				jAllRoutes = JsonReader
 						.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/route");
+				shortNameMap=new HashMap<String, String>();
+				routeSelectedMap= new HashMap<String, Boolean>();
+				
 				for (int i = 0; i < jAllRoutes.length(); i++) {
 					Route route = new Route();
 					JSONObject r = jAllRoutes.getJSONObject(i);
 					String id = r.getString("id");
 					String color = r.getString("color");
 					String name = r.getString("name");
+					String sName = r.getString("shortName");
+					String navType = r.getString("navigationType");
 					route.setId(id);
 					route.setColor(color);
 					route.setName(name);
+					route.setShortName(sName);
+					route.setNavigationType(navType);
+					
+					
+					shortNameMap.put(id, sName);
+					routeSelectedMap.put(id, true);
+					
 					JSONArray wp = r.getJSONArray("waypoints");
 					JSONArray safe = r.getJSONArray("safepoints");
 					ArrayList<LatLng> waypoints = new ArrayList<LatLng>();
@@ -417,8 +440,8 @@ public class DisplayMapActivity extends FragmentActivity implements
 					route.setWaypoints(waypoints);
 
 					route.setSafepoints(safepoints);
-					
-					if (waypoints.size()!= 0) {
+
+					if (waypoints.size() != 0) {
 						allRoutes.add(route);
 						selectedRoutes.add(route.getName());
 					}
@@ -430,49 +453,69 @@ public class DisplayMapActivity extends FragmentActivity implements
 				e.getMessage();
 			}
 
-			for (int n = 0; n < allRoutes.size(); n++) {
-			//	Log.v("id", allRoutes.get(n).getId());
-				//Log.v("color", allRoutes.get(n).getColor());
-				//Log.v("WP", allRoutes.get(n).getWaypoints().toString());
-			//	Log.v("SP", allRoutes.get(n).getSafepoints().toString());
-			}
-		//	Log.v("all route size", Integer.toString(allRoutes.size()));
+		//	for (int n = 0; n < allRoutes.size(); n++) {
+				// Log.v("id", allRoutes.get(n).getId());
+				// Log.v("color", allRoutes.get(n).getColor());
+				// Log.v("WP", allRoutes.get(n).getWaypoints().toString());
+				// Log.v("SP", allRoutes.get(n).getSafepoints().toString());
+			//}
+			// Log.v("all route size", Integer.toString(allRoutes.size()));
 			return null;
 		}
 
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 
+			// Load map
+			fm = (SupportMapFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.map);
+
+			googleMap = fm.getMap();
+
+			// enable the My Location layer on the Map
+			googleMap.setMyLocationEnabled(true);
 			
-			if(allCabs.size()>0&&allCabs!=null){
-			initCabInfo();
-			//googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-					//allCabs.get(0).getLocation(), 16));
+		    UiSettings setting = googleMap.getUiSettings();
+			setting.setZoomControlsEnabled(true);
+			setting.setMapToolbarEnabled(false);
 			
-			LatLng UTLatLng= new LatLng(32.984563,-96.745930);
-			googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-					UTLatLng, 16));	
-			UpdateCabInfo.update(allCabs, cabMarkerMap);
-			}else{
-				
-			LatLng UTLatLng= new LatLng(32.984563,-96.745930);
+			
+			
+			
+		//	if (allCabs.size() > 0 && allCabs != null) {
+				//initCabInfo();
+				// googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+				// allCabs.get(0).getLocation(), 16));
+
+				LatLng UTLatLng = new LatLng(32.984563, -96.745930);
 				googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-						UTLatLng, 16));	
+						UTLatLng, 16));
+			
 				
-			}
+				UpdateCabInfo updater= new UpdateCabInfo();
+				
+				updater.update(shortNameMap,routeSelectedMap,fm);
+				
+			//	allCabs= updater.getAllCabs();
+			
+			
+		//	} else {
+
+				//LatLng UTLatLng = new LatLng(32.984563, -96.745930);
+				//googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+						//UTLatLng, 16));
+
+		//	}
+
 			
 			
 			displayAllSafePoints();
 			hideAllSafePoints();
-			
-			
-		
 
-			//Log.v("allCabs", allCabs.toString());
-			//Log.v("cabMarkerMap", cabMarkerMap.toString());
+			// Log.v("allCabs", allCabs.toString());
+			// Log.v("cabMarkerMap", cabMarkerMap.toString());
 
 			// if (myLocation!=null){
-		
 
 			// }
 
@@ -499,12 +542,15 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 	}
 
-	// Google Map Direction API
+	// Google Map Direction API for Drawing Routes
 	private String getMapsApiDirectionsUrl(int routeId) {
 		String waypoints = "";
 		String url = "";
+		String navType="";
 		navFlag = 0;
+		
 		if (allRoutes.get(routeId).getWaypoints().size() > 0) {
+			
 			waypoints = "&waypoints=optimize:true";
 
 			for (int i = 1; i < allRoutes.get(routeId).getWaypoints().size() - 1; i++) {
@@ -515,7 +561,17 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 			}
 
+			navType=allRoutes.get(routeId).getNavigationType();
+			if(navType.equals("WALKING")){	
+				navType="walking";
+			}else{
+				
+				navType="driving";
+			}
+			
+			Log.v("navType", navType);
 			String sensor = "sensor=false";
+			String mode = "mode="+ navType;
 			String origin = "origin="
 					+ allRoutes.get(routeId).getWaypoints().get(0).latitude
 					+ ","
@@ -524,7 +580,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 					+ allRoutes.get(routeId).getWaypoints().get(0).latitude
 					+ ","
 					+ allRoutes.get(routeId).getWaypoints().get(0).longitude;
-			String params = waypoints + "&" + sensor;
+			String params = waypoints + "&" + sensor +"&" + mode ;
 			String output = "json";
 			url += "https://maps.googleapis.com/maps/api/directions/" + output
 					+ "?" + origin + "&" + destination + params;
@@ -540,7 +596,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 		}
 
 	}
-
+    //For Navigation only
 	private String getMapsApiDirectionsUrl(LatLng startPoint, LatLng endPoint) {
 
 		navFlag = 1;
@@ -640,7 +696,8 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 				if (navFlag == 0) {
 
-					polyLineOptions.color(Color.parseColor(allRoutes.get(numberOfRoutes).getColor()));
+					polyLineOptions.color(Color.parseColor(allRoutes.get(
+							numberOfRoutes).getColor()));
 				} else {
 
 					polyLineOptions.color(Color.parseColor("#000000"));
@@ -670,43 +727,50 @@ public class DisplayMapActivity extends FragmentActivity implements
 	@Override
 	public void displaySelectedRoute(int id) {
 
-		googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-				allRoutes.get(id).getWaypoints().get(0), 16));	
-		
+		googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(allRoutes
+				.get(id).getWaypoints().get(0), 16));
+
 		selectedRoute = id;
-		
-		if(routePolyLines!=null &&routePolyLines.size()>0 ){
-		routePolyLines.get(id).setVisible(true);
+
+		if (routePolyLines != null && routePolyLines.size() > 0) {
+			routePolyLines.get(id).setVisible(true);
+			
+			
 		}
-        
-		if(allCabs.size()>0){
+
+		routeSelectedMap.put(allRoutes.get(id).getId(), true );
 		
-		for (int i = 0; i < allCabs.size(); i++) {
-			// cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+//		if (allCabs.size() > 0) {
+//
+//			for (int i = 0; i < allCabs.size(); i++) {
+//				// cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+//
+//				if (allRoutes.get(id).getId()
+//						.equals(allCabs.get(i).getRouteId())) {
+//
+//					Log.v("routeId", allRoutes.get(id).getId());
+//					Log.v("cabrouteId", allCabs.get(i).getRouteId());
+//
+//					cabMarkerMap.get(allCabs.get(i)).setVisible(true);
+//
+//					// cabLocationMarkers.get(i).setVisible(true);
+//
+//				}
+//			}
+//		}
 
-			if (allRoutes.get(id).getId().equals(allCabs.get(i).getRouteId())) {
+	}
 
-				Log.v("routeId", allRoutes.get(id).getId());
-				Log.v("cabrouteId", allCabs.get(i).getRouteId());
+	public void hideNavRoute() {
 
-				cabMarkerMap.get(allCabs.get(i)).setVisible(true);
-
-				// cabLocationMarkers.get(i).setVisible(true);
-
+		if (navPolyLines.size() > 0 && navPolyLines != null) {
+			
+			for(int i=0;i<navPolyLines.size();i++){
+			navPolyLines.get(i).setVisible(false);
 			}
 		}
-		}
-
 	}
 
-	
-	public void hideNavRoute(){
-		
-		if(navPolyLines.size()>0&&navPolyLines!=null){
-		navPolyLines.get(0).setVisible(false);
-		}
-	}
-	
 	public void hideNavButton() {
 		navButton.setVisibility(View.INVISIBLE);
 
@@ -717,97 +781,96 @@ public class DisplayMapActivity extends FragmentActivity implements
 		navButton.setVisibility(View.VISIBLE);
 
 	}
-	
-	
-//	public void hideSpinner() {
-//		
-//      routeSelectionSpinner.setVisibility(View.INVISIBLE);
-//
-//	}
-//
-//	public void displaySpinner() {
-//
-//	 routeSelectionSpinner.setVisibility(View.VISIBLE);
-//
-//	}
-	
-	
+
+	// public void hideSpinner() {
+	//
+	// routeSelectionSpinner.setVisibility(View.INVISIBLE);
+	//
+	// }
+	//
+	// public void displaySpinner() {
+	//
+	// routeSelectionSpinner.setVisibility(View.VISIBLE);
+	//
+	// }
+
 	public void hideAllSafePoints() {
 		// TODO Auto-generated method stub
 		for (int i = 0; i < allRoutes.size(); i++) {
-			
-			if(allRoutes.get(i).getSafepoints().size()>0 && allRoutes.get(i).getSafepoints()!=null){
-			for (int j=0; j<allRoutes.get(i).getSafepoints().size();j++)
-			{
-			
-			 safePointsRouteMap.get(allRoutes.get(i)).get(j).setVisible(false);
-			
-			}
+
+			if (allRoutes.get(i).getSafepoints().size() > 0
+					&& allRoutes.get(i).getSafepoints() != null) {
+				for (int j = 0; j < allRoutes.get(i).getSafepoints().size(); j++) {
+
+					safePointsRouteMap.get(allRoutes.get(i)).get(j)
+							.setVisible(false);
+
+				}
 			}
 		}
 
 	}
-	
-	public void diplaySafePointsPerRoute(int id){
-		
-		if(allRoutes!=null && allRoutes.size()>0){
-		
-		for (int i=0; i<allRoutes.get(id).getSafepoints().size();i++ )
-		{
-		 safePointsRouteMap.get(allRoutes.get(id)).get(i).setVisible(true);
-		
+
+	public void diplaySafePointsPerRoute(int id) {
+
+		if (allRoutes != null && allRoutes.size() > 0) {
+
+			for (int i = 0; i < allRoutes.get(id).getSafepoints().size(); i++) {
+				safePointsRouteMap.get(allRoutes.get(id)).get(i)
+						.setVisible(true);
+
+			}
 		}
-		}
-		
+
 	}
-	
-	
-	
+
 	public void setRouteVisibleFalse() {
 		// TODO Auto-generated method stub
-		
-		if (routePolyLines!=null && routePolyLines.size()>0){
-		for (int i = 0; i < numberOfRoutes; i++) {
-			routePolyLines.get(i).setVisible(false);
+
+		if (routePolyLines != null && routePolyLines.size() > 0) {
+			for (int i = 0; i < numberOfRoutes; i++) {
+				routePolyLines.get(i).setVisible(false);
+				routeSelectedMap.put(allRoutes.get(i).getId(), false );
+
+			}
 
 		}
-		
-		}
-		//Log.i("route number", Integer.toString(numberOfRoutes));
+		// Log.i("route number", Integer.toString(numberOfRoutes));
 
-		if (allCabs!=null && allCabs.size()>0){
-		
-		for (int j = 0; j < allCabs.size(); j++) {
-
-			cabLocationMarkers.get(j).setVisible(false);
-		}
-		}
+//		if (allCabs != null && allCabs.size() > 0) {
+//
+//			for (int j = 0; j < allCabs.size(); j++) {
+//
+//				cabLocationMarkers.get(j).setVisible(false);
+//				
+//			}
+//		}
 	}
 
-//	public static double CalculationByDistance(LatLng StartP, LatLng EndP) {
-//		int Radius = 6371;// radius of earth in Km
-//		double lat1 = StartP.latitude;
-//		double lat2 = EndP.latitude;
-//		double lon1 = StartP.longitude;
-//		double lon2 = EndP.longitude;
-//		double dLat = Math.toRadians(lat2 - lat1);
-//		double dLon = Math.toRadians(lon2 - lon1);
-//		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-//				+ Math.cos(Math.toRadians(lat1))
-//				* Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-//				* Math.sin(dLon / 2);
-//		double c = 2 * Math.asin(Math.sqrt(a));
-//		double valueResult = Radius * c;
-//		double km = valueResult / 1000;
-//		DecimalFormat newFormat = new DecimalFormat("####");
-//		int kmInDec = Integer.valueOf(newFormat.format(km));
-//		double meter = valueResult % 1000;
-//		int meterInDec = Integer.valueOf(newFormat.format(meter));
-//		Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
-//				+ " Meter   " + meterInDec);
-//
-//		return valueResult;
-//	}
+	// public static double CalculationByDistance(LatLng StartP, LatLng EndP) {
+	// int Radius = 6371;// radius of earth in Km
+	// double lat1 = StartP.latitude;
+	// double lat2 = EndP.latitude;
+	// double lon1 = StartP.longitude;
+	// double lon2 = EndP.longitude;
+	// double dLat = Math.toRadians(lat2 - lat1);
+	// double dLon = Math.toRadians(lon2 - lon1);
+	// double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+	// + Math.cos(Math.toRadians(lat1))
+	// * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+	// * Math.sin(dLon / 2);
+	// double c = 2 * Math.asin(Math.sqrt(a));
+	// double valueResult = Radius * c;
+	// double km = valueResult / 1000;
+	// DecimalFormat newFormat = new DecimalFormat("####");
+	// int kmInDec = Integer.valueOf(newFormat.format(km));
+	// double meter = valueResult % 1000;
+	// int meterInDec = Integer.valueOf(newFormat.format(meter));
+	// Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
+	// + " Meter   " + meterInDec);
+	//
+	// return valueResult;
+	// }
 
 	public String getDistance(double lat1, double lon1, double lat2, double lon2) {
 		String result_in_kms = "";
