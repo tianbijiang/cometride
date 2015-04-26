@@ -152,11 +152,11 @@ $(document).ready(function() {
 
     finishBtnCreate.click(function() {
         sendCreatedRoute();
-        refreshTrigger = true;
+//        refreshTrigger = true;
     });
     finishBtnEdit.click(function() {
         sendEditedRoute();
-        refreshTrigger = true;
+//        refreshTrigger = true;
     });
 
     closeBtns.click(function() {
@@ -178,7 +178,10 @@ $(document).ready(function() {
 
     deleteRouteBtn.click(function() {
         deleteEditingRoute();
-        refreshTrigger = true;
+//        refreshTrigger = true;
+        clearRouteList();
+        getRouteList();
+        getRoute();
     });
 
     showInactiveCheck.click(function() {
@@ -619,12 +622,18 @@ $(document).ready(function() {
 
                 var travelMode = route.navigationType === 'WALKING' ? google.maps.TravelMode['WALKING'] : google.maps.TravelMode['DRIVING'];
 
-                dirsRequest.push({
+//                dirsRequest.push({
+//                    origin: startPoint,
+//                    destination: endPoint,
+//                    waypoints: wps,
+//                    travelMode: travelMode
+//                });
+                dirsRequest[i] = {
                     origin: startPoint,
                     destination: endPoint,
                     waypoints: wps,
                     travelMode: travelMode
-                });
+                };
 
                 displayRoute(i);
             }

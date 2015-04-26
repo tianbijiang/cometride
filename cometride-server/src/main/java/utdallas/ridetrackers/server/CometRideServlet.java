@@ -10,11 +10,11 @@ import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
+import utdallas.ridetrackers.server.datatypes.reports.TransDeptDailyRiders;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import javax.xml.ws.soap.MTOM;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -344,10 +344,19 @@ public class CometRideServlet {
     @Produces( MediaType.APPLICATION_JSON )
     @Path( "/admin/metrics/monthlyriders" )
     public Response getMothlyRidersReport() {
-        return Response.ok().build();
+
+        List<TransDeptDailyRiders> ridersMetrics = controller.getMontlyRidersMetrics();
+
+        return Response.ok().entity(ridersMetrics).build();
     }
 
-    // TODO: Auth support
+    @GET
+    @Produces( MediaType.APPLICATION_JSON )
+    @Path( "/admin/metrics/monthlyriders/{routeId}" )
+    public Response getMothlyRidersReport( @PathParam( "routeId" ) String routeId ) {
 
+        List<TransDeptDailyRiders> ridersMetrics = controller.getMontlyRidersMetrics( routeId );
 
+        return Response.ok().entity(ridersMetrics).build();
+    }
 }

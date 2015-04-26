@@ -70,8 +70,8 @@ public class DriverEmulatorLibrary {
 
         final WebResource loginResource = client.resource( "http://cometride.elasticbeanstalk.com/j_security_check" );
         Form form = new Form();
-        form.putSingle("j_username", "testUser");
-        form.putSingle("j_password", "testUser");
+        form.putSingle("j_username", "demoDriver");
+        form.putSingle("j_password", "demo");
         try {
             loginResource.type("application/x-www-form-urlencoded").post(form);
         } catch ( UniformInterfaceException e ) {
@@ -88,7 +88,7 @@ public class DriverEmulatorLibrary {
         Map<String, Object> sessionData = new HashMap<String, Object>();
         sessionData.put( "dutyStatus", "ON-DUTY" );
         sessionData.put( "maxCapacity", maxPassengers );
-        sessionData.put( "routeId", "route-32ff5550-daee-444c-bf12-650f42106da6" );
+        sessionData.put( "routeId", "route-5cd00d84-b64f-4763-8e11-3c91bbc75f64" );
 
         final String sessionId = sessionResource.entity(sessionData).type(MediaType.APPLICATION_JSON).
                 post(String.class);

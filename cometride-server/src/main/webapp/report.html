@@ -10,96 +10,72 @@
    <script src='js/report.js'></script>
  
 </head>
-
-<!--
 <body>
-<table id="my-final-table">
-  <thead>
-    <th data-dynatable-column="cabId">Cab Id</th>
-    <th data-dynatable-column="location">Location</th>
-    <th data-dynatable-column="maxCapacity">max Capacity</th>
-    <th data-dynatable-column="passengerCount">passenger Count</th>
-    <th data-dynatable-column="routeId">Route Id</th>
-    <th data-dynatable-column="status">Status</th>
-
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-
-<table id="my-route">
-  <thead>
-    <th data-dynatable-column="routeId">Route Id</th>
-    <th data-dynatable-column="color">Color</th>
-    <th data-dynatable-column="status">Status</th>
-    
-
-  </thead>
-  <tbody>
-  </tbody>
-</table>
--->
-<select id="route-list" name="year">
+<!--
+<select id="route-list" name="route selection">
 </select>
-<table id="hourly-riders-table">
+<table id="route-hourly-riders-table">
     <thead>
-    <th data-dynatable-column="route">Date</th>
-    <th data-dynatable-column="route">Hour</th>
-    <!--<th data-dynatable-column="route">Weather</th>-->
-    <th data-dynatable-column="route">7 AM</th>
-    <th data-dynatable-column="route">8 AM</th>
-    <th data-dynatable-column="route">9 AM</th>
-    <th data-dynatable-column="route">7-10 Total</th>
-    <th data-dynatable-column="route">10 AM</th>
-    <th data-dynatable-column="route">11 AM</th>
-    <th data-dynatable-column="route">12 PM</th>
-    <th data-dynatable-column="route">10-1 Total</th>
-    <th data-dynatable-column="route">1 PM</th>
-    <th data-dynatable-column="route">2 PM</th>
-    <th data-dynatable-column="route">3 PM</th>
-    <th data-dynatable-column="route">1-4 Total</th>
-    <th data-dynatable-column="route">4 PM</th>
-    <th data-dynatable-column="route">5 PM</th>
-    <th data-dynatable-column="route">6 PM</th>
-    <th data-dynatable-column="route">4-7 Total</th>
-    <th data-dynatable-column="route">7 PM</th>
-    <th data-dynatable-column="route">8 PM</th>
-    <th data-dynatable-column="route">9 PM</th>
-    <th data-dynatable-column="route">7-10 Total</th>
-    <th data-dynatable-column="route">Day Total</th>
+    <th data-dynatable-column="date">Date</th>
+    <th data-dynatable-column="seven">7 AM</th>
+    <th data-dynatable-column="eight">8 AM</th>
+    <th data-dynatable-column="nine">9 AM</th>
+    <th data-dynatable-column="sevenToNineTotal">7-10 Total</th>
+    <th data-dynatable-column="ten">10 AM</th>
+    <th data-dynatable-column="eleven">11 AM</th>
+    <th data-dynatable-column="twelve">12 PM</th>
+    <th data-dynatable-column="tenToTwelveTotal">10-1 Total</th>
+    <th data-dynatable-column="thirteen">1 PM</th>
+    <th data-dynatable-column="fourteen">2 PM</th>
+    <th data-dynatable-column="fifteen">3 PM</th>
+    <th data-dynatable-column="thirteenToFifteenTotal">1-4 Total</th>
+    <th data-dynatable-column="sixteen">4 PM</th>
+    <th data-dynatable-column="seventeen">5 PM</th>
+    <th data-dynatable-column="eighteen">6 PM</th>
+    <th data-dynatable-column="sixteenToEighteenTotal">4-7 Total</th>
+    <th data-dynatable-column="nineteen">7 PM</th>
+    <th data-dynatable-column="twenty">8 PM</th>
+    <th data-dynatable-column="twentyOne">9 PM</th>
+    <th data-dynatable-column="nineteenToTwentyOneTotal">7-10 Total</th>
+    <th data-dynatable-column="total">Day Total</th>
     </thead>
     <tbody>
     </tbody>
 </table>
- 
+-->
 
+<h3>Hourly Riders for All Routes</h3>
+<table id="all-hourly-riders-table">
+    <thead>
+    <th data-dynatable-column="date">Date</th>
+    <!--<th data-dynatable-column="route">Hour</th>-->
+    <!--<th data-dynatable-column="route">Weather</th>-->
+    <th data-dynatable-column="seven">7 AM</th>
+    <th data-dynatable-column="eight">8 AM</th>
+    <th data-dynatable-column="nine">9 AM</th>
+    <th data-dynatable-column="sevenToNineTotal">7-10 Total</th>
+    <th data-dynatable-column="ten">10 AM</th>
+    <th data-dynatable-column="eleven">11 AM</th>
+    <th data-dynatable-column="twelve">12 PM</th>
+    <th data-dynatable-column="tenToTwelveTotal">10-1 Total</th>
+    <th data-dynatable-column="thirteen">1 PM</th>
+    <th data-dynatable-column="fourteen">2 PM</th>
+    <th data-dynatable-column="fifteen">3 PM</th>
+    <th data-dynatable-column="thirteenToFifteenTotal">1-4 Total</th>
+    <th data-dynatable-column="sixteen">4 PM</th>
+    <th data-dynatable-column="seventeen">5 PM</th>
+    <th data-dynatable-column="eighteen">6 PM</th>
+    <th data-dynatable-column="sixteenToEighteenTotal">4-7 Total</th>
+    <th data-dynatable-column="nineteen">7 PM</th>
+    <th data-dynatable-column="twenty">8 PM</th>
+    <th data-dynatable-column="twentyOne">9 PM</th>
+    <th data-dynatable-column="nineteenToTwentyOneTotal">7-10 Total</th>
+    <th data-dynatable-column="total">Day Total</th>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
 
- 
-    <!-- <div id="light" class="white_content container">
-        <div class="card card-container">
-        <div id="close-login">
-            <i class="fa fa-cross"></i>
-        </div>
-            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
-            <p id="profile-name" class="profile-name-card"></p>
-            <form class="form-signin">
-                <span id="reauth-email" class="reauth-email"></span>
-                <input type="email" id="inputUsername" name="inputUsername" class="form-control" placeholder="Email address" required autofocus>
-                <input type="password" id="inputPassword" name="inputPassword" class="form-control" placeholder="Password" required>
-                <div id="remember" class="checkbox">
-                    <label>
-                        <input type="checkbox" value="remember-me"> Remember me
-                    </label>
-                </div>
-                <button id="actual-login"class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
-            </form>
-            <a href="#" class="forgot-password">
-                Forgot the password?
-            </a>
-            <div id="error"></div>
-        </div>
-    </div>
-    <div id="fade" class="black_overlay"></div> -->
 </body>
 
 </html>

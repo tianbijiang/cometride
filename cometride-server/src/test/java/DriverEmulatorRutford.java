@@ -80,8 +80,8 @@ public class DriverEmulatorRutford {
 
         final WebResource loginResource = client.resource( "http://cometride.elasticbeanstalk.com/j_security_check" );
         com.sun.jersey.api.representation.Form form = new Form();
-        form.putSingle("j_username", "testUser");
-        form.putSingle("j_password", "testUser");
+        form.putSingle("j_username", "demoDriver");
+        form.putSingle("j_password", "demo");
         try {
             loginResource.type("application/x-www-form-urlencoded").post(form);
         } catch ( UniformInterfaceException e ) {
@@ -98,7 +98,7 @@ public class DriverEmulatorRutford {
         Map<String, Object> sessionData = new HashMap<String, Object>();
         sessionData.put( "dutyStatus", "ON-DUTY" );
         sessionData.put( "maxCapacity", maxPassengers );
-        sessionData.put( "routeId", "route-282ea864-5e32-4c0b-b165-8c8432c229de" );
+        sessionData.put( "routeId", "route-516ce153-34f2-4a1c-ba67-22ee332ef265" );
 
         final String sessionId = sessionResource.entity(sessionData).type(MediaType.APPLICATION_JSON).
                 post(String.class);

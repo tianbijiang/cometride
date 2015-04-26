@@ -4,16 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utdallas.ridetrackers.server.datatypes.CabStatus;
 import utdallas.ridetrackers.server.datatypes.CabType;
-import utdallas.ridetrackers.server.datatypes.LatLng;
 import utdallas.ridetrackers.server.datatypes.Route;
 import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
+import utdallas.ridetrackers.server.datatypes.reports.TransDeptDailyRiders;
 import utdallas.ridetrackers.server.datatypes.rider.InterestedUpdate;
 import utdallas.ridetrackers.server.db.CometRideDatabaseAccess;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -271,5 +270,36 @@ public class CometRideController {
             logger.error( "Failed to delete user in DB:\n" + e.getMessage() );
             // TODO: Throw error with condensed message
         }
+    }
+
+
+    //
+    // Metrics
+    //
+
+    public List<TransDeptDailyRiders> getMontlyRidersMetrics() {
+        List<TransDeptDailyRiders> ridersMetrics = new ArrayList<TransDeptDailyRiders>();
+
+        try {
+            ridersMetrics.addAll( db.getMonthlyRidersMetrics() );
+        } catch (Exception e) {
+            logger.error( "Failed to retrieve metrics from DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return ridersMetrics;
+    }
+
+    public List<TransDeptDailyRiders> getMontlyRidersMetrics( String routeId ) {
+        List<TransDeptDailyRiders> ridersMetrics = new ArrayList<TransDeptDailyRiders>();
+
+        try {
+            ridersMetrics.addAll( db.getMonthlyRidersMetrics() );
+        } catch (Exception e) {
+            logger.error( "Failed to retrieve metrics from DB:\n" + e.getMessage() );
+            // TODO: Throw error with condensed message
+        }
+
+        return ridersMetrics;
     }
 }

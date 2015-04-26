@@ -7,13 +7,16 @@ import utdallas.ridetrackers.server.datatypes.admin.RouteDetails;
 import utdallas.ridetrackers.server.datatypes.admin.UserData;
 import utdallas.ridetrackers.server.datatypes.driver.CabSession;
 import utdallas.ridetrackers.server.datatypes.driver.TrackingUpdate;
+import utdallas.ridetrackers.server.datatypes.reports.TransDeptDailyRiders;
 
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -439,16 +442,22 @@ public class CometRideDatabaseAccess {
 
         for( int i=0; i < safepoints.size(); i++ ) {
             LatLng safepoint = safepoints.get(i);
-            String wayPointStatement = "\n" +
+            String safePointStatement = "\n" +
                     "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
-            db.executeUpdate(wayPointStatement, newRoute.getId(), safepoint.getLat(), safepoint.getLng(), i);
+            db.executeUpdate(safePointStatement, newRoute.getId(), safepoint.getLat(), safepoint.getLng(), i);
         }
 
         java.sql.Date startSqlDate = null;
         java.sql.Date endSqlDate = null;
         if( newRoute.getStartDate() != null && newRoute.getEndDate() != null ) {
-            startSqlDate = new java.sql.Date(newRoute.getStartDate().getTime());
-            endSqlDate = new java.sql.Date(newRoute.getEndDate().getTime());
+            try {
+                startSqlDate = new java.sql.Date(newRoute.getStartDate().getTime());
+                endSqlDate = new java.sql.Date(newRoute.getEndDate().getTime());
+            } catch ( Exception e ) {
+                logger.error( "Failed to parse new date!" );
+                startSqlDate = null;
+                endSqlDate = null;
+            }
         }
         String dateCreationStatement = "INSERT INTO ebdb.RouteDates ( route_id, start_date, end_date ) " +
                 "VALUES ( ?, ?, ? );";
@@ -505,9 +514,9 @@ public class CometRideDatabaseAccess {
 
         for( int i=0; i < safepoints.size(); i++ ) {
             LatLng safepoint = safepoints.get(i);
-            String wayPointStatement = "\n" +
+            String safePointStatement = "\n" +
                     "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
-            db.executeUpdate(wayPointStatement, routeDetails.getId(), safepoint.getLat(), safepoint.getLng(), i);
+            db.executeUpdate(safePointStatement, routeDetails.getId(), safepoint.getLat(), safepoint.getLng(), i);
         }
 
         java.sql.Date startSqlDate = null;
@@ -756,7 +765,175 @@ public class CometRideDatabaseAccess {
         db.executeStatement( rolesTableCreate );
     }
 
-}
 
-//    SELECT count(*), DATE( submission_time ) as day, HOUR( submission_time ) as hour FROM ebdb.cabstatus GROUP BY DAY( submission_time ), HOUR( submission_time );
-//    SELECT count(*), SUM( passengers_added ), DATE( submission_time ) as day, HOUR( submission_time ) as hour FROM ebdb.cabstatus GROUP BY DAY( submission_time ), HOUR( submission_time );
+    public List<TransDeptDailyRiders> getMonthlyRidersMetrics() {
+        List<TransDeptDailyRiders> metricsList = new ArrayList<TransDeptDailyRiders>();
+        String queryString = "SELECT SUM( passengers_added ) as passengers, " +
+                "DATE( submission_time ) as day, " +
+                "HOUR( submission_time ) as hour FROM ebdb.CabStatus GROUP BY DAY( submission_time ), " +
+                "HOUR( submission_time );";
+
+        logger.info( "Running query: " + queryString );
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection( jdbcUrl );
+            Statement setupStatement = connection.createStatement();
+            ResultSet results = setupStatement.executeQuery( queryString );
+            logger.debug( "Results found: " + results.toString() );
+            results.first();
+
+            // TODO: Make data
+            String currentDate = "";
+            Map<Integer, Integer> dateValueMap = new HashMap<Integer, Integer>();
+            int index = 0;
+            while( results.next() ) {
+                if( !results.getString( "day" ).equals( currentDate ) ) {
+                    logger.debug( "New day found: " + results.getString( "day" ) );
+
+                    if( metricsList.size() > 0 ) {
+                        metricsList.get(index).setDate(currentDate);
+                        metricsList.get(index).setSeven(dateValueMap.get(7) == null ? 0 : dateValueMap.get(7));
+                        metricsList.get(index).setEight(dateValueMap.get(8) == null ? 0 : dateValueMap.get(8));
+                        metricsList.get(index).setNine(dateValueMap.get(9) == null ? 0 : dateValueMap.get(9));
+                        metricsList.get(index).setTen(dateValueMap.get(10) == null ? 0 : dateValueMap.get(10));
+                        metricsList.get(index).setEleven(dateValueMap.get(11) == null ? 0 : dateValueMap.get(11));
+                        metricsList.get(index).setTwelve(dateValueMap.get(12) == null ? 0 : dateValueMap.get(12));
+                        metricsList.get(index).setThirteen(dateValueMap.get(13) == null ? 0 : dateValueMap.get(13));
+                        metricsList.get(index).setFourteen(dateValueMap.get(14) == null ? 0 : dateValueMap.get(14));
+                        metricsList.get(index).setFifteen(dateValueMap.get(15) == null ? 0 : dateValueMap.get(15));
+                        metricsList.get(index).setSixteen(dateValueMap.get(16) == null ? 0 : dateValueMap.get(16));
+                        metricsList.get(index).setSeventeen(dateValueMap.get(17) == null ? 0 : dateValueMap.get(17));
+                        metricsList.get(index).setEighteen(dateValueMap.get(18) == null ? 0 : dateValueMap.get(18));
+                        metricsList.get(index).setNineteen(dateValueMap.get(19) == null ? 0 : dateValueMap.get(19));
+                        metricsList.get(index).setTwenty(dateValueMap.get(20) == null ? 0 : dateValueMap.get(20));
+                        metricsList.get(index).setTwentyOne(dateValueMap.get(21) == null ? 0 : dateValueMap.get(21));
+                    }
+
+                    currentDate = results.getString( "day" );
+                    dateValueMap.clear();
+                    metricsList.add( new TransDeptDailyRiders() );
+                    index = metricsList.size() - 1;
+                }
+
+                dateValueMap.put( results.getInt("hour"), results.getInt( "passengers" ) );
+            }
+
+            metricsList.get( index ).setDate(currentDate);
+            metricsList.get( index ).setSeven(dateValueMap.get( 7 ) == null ? 0 : dateValueMap.get( 7 ));
+            metricsList.get( index ).setEight(dateValueMap.get( 8 ) == null ? 0 : dateValueMap.get( 8 ));
+            metricsList.get( index ).setNine(dateValueMap.get( 9 ) == null ? 0 : dateValueMap.get( 9 ));
+            metricsList.get( index ).setTen(dateValueMap.get( 10 ) == null ? 0 : dateValueMap.get( 10 ));
+            metricsList.get( index ).setEleven(dateValueMap.get( 11 ) == null ? 0 : dateValueMap.get( 11 ));
+            metricsList.get( index ).setTwelve(dateValueMap.get( 12 ) == null ? 0 : dateValueMap.get( 12 ));
+            metricsList.get( index ).setThirteen(dateValueMap.get( 13 ) == null ? 0 : dateValueMap.get( 13 ));
+            metricsList.get( index ).setFourteen(dateValueMap.get( 14 ) == null ? 0 : dateValueMap.get( 14 ));
+            metricsList.get( index ).setFifteen(dateValueMap.get( 15 ) == null ? 0 : dateValueMap.get( 15 ));
+            metricsList.get( index ).setSixteen(dateValueMap.get( 16 ) == null ? 0 : dateValueMap.get( 16 ));
+            metricsList.get( index ).setSeventeen(dateValueMap.get( 17 ) == null ? 0 : dateValueMap.get( 17  ) );
+            metricsList.get( index ).setEighteen(dateValueMap.get( 18 ) == null ? 0 : dateValueMap.get( 18  ) );
+            metricsList.get( index ).setNineteen(dateValueMap.get( 19 ) == null ? 0 : dateValueMap.get( 19 ) );
+            metricsList.get( index ).setTwenty(dateValueMap.get( 20 ) == null ? 0 : dateValueMap.get( 20 ) );
+            metricsList.get( index ).setTwentyOne(dateValueMap.get( 21  ) == null ? 0 : dateValueMap.get( 21 ) );
+
+            setupStatement.close();
+        } catch (SQLException ex) {
+            logger.error("SQLException: " + ex.getMessage());
+            logger.error("SQLState: " + ex.getSQLState());
+            logger.error("VendorError: " + ex.getErrorCode());
+        } finally {
+            System.out.println("Closing the connection.");
+            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+        }
+
+        return metricsList;
+    }
+
+    public List<TransDeptDailyRiders> getMonthlyRidersMetrics( String routeId ) {
+        List<TransDeptDailyRiders> metricsList = new ArrayList<TransDeptDailyRiders>();
+        String queryString = "SELECT SUM( passengers_added ) as passengers, DATE( submission_time ) as day, " +
+                "HOUR( submission_time ) as hour FROM \n" +
+                "\tebdb.CabStatus statusData JOIN \n" +
+                "    ( SELECT route_id, cab_session_id as cabId FROM ebdb.CabSession " +
+                "WHERE route_id = '" + routeId + "' ) sessionData\n" +
+                "    ON sessionData.cabId = statusData.cab_session_id\n" +
+                "    GROUP BY DAY( submission_time ), HOUR( submission_time );";
+
+        logger.info( "Running query: " + queryString );
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection( jdbcUrl );
+            Statement setupStatement = connection.createStatement();
+            ResultSet results = setupStatement.executeQuery( queryString );
+            logger.debug( "Results found: " + results.toString() );
+            results.first();
+
+            // TODO: Make data
+            String currentDate = "";
+            Map<Integer, Integer> dateValueMap = new HashMap<Integer, Integer>();
+            metricsList.add( new TransDeptDailyRiders() );
+            int index = 0;
+            while( results.next() ) {
+                if( !results.getString( "day" ).equals( currentDate ) ) {
+                    logger.debug( "New day found: " + results.getString( "day" ) );
+
+                    if( metricsList.size() > 0 ) {
+                        metricsList.get(index).setDate(currentDate);
+                        metricsList.get(index).setSeven(dateValueMap.get(7) == null ? 0 : dateValueMap.get(7));
+                        metricsList.get(index).setEight(dateValueMap.get(8) == null ? 0 : dateValueMap.get(8));
+                        metricsList.get(index).setNine(dateValueMap.get(9) == null ? 0 : dateValueMap.get(9));
+                        metricsList.get(index).setTen(dateValueMap.get(10) == null ? 0 : dateValueMap.get(10));
+                        metricsList.get(index).setEleven(dateValueMap.get(11) == null ? 0 : dateValueMap.get(11));
+                        metricsList.get(index).setTwelve(dateValueMap.get(12) == null ? 0 : dateValueMap.get(12));
+                        metricsList.get(index).setThirteen(dateValueMap.get(13) == null ? 0 : dateValueMap.get(13));
+                        metricsList.get(index).setFourteen(dateValueMap.get(14) == null ? 0 : dateValueMap.get(14));
+                        metricsList.get(index).setFifteen(dateValueMap.get(15) == null ? 0 : dateValueMap.get(15));
+                        metricsList.get(index).setSixteen(dateValueMap.get(16) == null ? 0 : dateValueMap.get(16));
+                        metricsList.get(index).setSeventeen(dateValueMap.get(17) == null ? 0 : dateValueMap.get(17));
+                        metricsList.get(index).setEighteen(dateValueMap.get(18) == null ? 0 : dateValueMap.get(18));
+                        metricsList.get(index).setNineteen(dateValueMap.get(19) == null ? 0 : dateValueMap.get(19));
+                        metricsList.get(index).setTwenty(dateValueMap.get(20) == null ? 0 : dateValueMap.get(20));
+                        metricsList.get(index).setTwentyOne(dateValueMap.get(21) == null ? 0 : dateValueMap.get(21));
+                    }
+
+                    currentDate = results.getString( "day" );
+                    dateValueMap.clear();
+                    metricsList.add( new TransDeptDailyRiders() );
+                    index = metricsList.size() - 1;
+                }
+
+                dateValueMap.put( results.getInt("hour"), results.getInt( "passengers" ) );
+            }
+
+            metricsList.get( index ).setDate(currentDate);
+            metricsList.get( index ).setSeven(dateValueMap.get( 7 ) == null ? 0 : dateValueMap.get( 7 ));
+            metricsList.get( index ).setEight(dateValueMap.get( 8 ) == null ? 0 : dateValueMap.get( 8 ));
+            metricsList.get( index ).setNine(dateValueMap.get( 9 ) == null ? 0 : dateValueMap.get( 9 ));
+            metricsList.get( index ).setTen(dateValueMap.get( 10 ) == null ? 0 : dateValueMap.get( 10 ));
+            metricsList.get( index ).setEleven(dateValueMap.get( 11 ) == null ? 0 : dateValueMap.get( 11 ));
+            metricsList.get( index ).setTwelve(dateValueMap.get( 12 ) == null ? 0 : dateValueMap.get( 12 ));
+            metricsList.get( index ).setThirteen(dateValueMap.get( 13 ) == null ? 0 : dateValueMap.get( 13 ));
+            metricsList.get( index ).setFourteen(dateValueMap.get( 14 ) == null ? 0 : dateValueMap.get( 14 ));
+            metricsList.get( index ).setFifteen(dateValueMap.get( 15 ) == null ? 0 : dateValueMap.get( 15 ));
+            metricsList.get( index ).setSixteen(dateValueMap.get( 16 ) == null ? 0 : dateValueMap.get( 16 ));
+            metricsList.get( index ).setSeventeen(dateValueMap.get( 17 ) == null ? 0 : dateValueMap.get( 17  ) );
+            metricsList.get( index ).setEighteen(dateValueMap.get( 18 ) == null ? 0 : dateValueMap.get( 18  ) );
+            metricsList.get( index ).setNineteen(dateValueMap.get( 19 ) == null ? 0 : dateValueMap.get( 19 ) );
+            metricsList.get( index ).setTwenty(dateValueMap.get( 20 ) == null ? 0 : dateValueMap.get( 20 ) );
+            metricsList.get( index ).setTwentyOne(dateValueMap.get( 21  ) == null ? 0 : dateValueMap.get( 21 ) );
+
+            setupStatement.close();
+        } catch (SQLException ex) {
+            logger.error("SQLException: " + ex.getMessage());
+            logger.error("SQLState: " + ex.getSQLState());
+            logger.error("VendorError: " + ex.getErrorCode());
+        } finally {
+            System.out.println("Closing the connection.");
+            if (connection != null) try { connection.close(); } catch (SQLException ignore) {}
+        }
+
+        return metricsList;
+    }
+
+}
