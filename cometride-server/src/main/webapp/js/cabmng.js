@@ -62,6 +62,8 @@ $(document).ready(function() {
     function clearCabType() {
         var rows = $("#cabtable tbody tr");
         rows.remove();
+        newTypeName.val("");
+        newCapacity.val("");
     }
 
     function enableAfterGetCabType() {

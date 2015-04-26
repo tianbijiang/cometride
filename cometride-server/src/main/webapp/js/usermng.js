@@ -83,6 +83,9 @@ $(document).ready(function() {
     function clearUser() {
         var rows = $("#usertable tbody tr");
         rows.remove();
+        newUserName.val("");
+        newPw.val("");
+        //newRoles.val
     }
 
     function enableAfterGet() {
