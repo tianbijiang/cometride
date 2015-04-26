@@ -79,6 +79,8 @@ $(document).ready(function() {
     var safePtsDisplay = []; //safe points for displaying route
     var shortNames = [];
     var infoWindows = [];
+    var obj = [];
+    var obj2 = [];
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -581,6 +583,8 @@ $(document).ready(function() {
 
                 var id = route.id;
                 ids.push(id);
+                //00
+                obj[id] = [];
 
                 var name = route.name;
                 var shortName = route.shortName;
@@ -633,6 +637,12 @@ $(document).ready(function() {
 
                 var route_id = cab.routeId;
                 cab_ids.push(route_id);
+                //00
+                for (var key in obj) {
+                    if (key == route_id) {
+                        obj[id].push(cab_id);
+                    }
+                }
 
                 var passengerCount = cab.passengerCount;
                 var capacity = cab.maxCapacity;
@@ -650,6 +660,9 @@ $(document).ready(function() {
                     icon: cab_img
                 });
                 markerMap[cab_id] = markers[m];
+
+                obj2[cab_id] = [];
+                obj2[cab_id].push(m);
 
                 displayCab(m);
             }
@@ -776,11 +789,21 @@ $(document).ready(function() {
         });
     }
 
-    function displayCab(m) {
-        if (m < numberOfCabs) {
-            //console.log("cab" + m);
-            markers[m].setMap(map);
+    function displayCab(i) {
+        var routeId = ids[i];
+        var cabIdArray = obj[routeId];
+        for (var p = 0; p < cabIdArray.length; p++) {
+            for (var key in obj2) {
+                if (key == cabIdArray[p]) {
+                    markers[obj2[key]].setMap(map);
+                }
+            }
         }
+
+        // if (i < numberOfCabs) {
+        //     //console.log("cab" + m);
+        //     markers[i].setMap(map);
+        // }
     }
 
     function displaySafePoint(i) {
@@ -793,7 +816,7 @@ $(document).ready(function() {
                 title: 'Safe Point',
                 icon: SAFE_IMG
             });
-            safePtsDisplay[i][k].setMap(map);
+            //safePtsDisplay[i][k].setMap(map);
         }
     }
 
@@ -802,7 +825,6 @@ $(document).ready(function() {
             dirsDisplay[i].setMap(null);
         }
         for (var m = 0; m < numberOfCabs; m++) {
-            //console.log(markers[m]);
             markers[m].setMap(null);
         }
         if (safePtsDisplay.length > 0) {
