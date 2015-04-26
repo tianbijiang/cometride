@@ -1,10 +1,5 @@
 //todo
 //tags over routes/cabs/safepoints
-//fix safe points misplace bug
-//create cabtypes
-//manage users
-//increase point limit
-//login.html prettify
 //report.html prettify
 
 $(document).ready(function() {
@@ -23,7 +18,6 @@ $(document).ready(function() {
     var selectRouteList = $("#navHeaderCollapse #navs #selectRoute #selectRouteList");
     var editRouteList = $("#navHeaderCollapse #navs #editRoute #editRouteList");
     var showInactiveCheck = $("#navHeaderCollapse #navs #showAllRoutes #showAllRoutesCheck");
-    var routeListPlaceholder = $(".noroute");
     var colorBtns = $('.create #color, .edit #color');
     var colorBtnCreate = $('.create #color');
     var colorBtnEdit = $('.edit #color');
@@ -35,6 +29,7 @@ $(document).ready(function() {
     var finishBtnCreate = $(".create #btn-save");
     var finishBtnEdit = $(".edit #btn-save");
     var closeBtns = $(".create #hide-sb, .edit #hide-sb");
+    var deleteRouteBtn = $("#btn-delete-route");
 
     var roundTripBoxCreate = $(".create #roundTrip");
     var tempFlagCreate = $(".create #temporary-flag");
@@ -82,6 +77,8 @@ $(document).ready(function() {
     var routeObjects = [];
     var safePts2 = []; //safe points for getting route
     var safePtsDisplay = []; //safe points for displaying route
+    var shortNames = [];
+    var infoWindows = [];
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -168,18 +165,28 @@ $(document).ready(function() {
         if (refreshTrigger == true) {
             window.location.reload(true);
         } else {
-            if (selectedRoutesTemp.length == 0) {
-                getRoute();
-            } else {
-                showSelectedRoutes(selectedRoutesTemp);
-            }
+            clearRouteList();
+            getRouteList();
+            getRoute();
         }
     });
 
-    showInactiveCheck.click(function() {
-        getRoute();
-        getRouteList();
+    deleteRouteBtn.click(function() {
+        deleteEditingRoute();
+        refreshTrigger = true;
     });
+
+    showInactiveCheck.click(function() {
+        clearRouteList();
+        getRouteList();
+        getRoute();
+    });
+
+    function clearRouteList() {
+        selectRouteList.find('option').remove();
+        editRouteList.find('li').remove();
+        $('#selectRouteList').multiselect('destroy');
+    }
 
     function initialize() {
         var mapOptions = {
@@ -196,14 +203,13 @@ $(document).ready(function() {
     }
 
     function getRouteList() {
-        var getUrl = showInactiveCheck.is( ':checked' ) === true ? API_ROUTE_ADMIN : API_ROUTE_GET;
-        $.getJSON(getUrl, function(data) {
+        var getUrl1 = showInactiveCheck.is(':checked') === true ? API_ROUTE_ADMIN : API_ROUTE_GET;
+        $.getJSON(getUrl1, function(data) {
             if (data.length == 0) {
                 selectRouteList.append($("<option></option>")
                     .text("No Route Available"));
-                routeListPlaceholder.show();
+                editRouteList.append("<li class='edit-btn noroute'><a href='#'>No Route Available</a></li>");
             } else {
-                routeListPlaceholder.hide();
                 for (var i = 0; i < data.length; i++) {
                     var route = data[i];
                     var name = route.name;
@@ -351,12 +357,7 @@ $(document).ready(function() {
                 cache: false,
                 success: function(data) {
                     //TODO
-                    alert(dataString);
-                    if (data) {
-                        //alert(data);
-                    } else {
-                        alert("Server error. Please try saving again.");
-                    }
+                    //alert(dataString);
                 },
                 error: function(xhr, textStatus, error) {
                     console.log(xhr.statusText);
@@ -375,7 +376,7 @@ $(document).ready(function() {
             url: API_ROUTE_ADMIN + "/" + currentEditId,
             success: function(data) {
                 //TODO
-                alert("DELETED!");
+                //alert("DELETED!");
             }
         });
         return false;
@@ -384,7 +385,6 @@ $(document).ready(function() {
     function sendEditedRoute() {
         var dataString = collectEditFormData();
         if (formValidation()) {
-            //deleteEditingRoute();
             $.ajax({
                 contentType: 'application/json',
                 type: "PUT",
@@ -394,7 +394,7 @@ $(document).ready(function() {
                 cache: false,
                 success: function(data) {
                     //TODO
-                    alert("EDITED!");
+                    //alert("EDITED!");
                 },
                 error: function(xhr, textStatus, error) {
                     console.log(xhr.statusText);
@@ -569,9 +569,11 @@ $(document).ready(function() {
     }
 
     function getRoute() {
+        ids = [];
+        safePts2 = [];
         hideRoute();
-        var getUrl = showInactiveCheck.is( ':checked' ) === true ? API_ROUTE_ADMIN : API_ROUTE_GET;
-        $.getJSON(getUrl, function(data) {
+        var getUrl2 = showInactiveCheck.is(':checked') === true ? API_ROUTE_ADMIN : API_ROUTE_GET;
+        $.getJSON(getUrl2, function(data) {
             routeObjects = data;
             datalength = data.length;
             for (var i = 0; i < datalength; i++) {
@@ -581,6 +583,8 @@ $(document).ready(function() {
                 ids.push(id);
 
                 var name = route.name;
+                var shortName = route.shortName;
+                shortNames.push(shortName);
 
                 var color = route.color;
                 colors.push(color);
@@ -670,12 +674,15 @@ $(document).ready(function() {
 
     function updateCab() {
         $.getJSON(API_CAB, function(data) {
+            numberOfCabs = data.length;
             for (var m = 0; m < data.length; m++) {
                 var cab = data[m];
 
                 var cab_id = cab.cabId;
 
                 var route_id = cab.routeId;
+
+                var cabShortName;
 
                 var passengerCount = cab.passengerCount;
                 var capacity = cab.maxCapacity;
@@ -686,7 +693,21 @@ $(document).ready(function() {
                 var lat = cab.location.lat;
                 var lng = cab.location.lng;
 
-                if( !( cab_id in markerMap ) ) {
+                for (var a = 0; a < datalength; a++) {
+                    if (ids[a] == route_id) {
+                        cabShortName = shortNames[a];
+                    }
+                }
+                var contentString = "<h4 class='cabShortName text-center'>" + cabShortName +
+                    "</h4><p class='cabPassengerCount text-center'>" + passengerCount + " / " + capacity + "</p>";
+
+                var infoWindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
+
+                infoWindows.push(infoWindow);
+
+                if (!(cab_id in markerMap)) {
                     cab_ids.push(route_id);
                     markers[markers.length] = new google.maps.Marker({
                         position: new google.maps.LatLng(lat, lng),
@@ -694,13 +715,20 @@ $(document).ready(function() {
                         title: 'Cab ' + (m + 1),
                         icon: cab_img
                     });
-                    markerMap[cab_id] = markers[markers.length-1];
+                    markerMap[cab_id] = markers[markers.length - 1];
 
                     displayCab(m);
                 } else {
                     markerMap[cab_id].setPosition(new google.maps.LatLng(lat, lng));
                     markerMap[cab_id].setIcon(cab_img);
                 }
+
+                google.maps.event.addListener(markerMap[cab_id], 'mouseover', function() {
+                    infoWindows[m].open(map, this);
+                });
+                google.maps.event.addListener(markerMap[cab_id], 'mouseout', function() {
+                    infowindow[m].close();
+                });
             }
         });
     }
@@ -756,16 +784,16 @@ $(document).ready(function() {
     }
 
     function displaySafePoint(i) {
-        var pts = safePts2[i];
-        safePtsDisplay[i] = pts;
-        for (var k = 0; k < pts.length; k++) {
-            console.log("display " + pts[k].lat + " " + pts[k].lng);
+        safePtsDisplay[i] = [];
+        for (var k = 0; k < safePts2[i].length; k++) {
+            console.log("display " + safePts2[i][k].lat + " " + safePts2[i][k].lng);
             safePtsDisplay[i][k] = new google.maps.Marker({
-                position: new google.maps.LatLng(pts[k].lat, pts[k].lng),
+                position: new google.maps.LatLng(safePts2[i][k].lat, safePts2[i][k].lng),
                 map: map,
                 title: 'Safe Point',
                 icon: SAFE_IMG
             });
+            safePtsDisplay[i][k].setMap(map);
         }
     }
 

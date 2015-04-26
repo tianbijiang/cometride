@@ -252,6 +252,7 @@
             <button id="btn-reverse-points" class="btn btn-panel half-block">Reverse</button>
             <button id="btn-draw-points" class="btn btn-panel half-block">Draw Safepoints</button>
             <button id="btn-save" class="btn btn-panel half-block">Finish</button>
+            <button id="btn-delete-route" class="btn btn-panel btn-block">Delete This Route</button>
             <button id="hide-sb" class="btn btn-panel btn-block">Close</button>
         </div>
     </div>
@@ -297,7 +298,6 @@
                             <span class="btn-exp"> Edit a route</span> <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu" id="editRouteList">
-                            <li class="edit-btn noroute"><a href="#">No Route Available</a></li>
                         </ul>
                     </li>
                     <li id="stats-btn">
@@ -319,8 +319,9 @@
                         </a>
                     </li>
                     <li id="showAllRoutes">
-                        Show Inactive Routes
+                        <a href="#">Inactive Routes
                         <input type="checkbox" id="showAllRoutesCheck">
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -328,6 +329,11 @@
         </div>
         <!-- /.container-fluid -->
     </nav>
+    <!-- Messages -->
+    <!-- <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <strong>Warning!</strong> Better check yourself, you're not looking too good.
+    </div> -->
     <!-- Map Canvas -->
     <div id="container">
         <div id="map-canvas"></div>
