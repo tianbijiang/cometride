@@ -382,6 +382,7 @@ $(document).ready(function() {
             url: API_ROUTE_ADMIN + "/" + currentEditId,
             success: function(data) {
                 //TODO
+                deleteSuccessAlert();
                 //alert("DELETED!");
             }
         });
@@ -400,6 +401,7 @@ $(document).ready(function() {
                 cache: false,
                 success: function(data) {
                     //TODO
+                    editSuccessAlert();
                     //alert("EDITED!");
                 },
                 error: function(xhr, textStatus, error) {
@@ -740,12 +742,12 @@ $(document).ready(function() {
                     markerMap[cab_id].setIcon(cab_img);
                 }
 
-                google.maps.event.addListener(markerMap[cab_id], 'mouseover', function() {
+                google.maps.event.addListener(markerMap[cab_id], 'click', function() {
                     infoWindows[m].open(map, this);
                 });
-                google.maps.event.addListener(markerMap[cab_id], 'mouseout', function() {
-                    infowindow[m].close();
-                });
+                // google.maps.event.addListener(markerMap[cab_id], 'mouseout', function() {
+                //     infowindow[m].close();
+                // });
             }
         });
     }
@@ -910,6 +912,20 @@ $(document).ready(function() {
         $("#createSuccess").show();
         setTimeout(function() {
             $("#createSuccess").hide();
+        }, ALERT_TIMEOUT);
+    }
+
+    function deleteSuccessAlert() {
+        $("#deleteSuccess").show();
+        setTimeout(function() {
+            $("#deleteSuccess").hide();
+        }, ALERT_TIMEOUT);
+    }
+
+    function editSuccessAlert() {
+        $("#editSuccess").show();
+        setTimeout(function() {
+            $("#editSuccess").hide();
         }, ALERT_TIMEOUT);
     }
 });
