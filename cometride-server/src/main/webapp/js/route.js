@@ -82,6 +82,7 @@ $(document).ready(function() {
     var infoWindows = [];
     var obj = [];
     var obj2 = [];
+    var contentStrings = [];
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -717,11 +718,13 @@ $(document).ready(function() {
                         cabShortName = shortNames[a];
                     }
                 }
-                var contentString = "<h4 class='cabShortName text-center'>" + cabShortName +
-                    "</h4><p class='cabPassengerCount text-center'>" + passengerCount + " / " + capacity + "</p>";
+                var contentString = "<h5 class='cabShortName text-center'>" + cabShortName +
+                    "</h5><p class='cabPassengerCount text-center'>" + passengerCount + " / " + capacity + "</p>";
+
+                contentStrings.push(contentString);
 
                 var infoWindow = new google.maps.InfoWindow({
-                    content: contentString
+                    content: contentStrings[m]
                 });
 
                 infoWindows.push(infoWindow);
@@ -801,6 +804,7 @@ $(document).ready(function() {
         for (var p = 0; p < cabIdArray.length; p++) {
             for (var key in obj2) {
                 if (key == cabIdArray[p]) {
+                    console.log(obj2[key]);
                     markers[obj2[key]].setMap(map);
                 }
             }
