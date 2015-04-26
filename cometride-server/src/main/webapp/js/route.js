@@ -12,6 +12,7 @@ $(document).ready(function() {
     var ORANGE_CAB_IMG = "img/cab_yellow.png";
     var RED_CAB_IMG = "img/cab_red.png";
     var RETRY_DELAY = 500;
+    var ALERT_TIMEOUT = 2000;
     var SAFE_IMG = "img/safe_point.png";
 
     /* Some Element Names */
@@ -83,6 +84,8 @@ $(document).ready(function() {
     var obj2 = [];
 
     google.maps.event.addDomListener(window, 'load', initialize);
+
+    $(".alert").hide();
 
     colorBtns.spectrum({
         color: "rgb(224, 102, 102)",
@@ -359,6 +362,7 @@ $(document).ready(function() {
                 cache: false,
                 success: function(data) {
                     //TODO
+                    createSuccessAlert();
                     //alert(dataString);
                 },
                 error: function(xhr, textStatus, error) {
@@ -640,7 +644,7 @@ $(document).ready(function() {
                 //00
                 for (var key in obj) {
                     if (key == route_id) {
-                        obj[id].push(cab_id);
+                        obj[key].push(cab_id);
                     }
                 }
 
@@ -900,5 +904,12 @@ $(document).ready(function() {
             });
             //safePts[safePts.length - 1].setMap(map);
         }
+    }
+
+    function createSuccessAlert() {
+        $("#createSuccess").show();
+        setTimeout(function() {
+            $("#createSuccess").hide();
+        }, ALERT_TIMEOUT);
     }
 });
