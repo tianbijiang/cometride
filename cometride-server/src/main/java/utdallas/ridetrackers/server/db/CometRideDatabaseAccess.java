@@ -438,7 +438,7 @@ public class CometRideDatabaseAccess {
         }
 
         for( int i=0; i < safepoints.size(); i++ ) {
-            LatLng safepoint = waypoints.get(i);
+            LatLng safepoint = safepoints.get(i);
             String wayPointStatement = "\n" +
                     "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
             db.executeUpdate(wayPointStatement, newRoute.getId(), safepoint.getLat(), safepoint.getLng(), i);
@@ -480,6 +480,9 @@ public class CometRideDatabaseAccess {
     }
 
     public void updateRoute( RouteDetails routeDetails ) throws ParseException {
+        if( routeDetails.getNavigationType() == null ) {
+            routeDetails.setNavigationType( "DRIVING" );
+        }
 
         String deleteStatement = "DELETE FROM ebdb.RouteInfo WHERE route_id = '" + routeDetails.getId() + "';";
         db.executeStatement( deleteStatement );
@@ -501,7 +504,7 @@ public class CometRideDatabaseAccess {
         }
 
         for( int i=0; i < safepoints.size(); i++ ) {
-            LatLng safepoint = waypoints.get(i);
+            LatLng safepoint = safepoints.get(i);
             String wayPointStatement = "\n" +
                     "INSERT INTO ebdb.RouteSafepoints (route_id, lat, lng, sequence_num) VALUES ( ?, ?, ?, ? );";
             db.executeUpdate(wayPointStatement, routeDetails.getId(), safepoint.getLat(), safepoint.getLng(), i);

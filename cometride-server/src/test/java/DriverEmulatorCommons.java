@@ -21,49 +21,33 @@ public class DriverEmulatorCommons {
 
     public static void main( String[] args ) throws IOException, InterruptedException {
 
-        locations.add( new LatLng(32.992760, -96.752034) );
-        locations.add( new LatLng(32.992558, -96.752050) );
-        locations.add( new LatLng(32.992342, -96.752039) );
-        locations.add( new LatLng(32.992158, -96.752044) );
-        locations.add( new LatLng(32.992046, -96.751942) );
-        locations.add( new LatLng(32.992046, -96.751749) );
-        locations.add( new LatLng(32.992046, -96.751513) );
-        locations.add( new LatLng(32.992046, -96.751196) );
-        locations.add( new LatLng(32.992050, -96.750960) );
-        locations.add( new LatLng(32.991672, -96.750971) );
-        locations.add( new LatLng(32.991101, -96.750982) );
-        locations.add( new LatLng(32.990435, -96.750998) );
-        locations.add( new LatLng(32.989733, -96.750982) );
-        locations.add( new LatLng(32.989090, -96.750987) );
-        locations.add( new LatLng(32.988375, -96.751003) );
-        locations.add( new LatLng(32.987610, -96.750992) );
-        locations.add( new LatLng(32.986895, -96.750976) );
-        locations.add( new LatLng(32.986225, -96.751003) );
-        locations.add( new LatLng(32.985532, -96.751003) );
-        locations.add( new LatLng(32.984952, -96.751003) );
-        locations.add( new LatLng(32.984214, -96.751030) );
-        locations.add( new LatLng(32.983769, -96.751073) );
-        locations.add( new LatLng(32.983211, -96.750976) );
-        locations.add( new LatLng(32.982667, -96.750960) );
-        locations.add( new LatLng(32.982141, -96.750987) );
-        locations.add( new LatLng(32.982667, -96.750960) );
-        locations.add( new LatLng(32.983211, -96.750976) );
-        locations.add( new LatLng(32.983769, -96.751073) );
-        locations.add( new LatLng(32.984214, -96.751030) );
-        locations.add( new LatLng(32.985532, -96.751003) );
-        locations.add( new LatLng(32.986225, -96.751003) );
-        locations.add( new LatLng(32.986895, -96.750976) );
-        locations.add( new LatLng(32.987610, -96.750992) );
-        locations.add( new LatLng(32.988375, -96.751003) );
-        locations.add( new LatLng(32.989090, -96.750987) );
-        locations.add( new LatLng(32.990435, -96.750998) );
-        locations.add( new LatLng(32.991101, -96.750982) );
-        locations.add( new LatLng(32.991672, -96.750971) );
-        locations.add( new LatLng(32.992050, -96.750960) );
-        locations.add( new LatLng(32.992050, -96.751400) );
-        locations.add( new LatLng(32.992410, -96.751475) );
-        locations.add( new LatLng(32.992779, -96.751582) );
-        locations.add( new LatLng(32.992752, -96.751839) );
+        locations.add( new LatLng(32.985662, -96.749399) );
+        locations.add( new LatLng(32.985680, -96.750220) );
+        locations.add( new LatLng(32.985689, -96.750971) );
+        locations.add( new LatLng(32.986409, -96.750992) );
+        locations.add( new LatLng(32.987300, -96.751003) );
+        locations.add( new LatLng(32.987948, -96.750971) );
+        locations.add( new LatLng(32.988623, -96.750982) );
+        locations.add( new LatLng(32.989379, -96.750982) );
+        locations.add( new LatLng(32.990027, -96.751003) );
+        locations.add( new LatLng(32.990693, -96.750960) );
+        locations.add( new LatLng(32.990720, -96.752076) );
+        locations.add( new LatLng(32.991223, -96.752612) );
+        locations.add( new LatLng(32.991790, -96.752634) );
+        locations.add( new LatLng(32.991808, -96.753632) );
+        locations.add( new LatLng(32.991268, -96.753653) );
+        locations.add( new LatLng(32.990801, -96.753642) );
+        locations.add( new LatLng(32.990702, -96.752602) );
+        locations.add( new LatLng(32.990675, -96.751057) );
+        locations.add( new LatLng(32.989730, -96.751035) );
+        locations.add( new LatLng(32.988866, -96.750971) );
+        locations.add( new LatLng(32.987966, -96.751057) );
+        locations.add( new LatLng(32.987102, -96.751024) );
+        locations.add( new LatLng(32.986409, -96.751046) );
+        locations.add( new LatLng(32.985716, -96.751057) );
+        locations.add( new LatLng(32.985662, -96.750273) );
+        locations.add( new LatLng(32.985572, -96.749758) );
+
 
         final PassengerTracker tracker = new PassengerTracker();
         final int maxPassengers = 8;
@@ -96,9 +80,9 @@ public class DriverEmulatorCommons {
 
         final WebResource sessionResource = client.resource( "http://cometride.elasticbeanstalk.com/api/driver/session" );
         Map<String, Object> sessionData = new HashMap<String, Object>();
-        sessionData.put( "dutyStatus", "ON_DUTY" );
+        sessionData.put( "dutyStatus", "ON-DUTY" );
         sessionData.put( "maxCapacity", maxPassengers );
-        sessionData.put( "routeId", "route-282ea864-5e32-4c0b-b165-8c8432c229de" );
+        sessionData.put( "routeId", "route-593ff0db-13c8-41df-af63-99732488925f" );
 
         final String sessionId = sessionResource.entity(sessionData).type(MediaType.APPLICATION_JSON).
                 post(String.class);

@@ -21,49 +21,39 @@ public class DriverEmulatorLibrary {
 
     public static void main( String[] args ) throws IOException, InterruptedException {
 
-        locations.add( new LatLng(32.992760, -96.752034) );
-        locations.add( new LatLng(32.992558, -96.752050) );
-        locations.add( new LatLng(32.992342, -96.752039) );
-        locations.add( new LatLng(32.992158, -96.752044) );
-        locations.add( new LatLng(32.992046, -96.751942) );
-        locations.add( new LatLng(32.992046, -96.751749) );
-        locations.add( new LatLng(32.992046, -96.751513) );
-        locations.add( new LatLng(32.992046, -96.751196) );
-        locations.add( new LatLng(32.992050, -96.750960) );
-        locations.add( new LatLng(32.991672, -96.750971) );
-        locations.add( new LatLng(32.991101, -96.750982) );
-        locations.add( new LatLng(32.990435, -96.750998) );
-        locations.add( new LatLng(32.989733, -96.750982) );
-        locations.add( new LatLng(32.989090, -96.750987) );
-        locations.add( new LatLng(32.988375, -96.751003) );
-        locations.add( new LatLng(32.987610, -96.750992) );
-        locations.add( new LatLng(32.986895, -96.750976) );
-        locations.add( new LatLng(32.986225, -96.751003) );
-        locations.add( new LatLng(32.985532, -96.751003) );
-        locations.add( new LatLng(32.984952, -96.751003) );
-        locations.add( new LatLng(32.984214, -96.751030) );
-        locations.add( new LatLng(32.983769, -96.751073) );
-        locations.add( new LatLng(32.983211, -96.750976) );
-        locations.add( new LatLng(32.982667, -96.750960) );
-        locations.add( new LatLng(32.982141, -96.750987) );
-        locations.add( new LatLng(32.982667, -96.750960) );
-        locations.add( new LatLng(32.983211, -96.750976) );
-        locations.add( new LatLng(32.983769, -96.751073) );
-        locations.add( new LatLng(32.984214, -96.751030) );
-        locations.add( new LatLng(32.985532, -96.751003) );
-        locations.add( new LatLng(32.986225, -96.751003) );
-        locations.add( new LatLng(32.986895, -96.750976) );
-        locations.add( new LatLng(32.987610, -96.750992) );
-        locations.add( new LatLng(32.988375, -96.751003) );
-        locations.add( new LatLng(32.989090, -96.750987) );
-        locations.add( new LatLng(32.990435, -96.750998) );
-        locations.add( new LatLng(32.991101, -96.750982) );
-        locations.add( new LatLng(32.991672, -96.750971) );
-        locations.add( new LatLng(32.992050, -96.750960) );
-        locations.add( new LatLng(32.992050, -96.751400) );
-        locations.add( new LatLng(32.992410, -96.751475) );
-        locations.add( new LatLng(32.992779, -96.751582) );
-        locations.add( new LatLng(32.992752, -96.751839) );
+        locations.add( new LatLng(32.987705, -96.747661) );
+        locations.add( new LatLng(32.987525, -96.747017) );
+        locations.add( new LatLng(32.987354, -96.746631) );
+        locations.add( new LatLng(32.987471, -96.746191) );
+        locations.add( new LatLng(32.987003, -96.745987) );
+        locations.add( new LatLng(32.986292, -96.746008) );
+        locations.add( new LatLng(32.985725, -96.746019) );
+        locations.add( new LatLng(32.985248, -96.745966) );
+        locations.add( new LatLng(32.984663, -96.745976) );
+        locations.add( new LatLng(32.984627, -96.745365) );
+        locations.add( new LatLng(32.985221, -96.745225) );
+        locations.add( new LatLng(32.985428, -96.745333) );
+        locations.add( new LatLng(32.985635, -96.745966) );
+        locations.add( new LatLng(32.986589, -96.745987) );
+        locations.add( new LatLng(32.987165, -96.746008) );
+        locations.add( new LatLng(32.987786, -96.746223) );
+        locations.add( new LatLng(32.987957, -96.745654) );
+        locations.add( new LatLng(32.988389, -96.744893) );
+        locations.add( new LatLng(32.988686, -96.745107) );
+        locations.add( new LatLng(32.989001, -96.744646) );
+        locations.add( new LatLng(32.989208, -96.743841) );
+        locations.add( new LatLng(32.989712, -96.743788) );
+        locations.add( new LatLng(32.990135, -96.743831) );
+        locations.add( new LatLng(32.990108, -96.744442) );
+        locations.add( new LatLng(32.989703, -96.745075) );
+        locations.add( new LatLng(32.989379, -96.745601) );
+        locations.add( new LatLng(32.988695, -96.745150) );
+        locations.add( new LatLng(32.988506, -96.745011) );
+        locations.add( new LatLng(32.988065, -96.745730) );
+        locations.add( new LatLng(32.987930, -96.746438) );
+        locations.add( new LatLng(32.988110, -96.747060) );
+
+
 
         final PassengerTracker tracker = new PassengerTracker();
         final int maxPassengers = 8;
@@ -98,7 +88,7 @@ public class DriverEmulatorLibrary {
         Map<String, Object> sessionData = new HashMap<String, Object>();
         sessionData.put( "dutyStatus", "ON-DUTY" );
         sessionData.put( "maxCapacity", maxPassengers );
-        sessionData.put( "routeId", "route-282ea864-5e32-4c0b-b165-8c8432c229de" );
+        sessionData.put( "routeId", "route-32ff5550-daee-444c-bf12-650f42106da6" );
 
         final String sessionId = sessionResource.entity(sessionData).type(MediaType.APPLICATION_JSON).
                 post(String.class);
