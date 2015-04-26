@@ -5,7 +5,6 @@ $(document).ready(function() {
 
     var thead = $("#cabtable thead");
     var tbody = $("#cabtable tbody");
-    var newTypeId = $('#newTypeId');
     var newTypeName = $('#newTypeName');
     var newCapacity = $("#newCapacity");
     var createNewCab = $("#createNewCab");
@@ -16,7 +15,6 @@ $(document).ready(function() {
 
     createNewCab.click(function() {
         var dataString_cabtype = {
-            typeId: newTypeId.val(),
             typeName: newTypeName.val(),
             maximumCapacity: newCapacity.val()
         };
@@ -50,7 +48,7 @@ $(document).ready(function() {
         $.getJSON(API_CABTYPE, function(data) {
             if (data.length > 0) {
                 for (var i = 0; i < data.length; i++) {
-                    var content = "<tr id='" + data[i].typeId + "'><td>" + data[i].typeId + "</td>";
+                    var content = "<tr id='" + data[i].typeId + "'>";
                     content += "<td>" + data[i].typeName + "</td>";
                     content += "<td>" + data[i].maximumCapacity + "</td>";
                     content += "<td class='text-center'><a href='#' id='del-cabtype-btn' class='btn btn-danger btn-xs'><span class='glyphicon glyphicon-remove'></span> Delete</a></td></tr>";
