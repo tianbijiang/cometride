@@ -82,7 +82,6 @@ $(document).ready(function() {
     var infoWindows = [];
     var obj = [];
     var obj2 = [];
-    var contentStrings = [];
 
     google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -721,10 +720,8 @@ $(document).ready(function() {
                 var contentString = "<h5 class='cabShortName text-center'>" + cabShortName +
                     "</h5><p class='cabPassengerCount text-center'>" + passengerCount + " / " + capacity + "</p>";
 
-                contentStrings.push(contentString);
-
                 var infoWindow = new google.maps.InfoWindow({
-                    content: contentStrings[m]
+                    content: contentString
                 });
 
                 infoWindows.push(infoWindow);
@@ -744,13 +741,6 @@ $(document).ready(function() {
                     markerMap[cab_id].setPosition(new google.maps.LatLng(lat, lng));
                     markerMap[cab_id].setIcon(cab_img);
                 }
-
-                google.maps.event.addListener(markerMap[cab_id], 'click', function() {
-                    infoWindows[m].open(map, this);
-                });
-                // google.maps.event.addListener(markerMap[cab_id], 'mouseout', function() {
-                //     infowindow[m].close();
-                // });
             }
         });
     }
@@ -806,6 +796,12 @@ $(document).ready(function() {
                 if (key == cabIdArray[p]) {
                     console.log(obj2[key]);
                     markers[obj2[key]].setMap(map);
+                    google.maps.event.addListener(markers[obj2[key]], 'click', function() {
+                        infoWindows[obj2[key]].open(map, this);
+                    });
+                    // google.maps.event.addListener(markerMap[cab_id], 'mouseout', function() {
+                    //     infowindow[m].close();
+                    // });
                 }
             }
         }
