@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,11 +24,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -40,6 +38,9 @@ public class DriverLogin extends Activity {
     TextView username;
     EditText pass;
     int status;
+    HttpClient client = new DefaultHttpClient();
+    CookieStore cookieStore = new BasicCookieStore();
+    HttpContext context = new BasicHttpContext();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,17 +64,13 @@ public class DriverLogin extends Activity {
 
             String cookieUrl = "http://cometride.elasticbeanstalk.com/api/driver/session";
             String authenticateUrl = "http://cometride.elasticbeanstalk.com/j_security_check";
-            String dataUrl = "http://cometride.elasticbeanstalk.com/api/admin/users";
-
 
             final String userNameKey = "j_username";
             final String userPassKey = "j_password";
             final String userName = username.getText().toString();
             final String userPass = pass.getText().toString();
 
-            HttpClient client = new DefaultHttpClient();
-            CookieStore cookieStore = new BasicCookieStore();
-            HttpContext context = new BasicHttpContext();
+
             context.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 
             String getUrl = cookieUrl;
@@ -133,31 +130,25 @@ public class DriverLogin extends Activity {
             status=authPostResponse.getStatusLine().getStatusCode();
             Log.d("ConnectionTest", status +"");
 
-            if(status==405)
-            {
-                Intent next = new Intent(getApplicationContext(), Options.class);
-                next.putExtra( "cookie-name", cookieStore.getCookies().get( 0 ).getName() );
-                next.putExtra( "cookie-value", cookieStore.getCookies().get( 0 ).getValue() );
-                next.putExtra( "cookie-domain", cookieStore.getCookies().get( 0 ).getDomain() );
-                startActivity(next);
-                Log.v( "cookie-name", cookieStore.getCookies().get( 0 ).getName());
-                Log.v("cookie-value", cookieStore.getCookies().get( 0 ).getValue());
 
-            }
-            else
-            {
-                Toast.makeText(getBaseContext(), "Login Failed!", Toast.LENGTH_LONG).show();
-            }
             return null;
         }
-
-
 
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
 
-
+            if(status==405)
+            {
+                Intent next = new Intent(getApplicationContext(), Options.class);
+                next.putExtra( "cookie-name", cookieStore.getCookies().get( 0 ).getName() );
+                next.putExtra("cookie-value", cookieStore.getCookies().get(0).getValue());
+                next.putExtra("cookie-domain", cookieStore.getCookies().get(0).getDomain());
+                startActivity(next);
+            }
+            else {
+                Toast.makeText(getBaseContext(), "Invalid Login Credentials!", Toast.LENGTH_LONG).show();
+            }
 
         }
     }

@@ -3,19 +3,16 @@
     package="com.UTD.driverapp"
     android:screenOrientation="portrait" >
 
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-
-
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:icon="@drawable/ic_launcher"
+        android:label="CometRide-Driver"
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"

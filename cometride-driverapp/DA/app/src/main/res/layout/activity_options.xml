@@ -36,23 +36,20 @@
         android:layout_width="match_parent"
         android:layout_height="20dp" />
 
-    <Spinner
-        android:id="@+id/Spinnercabroute"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:textSize="25sp"
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/Spinnercabroute"
+            android:background="@drawable/spinner_ab_default_example"
+            android:textColor="@android:color/black"/>
 
-        android:spinnerMode="dropdown"
-        android:theme="@android:style/TextAppearance.DeviceDefault.Widget.TextView.SpinnerItem" />
-
-    <Space
+        <Space
         android:layout_width="match_parent"
         android:layout_height="20dp" />
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/select_cab_type"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -60,11 +57,11 @@
 
         <Spinner
             android:id="@+id/Spinnercabtype"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
             android:textSize="25sp"
-
+            android:background="@drawable/spinner_ab_default_example"
             android:spinnerMode="dropdown"
             />
         <Space

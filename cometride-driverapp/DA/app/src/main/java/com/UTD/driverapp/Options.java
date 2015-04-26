@@ -10,10 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.Spinner;
-import android.widget.Toast;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
@@ -22,14 +19,12 @@ import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
-
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,10 +43,13 @@ public class Options extends Activity  {
     JSONArray jAllRoutes = null;
     List<String> selectedRoutes = new ArrayList<String>();
     List<String> selectedCabTypes = new ArrayList<String>();
+    List<String> selectedCabCapacity = new ArrayList<String>();
+    List<String> cabTypeInfo = new ArrayList<String>();
     ArrayList<Route> allRoutes = new ArrayList<Route>();
     List<Route> allCabTypes = new ArrayList<Route>();
     HttpContext context = new BasicHttpContext();
     CookieStore cookieStore = new BasicCookieStore();
+
 
 
     @Override
@@ -59,19 +57,14 @@ public class Options extends Activity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_options);
         context.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-        Intent intent= getIntent();
-        String name = intent.getExtras().getString("cookie-name");
-        String value=intent.getExtras().getString("cookie-value");
-        String domain=intent.getExtras().getString("cookie-domain");
+        Intent intent1= getIntent();
+        String name = intent1.getExtras().getString("cookie-name");
+        String value=intent1.getExtras().getString("cookie-value");
+        String domain=intent1.getExtras().getString("cookie-domain");
         BasicClientCookie cookie = new BasicClientCookie( name, value );
         cookie.setDomain(domain);
         cookieStore.addCookie( cookie );
-        Log.d("name",name);
-        Log.d("value",value);
-        Log.v( "cookie-name", cookieStore.getCookies().get( 0 ).getName());
-        Log.v("cookie-value", cookieStore.getCookies().get( 0 ).getValue());
-
-        new GetAllRoutes().execute();
+         new GetAllRoutes().execute();
         new GetCabTypes().execute();
     }
 
@@ -105,19 +98,22 @@ public class Options extends Activity  {
         proceed.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View v)
-            {
-                Spinner spinner = (Spinner)findViewById(R.id.Spinnercabroute);
+            public void onClick(View v) {
+                Spinner spinner = (Spinner) findViewById(R.id.Spinnercabroute);
                 String text = spinner.getSelectedItem().toString();
                 for (int i = 0; i < allRoutes.size(); i++) {
-                    if(allRoutes.get(i).getName().equals(text))
-                    {
-                        routeId=allRoutes.get(i).getId();
+                    if (allRoutes.get(i).getName().equals(text)) {
+                        routeId = allRoutes.get(i).getId();
                     }
-
+                    Spinner cabType = (Spinner) findViewById(R.id.Spinnercabtype);
+                    String text1 = cabType.getSelectedItem().toString();
+                    for (int j = 0; j < cabTypeInfo.size(); j++) {
+                        if (cabTypeInfo.get(j).equals(text1)) {
+                            capacity = Integer.parseInt(selectedCabCapacity.get(j));
+                         }
+                    }
                 }
                 new HttpPostTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
-
             }
         });
     }
@@ -127,46 +123,20 @@ public class Options extends Activity  {
         String result = "";
         try {
 
-            // 1. create HttpClient
             HttpClient httpclient = new DefaultHttpClient();
-
-            // 2. make POST request to the given URL
             HttpPost httpPost = new HttpPost(url);
-
             String json = "";
-
-            // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
             jsonObject.accumulate("dutyStatus", cab.getStatus());
             jsonObject.accumulate("maxCapacity", cab.getmaxCapacity());
             jsonObject.accumulate("routeId", cab.getrouteId());
-
-            // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
-
-            // ** Alternative way to convert Person object to JSON string using Jackson Lib
-            // ObjectMapper mapper = new ObjectMapper();
-            // json = mapper.writeValueAsString(person);
-
-            // 5. set json to StringEntity
             StringEntity se = new StringEntity(json);
-
-            // 6. set httpPost Entity
             httpPost.setEntity(se);
-
-            // 7. Set some headers to inform server about the type of the content
             httpPost.setHeader("Accept", "application/json");
             httpPost.setHeader("Content-type", "application/json");
-
-            // 8. Execute POST request to the given URL
-            Log.v( "holaa", ( (CookieStore) context.getAttribute(ClientContext.COOKIE_STORE)).getCookies().get( 0 ).getName());
-            Log.v("cookie-value", ( (CookieStore) context.getAttribute(ClientContext.COOKIE_STORE)).getCookies().get( 0 ).getValue());
             HttpResponse httpResponse = httpclient.execute(httpPost, context);
-
-            // 9. receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();
-
-            // 10. convert inputstream to string
             if(inputStream != null)
                 result = convertInputStreamToString(inputStream);
             else
@@ -176,7 +146,6 @@ public class Options extends Activity  {
             Log.d("InputStream", e.getLocalizedMessage());
         }
 
-        // 11. return result
         return result;
     }
 
@@ -184,30 +153,20 @@ public class Options extends Activity  {
         @Override
         protected String doInBackground(String... urls) {
             cab = new Cab();
-
             cab.setStatus("ON-DUTY");
             cab.setmaxCapacity(capacity);
             cab.setrouteId(routeId);
-            Log.v("routeId",routeId);
-
-
             return POST(urls[0],cab);
         }
-        // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
             sessionId=result;
-
-            Log.v("session",sessionId);
             Intent intent = new Intent(getApplicationContext(), Driver.class);
             intent.putExtra("capacity",capacity);
             intent.putExtra("sessionid", sessionId);
             intent.putExtra( "cookie-name", cookieStore.getCookies().get( 0 ).getName() );
             intent.putExtra( "cookie-value", cookieStore.getCookies().get( 0 ).getValue() );
             intent.putExtra( "cookie-domain", cookieStore.getCookies().get( 0 ).getDomain() );
-            Log.v( "cookie-name", cookieStore.getCookies().get( 0 ).getName());
-            Log.v("cookie-value", cookieStore.getCookies().get( 0 ).getValue());
             startActivity(intent);
         }
     }
@@ -219,7 +178,6 @@ public class Options extends Activity  {
         String result = "";
         while((line = bufferedReader.readLine()) != null)
             result += line;
-
         inputStream.close();
         return result;
 
@@ -239,25 +197,23 @@ public class Options extends Activity  {
                     route.setCapacity(maximumCapacity);
                     route.setName(typeName);
                     route.setTypeId(typeId);
-                  //  allCabTypes.add(route.getCapacity());
+                    allCabTypes.add(route);
+
+                    cabTypeInfo.add( route.getTypeName()+ " - " + route.getMaximumCapacity() );
                     selectedCabTypes.add(route.getTypeName());
+                    selectedCabCapacity.add(Integer.toString(route.getMaximumCapacity()));
                 }
             } catch (IOException e) {
                 e.getMessage();
             } catch (JSONException e) {
                 e.getMessage();
             }
-            for (int n = 0; n < allRoutes.size(); n++) {
-              Log.v("name", allRoutes.get(n).getName());
-             // Log.v("capacity", allRoutes.get(n).getCapacity());
-
-            }
             return null;
         }
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             final Spinner sp=(Spinner) findViewById(R.id.Spinnercabtype);
-            ArrayAdapter<String> adp= new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,selectedCabTypes);
+            ArrayAdapter<String> adp= new ArrayAdapter<String>(getApplicationContext(),R.layout.custom_textview,cabTypeInfo);
             sp.setAdapter(adp);
 
         }
@@ -283,17 +239,13 @@ public class Options extends Activity  {
             } catch (JSONException e) {
                 e.getMessage();
             }
-            for (int n = 0; n < allRoutes.size(); n++) {
-                Log.v("id", allRoutes.get(n).getId());
-                Log.v("name", allRoutes.get(n).getName());
 
-            }
             return null;
         }
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             final Spinner sp=(Spinner) findViewById(R.id.Spinnercabroute);
-            ArrayAdapter<String> adp= new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item,selectedRoutes);
+            ArrayAdapter<String> adp= new ArrayAdapter<String>(getApplicationContext(),R.layout.custom_textview,selectedRoutes);
             sp.setAdapter(adp);
 
         }

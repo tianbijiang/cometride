@@ -11,16 +11,9 @@ public class Route {
     private int maximumCapacity;
     private String color;
     private String status;
-    private ArrayList<LatLng> waypoints;
-    private ArrayList<LatLng> safepoints;
 
-    public ArrayList<LatLng> getSafepoints() {
-        return safepoints;
-    }
 
-    public void setSafepoints(ArrayList<LatLng> safepoints) {
-        this.safepoints = safepoints;
-    }
+
 
     public String getId() {
         return id;
@@ -31,15 +24,17 @@ public class Route {
     public void setId(String id) {
         this.id = id;
     }
-
-    public int getCapacity(int maximumCapacity) {
-        return maximumCapacity;
-    }
+    public void setCapacity(int maximumCapacity) { this.maximumCapacity=maximumCapacity;   }
+    public int getCapacity() {
+        return maximumCapacity;    }
     public String getName() {
         return name;
     }
     public String getTypeName() {
-        return typeName;
+        return name;
+    }
+    public int getMaximumCapacity() {
+        return maximumCapacity;
     }
 
 
@@ -61,17 +56,6 @@ public class Route {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public ArrayList<LatLng> getWaypoints() {
-        return waypoints;
-    }
-
-    public void setWaypoints(ArrayList<LatLng> waypoints) {
-        this.waypoints = waypoints;
-    }
-
-    public void setCapacity(int maximumCapacity) {
     }
 
 

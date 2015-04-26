@@ -9,17 +9,15 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -28,21 +26,20 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-public class Driver extends Activity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+public class Driver extends Activity implements CompoundButton.OnCheckedChangeListener {
 
     int num = 0;
+    int passengerTotal,passengerAdded;
     int total;
     ImageButton plus1, minus1;
     GPSTracker gps;
     TextView textView7,textView8,textView10;
-    Button btnPost;
     Cab cab;
     double lat;
     double lng;
@@ -50,28 +47,25 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
     String sessionId;
     int capacity;
     HttpContext context = new BasicHttpContext();
+    final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver);
-        Intent intent = getIntent();
-        sessionId = intent.getExtras().getString("sessionid");
-        capacity = intent.getExtras().getInt("capacity");
+        Intent intent1 = getIntent();
+        sessionId = intent1.getExtras().getString("sessionid");
+        capacity = intent1.getExtras().getInt("capacity");
         Log.d("session",sessionId);
         Log.d("capacity","current"+capacity);
         CookieStore cookieStore = new BasicCookieStore();
         context.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
-        String name = intent.getExtras().getString("cookie-name");
-        String value=intent.getExtras().getString("cookie-value");
-        String domain=intent.getExtras().getString("cookie-domain");
+        String name = intent1.getExtras().getString("cookie-name");
+        String value=intent1.getExtras().getString("cookie-value");
+        String domain=intent1.getExtras().getString("cookie-domain");
         BasicClientCookie cookie = new BasicClientCookie( name, value );
         cookie.setDomain(domain);
         cookieStore.addCookie( cookie );
-        Log.d("name",name);
-        Log.d("value",value);
-        Log.v( "cookie-name", cookieStore.getCookies().get( 0 ).getName());
-        Log.v("cookie-value", cookieStore.getCookies().get( 0 ).getValue());
         plus1 = (ImageButton) findViewById(R.id.plus);
         minus1 = (ImageButton) findViewById(R.id.minus);
         textView10 = (TextView) findViewById(R.id.textView10);
@@ -148,7 +142,7 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(num<9)
+                            if(num<capacity)
                             {
                                 num++;
                                 total++;
@@ -174,6 +168,16 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
                     });
                 }
                 return true;
+            case KeyEvent.KEYCODE_MEDIA_NEXT:
+            //    cabActive.run();
+                switch1.toggle();
+                return true;
+               case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                switch1.toggle();
+             //   handler.removeCallbacks(cabActive);
+             //   new HttpPostDutyTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
+                return true;
+
             default:
                 return super.dispatchKeyEvent(event);
         }
@@ -207,15 +211,12 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
         String result = "";
         try {
 
-            // 1. create HttpClient
             HttpClient httpclient = new DefaultHttpClient();
 
-            // 2. make POST request to the given URL
             HttpPost httpPost = new HttpPost(url);
 
             String json = "";
 
-            // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
             jsonObject.accumulate("cabSessionId", cab.getcabSessionId());
             jsonObject.accumulate("lat", cab.getlat());
@@ -223,30 +224,19 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
             jsonObject.accumulate("passengerCount", cab.getpassengerCount());
             jsonObject.accumulate("passengersAdded", cab.getpassengerTotal());
 
-            // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
 
-            // ** Alternative way to convert Person object to JSON string using Jackson Lib
-            // ObjectMapper mapper = new ObjectMapper();
-            // json = mapper.writeValueAsString(person);
-
-            // 5. set json to StringEntity
             StringEntity se = new StringEntity(json);
 
-            // 6. set httpPost Entity
             httpPost.setEntity(se);
 
-            // 7. Set some headers to inform server about the type of the content
             httpPost.setHeader("Accept", "application/json");
             httpPost.setHeader("Content-type", "application/json");
 
-            // 8. Execute POST request to the given URL
             HttpResponse httpResponse = httpclient.execute(httpPost, context);
 
-            // 9. receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();
 
-            // 10. convert inputstream to string
             if(inputStream != null)
                 result = convertInputStreamToString(inputStream);
             else
@@ -260,102 +250,57 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
         return result;
     }
 
-    public void onClick(View view) {
-
-
-
-                // call AsynTask to perform network operation on separate thread
-
-                final Handler handler = new Handler();
-
-                handler.post(new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        gps = new GPSTracker(Driver.this);
-
-                        // check if GPS enabled
-                        if (gps.canGetLocation()) {
-
-                            lat = gps.getLatitude();
-                            lng = gps.getLongitude();
-
-                            // \n is for new line
-                            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + lat + "\nLong: " + lng, Toast.LENGTH_LONG).show();
-                        } else {
-                            // can't get location
-                            // GPS or Network is not enabled
-                            // Ask user to enable GPS/network in settings
-                            gps.showSettingsAlert();
-                        }
-                        new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/driver/cab");
-                        handler.postDelayed(this, 3000);
-
-                    }
-                }));
-
-        }
-
-
-
     public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
-        Toast.makeText(this, "The Switch is " + (isChecked ? "on" : "off"),
-                Toast.LENGTH_SHORT).show();
-        final Handler handler = new Handler();
+  //      Toast.makeText(this, "The Switch is " + (isChecked ? "on" : "off"),Toast.LENGTH_SHORT).show();
         if(isChecked) {
-
-
-            handler.post(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    gps = new GPSTracker(Driver.this);
-
-                    // check if GPS enabled
-                    if (gps.canGetLocation()) {
-
-                        lat = gps.getLatitude();
-                        lng = gps.getLongitude();
-
-                        // \n is for new line
-                        Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + lat + "\nLong: " + lng, Toast.LENGTH_LONG).show();
-                    } else {
-                        // can't get location
-                        // GPS or Network is not enabled
-                        // Ask user to enable GPS/network in settings
-                        gps.showSettingsAlert();
-                    }
-                    new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/driver/cab");
-                    handler.postDelayed(this, 3000);
-
-                }
-            }));
-
+        cabActive.run();
         } else {
-            handler.removeCallbacksAndMessages(handler);
-            Intent sevenIntent = new Intent(getApplicationContext(), DriverLogin.class);
-            startActivityForResult(sevenIntent, 0);
+            handler.removeCallbacks(cabActive);
+            new HttpPostDutyTask().execute("http://cometride.elasticbeanstalk.com/api/driver/session");
+
         }
     }
+    public Runnable cabActive=new Runnable() {
+        @Override
+        public void run() {
+            gps = new GPSTracker(Driver.this);
+
+            // check if GPS enabled
+            if (gps.canGetLocation()) {
+
+                lat = gps.getLatitude();
+                lng = gps.getLongitude();
+
+                // \n is for new line
+
+            } else {
+                gps.showSettingsAlert();
+            }
+            new HttpAsyncTask().execute("http://cometride.elasticbeanstalk.com/api/driver/cab");
+            handler.postDelayed(this, 3000);
+        }
+    };
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
 
             cab = new Cab();
-            Log.d("i want it here",sessionId);
             cab.setcabSessionId(sessionId);
             cab.setlat(lat);
             cab.setlng(lng);
             cab.setpassengerCount(Integer.parseInt(textView8.getText().toString()));
-            cab.setpassengerTotal(Integer.parseInt(textView7.getText().toString()));
+            passengerAdded=total-passengerTotal;
 
+            cab.setpassengerTotal(passengerAdded);
+            passengerTotal= Integer.parseInt(textView7.getText().toString());
 
             return POST(urls[0],cab);
         }
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
-            Log.d("result",result);
-        }
+
+            }
     }
 
 
@@ -369,5 +314,65 @@ public class Driver extends Activity implements CompoundButton.OnCheckedChangeLi
         inputStream.close();
         return result;
 
+    }
+    public String POSTDuty(String url, Cab cab){
+
+        InputStream inputStream = null;
+        String result = "";
+        try {
+
+            HttpClient httpclient = new DefaultHttpClient();
+
+            HttpPut httpPut = new HttpPut(url+"/"+sessionId);
+
+            String json = "";
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.accumulate("dutyStatus", cab.getStatus());
+            jsonObject.accumulate("cabSessionId", cab.getcabSessionId());
+
+            json = jsonObject.toString();
+
+            StringEntity se = new StringEntity(json);
+
+            httpPut.setEntity(se);
+
+            httpPut.setHeader("Accept", "application/json");
+            httpPut.setHeader("Content-type", "application/json");
+
+            HttpResponse httpResponse = httpclient.execute(httpPut, context);
+
+            inputStream = httpResponse.getEntity().getContent();
+
+            if(inputStream != null)
+                result = convertInputStreamToString(inputStream);
+            else
+                result = "Did not work!";
+
+        } catch (Exception e) {
+            Log.d("InputStream", e.getLocalizedMessage());
+        }
+
+        // 11. return result
+        return result;
+    }
+
+    private class HttpPostDutyTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+            cab = new Cab();
+            cab.setStatus("OFF-DUTY");
+            cab.setcabSessionId(sessionId);
+            Log.i("doing post",sessionId);
+            return POSTDuty(urls[0], cab);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.i("done post",sessionId);
+            Log.i("result",result);
+             Intent sevenIntent = new Intent(getApplicationContext(), DriverLogin.class);
+            startActivityForResult(sevenIntent, 0);
+        }
     }
 }
