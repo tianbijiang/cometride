@@ -1,6 +1,5 @@
 //todo
 //tags over routes/cabs/safepoints
-//report.html prettify
 
 $(document).ready(function() {
 
@@ -364,7 +363,6 @@ $(document).ready(function() {
                 dataType: "text",
                 cache: false,
                 success: function(data) {
-                    //TODO
                     createSuccessAlert();
                     //alert(dataString);
                 },
@@ -384,7 +382,6 @@ $(document).ready(function() {
             type: "DELETE",
             url: API_ROUTE_ADMIN + "/" + currentEditId,
             success: function(data) {
-                //TODO
                 deleteSuccessAlert();
                 //alert("DELETED!");
             }
@@ -403,7 +400,6 @@ $(document).ready(function() {
                 dataType: "text",
                 cache: false,
                 success: function(data) {
-                    //TODO
                     editSuccessAlert();
                     //alert("EDITED!");
                 },
@@ -729,11 +725,15 @@ $(document).ready(function() {
                 var contentString = "<h5 class='cabShortName text-center'>" + cabShortName +
                     "</h5><p class='cabPassengerCount text-center'>" + passengerCount + " / " + capacity + "</p>";
 
-                var infoWindow = new google.maps.InfoWindow({
-                    content: contentString
-                });
+                // var infoWindow = new google.maps.InfoWindow({
+                //     content: contentString
+                // });
 
-                infoWindows.push(infoWindow);
+                // infoWindows.push(infoWindow);
+
+                infoWindows[m] = new google.maps.InfoWindow({
+                    content: contentString
+                }); 
 
                 if (!(cab_id in markerMap)) {
                     cab_ids.push(route_id);
