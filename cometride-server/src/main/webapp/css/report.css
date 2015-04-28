@@ -1,14 +1,37 @@
-th a {
-  color: #fff;
-  text-decoration: none;
+.panel {
+    padding: 0;
+    margin-top: 2%;
+    margin-left: 5px;
+    margin-right: 5px;
 }
-th a:hover {
-  color: #fff;
-  text-decoration: none;
+
+.table {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 2px #ccc;
+    transition: 0.5s;
 }
-table td {
-   border: 1px solid black;
+
+.table:hover {
+    box-shadow: 3px 3px 0px transparent;
+    transition: 0.5s;
 }
-th{
-  background-color:#71AF5A;
+
+.table thead tr {
+	background-color: #E98300;
+}
+
+.table thead tr th a{
+	color: #fff;
+	text-align: center;
+}
+
+.table tr td:first-child {
+	width: 8em;
+	text-align: center;
+}
+
+.btns {
+	margin-left:auto;
+	margin-right: auto;
+	width: 15%;
 }

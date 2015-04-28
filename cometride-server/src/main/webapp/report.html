@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  
     <title>CometRide Admin Dashboard -- Report</title>
-    <link href="css/jquery.dynatable.css" rel="stylesheet">
-    
-   <script src="js/jquery.min.js"></script>
-   <script src="js/jquery.dynatable.js"></script>
-   <script src='js/report.js'></script>
- 
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <!-- plugin css -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <!--     <link href="css/jquery.dynatable.css" rel="stylesheet">
+ -->
+    <!-- custom css -->
+    <link href="css/report.css" rel="stylesheet">
+    <!-- plugin js -->
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="js/jquery.table2excel.js"></script>
+    <!--<script src="js/jquery.dynatable.js"></script>-->
+    <!-- custom js -->
+    <script src='js/report.js'></script>
 </head>
+
 <body>
-<!--
+    <!--
 <select id="route-list" name="route selection">
 </select>
 <table id="route-hourly-riders-table">
@@ -43,39 +55,55 @@
     </tbody>
 </table>
 -->
-
-<h3>Hourly Riders for All Routes</h3>
-<table id="all-hourly-riders-table">
-    <thead>
-    <th data-dynatable-column="date">Date</th>
-    <!--<th data-dynatable-column="route">Hour</th>-->
-    <!--<th data-dynatable-column="route">Weather</th>-->
-    <th data-dynatable-column="seven">7 AM</th>
-    <th data-dynatable-column="eight">8 AM</th>
-    <th data-dynatable-column="nine">9 AM</th>
-    <th data-dynatable-column="sevenToNineTotal">7-10 Total</th>
-    <th data-dynatable-column="ten">10 AM</th>
-    <th data-dynatable-column="eleven">11 AM</th>
-    <th data-dynatable-column="twelve">12 PM</th>
-    <th data-dynatable-column="tenToTwelveTotal">10-1 Total</th>
-    <th data-dynatable-column="thirteen">1 PM</th>
-    <th data-dynatable-column="fourteen">2 PM</th>
-    <th data-dynatable-column="fifteen">3 PM</th>
-    <th data-dynatable-column="thirteenToFifteenTotal">1-4 Total</th>
-    <th data-dynatable-column="sixteen">4 PM</th>
-    <th data-dynatable-column="seventeen">5 PM</th>
-    <th data-dynatable-column="eighteen">6 PM</th>
-    <th data-dynatable-column="sixteenToEighteenTotal">4-7 Total</th>
-    <th data-dynatable-column="nineteen">7 PM</th>
-    <th data-dynatable-column="twenty">8 PM</th>
-    <th data-dynatable-column="twentyOne">9 PM</th>
-    <th data-dynatable-column="nineteenToTwentyOneTotal">7-10 Total</th>
-    <th data-dynatable-column="total">Day Total</th>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
-
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h4 class="text-center">Hourly Riders for All Routes</h4>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <table id="all-hourly-riders-table" class="table2excel table table-striped table-bordered" cellspacing="0">
+                    <thead>
+                        <th data-dynatable-column="date">Date</th>
+                        <th data-dynatable-column="seven">7 AM</th>
+                        <th data-dynatable-column="eight">8 AM</th>
+                        <th data-dynatable-column="nine">9 AM</th>
+                        <th data-dynatable-column="sevenToNineTotal">7-10 Total</th>
+                        <th data-dynatable-column="ten">10 AM</th>
+                        <th data-dynatable-column="eleven">11 AM</th>
+                        <th data-dynatable-column="twelve">12 PM</th>
+                        <th data-dynatable-column="tenToTwelveTotal">10-1 Total</th>
+                        <th data-dynatable-column="thirteen">1 PM</th>
+                        <th data-dynatable-column="fourteen">2 PM</th>
+                        <th data-dynatable-column="fifteen">3 PM</th>
+                        <th data-dynatable-column="thirteenToFifteenTotal">1-4 Total</th>
+                        <th data-dynatable-column="sixteen">4 PM</th>
+                        <th data-dynatable-column="seventeen">5 PM</th>
+                        <th data-dynatable-column="eighteen">6 PM</th>
+                        <th data-dynatable-column="sixteenToEighteenTotal">4-7 Total</th>
+                        <th data-dynatable-column="nineteen">7 PM</th>
+                        <th data-dynatable-column="twenty">8 PM</th>
+                        <th data-dynatable-column="twentyOne">9 PM</th>
+                        <th data-dynatable-column="nineteenToTwentyOneTotal">7-10 Total</th>
+                        <th data-dynatable-column="total">Day Total</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="btns">
+            <div class="form-group">
+                <a id="download" class="btn btn-primary btn-block" href="#">
+                    <i class="fa fa-cloud-download"></i> Download To Excel</a>
+            </div>
+            <div class="form-group">
+                <a class="btn btn-success btn-block" href="admin.html">
+                    <i class="fa fa-home"></i> Back To Home</a>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
