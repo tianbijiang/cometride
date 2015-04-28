@@ -803,18 +803,14 @@ $(document).ready(function() {
         for (var p = 0; p < cabIdArray.length; p++) {
             for (var key in obj2) {
                 if (key == cabIdArray[p]) {
-                    console.log(obj2[key]);
-                    markers[obj2[key]].setMap(map);
-                    google.maps.event.addListener(markers[obj2[key]], 'click', function() {
-                        infoWindows[obj2[key]].open(map, this);
+                    console.log("m["+obj2[key][0]+"]");
+                    markers[obj2[key][0]].setMap(map);
+                    google.maps.event.addListener(markers[obj2[key][0]], 'click', function() {
+                        infoWindows[obj2[key][0]].open(map, this);
                     });
-                    // google.maps.event.addListener(markerMap[cab_id], 'mouseout', function() {
-                    //     infowindow[m].close();
-                    // });
                 }
             }
         }
-
         // if (i < numberOfCabs) {
         //     //console.log("cab" + m);
         //     markers[i].setMap(map);
