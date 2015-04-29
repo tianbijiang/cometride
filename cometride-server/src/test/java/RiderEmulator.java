@@ -28,7 +28,7 @@ public class RiderEmulator {
             }
         };
 
-        timer.scheduleAtFixedRate( task, 0, 1000 );
+        timer.scheduleAtFixedRate( task, 0, 50 );
 
 
         System.out.println( "Press enter to kill client cycle." );
