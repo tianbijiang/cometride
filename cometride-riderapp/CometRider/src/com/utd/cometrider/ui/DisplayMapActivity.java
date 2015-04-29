@@ -2,7 +2,6 @@ package com.utd.cometrider.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,24 +24,22 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import android.content.Context;
-import android.content.Intent;
+
 import android.graphics.Color;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
+
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.StrictMode;
+
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
+
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -95,6 +92,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 	int selectedRoute = 0;
 	GPSLocation myLocation;
 	SupportMapFragment fm;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -107,11 +105,9 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 			setContentView(R.layout.activity_displaymap);
 
-			// get all cab information from server
-		//	new GetAllCabInfo().execute();
+			// get all routes information from server
+
 			new GetAllRoutes().execute();
-		
-			// setting.setMapToolbarEnabled(false);
 
 			// route selection drop-down
 			routeSelectionSpinner = new RouteSelectionSpinner(context);
@@ -170,48 +166,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 			return true;
 	}
 
-//	private void initCabInfo() {
-//		if (googleMap != null) {
-//
-//			cabMarkerMap = new HashMap<Cab, Marker>();
-//
-//			for (int i = 0; i < allCabs.size(); i++) {
-//				for (int j = 0; j < allRoutes.size(); j++) {
-//					
-//					if(allCabs.get(i).getRouteId().equals(allRoutes.get(j).getId())){
-//					cabLocationMarkers
-//							.add(googleMap
-//									.addMarker(new MarkerOptions()
-//											.position(
-//													allCabs.get(i)
-//															.getLocation())
-//											.title(allRoutes
-//													.get(j)
-//													.getShortName())
-//											.snippet(
-//													"From "
-//															+ allRoutes
-//																	.get(j)
-//																	.getShortName()
-//																	
-//															+ "\n"
-//															+ allCabs
-//																	.get(i)
-//																	.getPassengerCount()
-//															+ "/"
-//															+ allCabs
-//																	.get(i)
-//																	.getMaxCapacity())
-//											.icon(BitmapDescriptorFactory
-//													.fromResource(R.drawable.cab_green))));
-//
-//					cabMarkerMap.put(allCabs.get(i), cabLocationMarkers.get(i));
-//					}
-//				}
-//			}
-//		}
-//	}
-
 	private void displayAllSafePoints() {
 		if (googleMap != null) {
 
@@ -249,10 +203,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 		protected Void doInBackground(Void... params) {
 
 			if (myLocation.getLocation() != null) {
-				// myLocation = new LatLng(loc.getLatitude(),
-				// loc.getLongitude());
-
-				// LatLng nearestSaftPoint = new LatLng(0, 0);
 
 				ArrayList<LatLng> safePointsPerRoute = new ArrayList<LatLng>();
 				ArrayList<Double> distances = new ArrayList<Double>();
@@ -267,9 +217,16 @@ public class DisplayMapActivity extends FragmentActivity implements
 								safePointsPerRoute.get(i).latitude,
 								safePointsPerRoute.get(i).longitude);
 
-						double distance = Double.parseDouble(s.substring(0,
-								s.length() - 3));
-						distances.add(distance);
+						Log.v("s", s);
+						if (s.substring(0, s.length() - 3) != "" && s != null
+								&& s != "-" && s != " - ") {
+							double distance = Double.parseDouble(s.substring(0,
+									s.length() - 3));
+
+							if (distance != 0) {
+								distances.add(distance);
+							}
+						}
 					}
 
 					int minIndex = distances
@@ -279,8 +236,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 							new LatLng(myLocation.getLatitude(),
 									myLocation.getLongitude()),
 							safePointsPerRoute.get(minIndex));
-					// Log.v("safe",
-					// safePointsPerRoute.get(minIndex).toString());
 
 					ReadGoogleMapAPIURL readURL = new ReadGoogleMapAPIURL();
 
@@ -305,74 +260,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 	}
 
-//	private class GetAllCabInfo extends AsyncTask<Void, Void, Void> {
-//
-//		@Override
-//		protected Void doInBackground(Void... params) {
-//
-//			try {
-//
-//				jAllCabs = JsonReader
-//						.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/cab");
-//				for (int i = 0; i < jAllCabs.length(); i++) {
-//					Cab cab = new Cab();
-//					JSONObject c = jAllCabs.getJSONObject(i);
-//					String routeId = c.getString("routeId");
-//					int maxCapacity = c.getInt("maxCapacity");
-//					int passengerCount = c.getInt("passengerCount");
-//					String status = c.getString("status");
-//					cab.setRouteId(routeId);
-//					cab.setMaxCapacity(maxCapacity);
-//					cab.setPassengerCount(passengerCount);
-//					cab.setStatus(status);
-//
-//					// JSONObject l = c.getJSONObject("location");
-//					// ArrayList<LatLng> locations = new ArrayList<LatLng>();
-//
-//					JSONObject position = c.getJSONObject("location");
-//
-//					double lat = Double.parseDouble(position.getString("lat"));
-//					double lng = Double.parseDouble(position.getString("lng"));
-//
-//					LatLng p = new LatLng(lat, lng);
-//
-//					// locations.add(p);
-//
-//					cab.setLocation(p);
-//					allCabs.add(cab);
-//
-//				}
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (JSONException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//
-//			for (int n = 0; n < allCabs.size(); n++) {
-//				Log.v("Cab Locations", allCabs.get(n).getLocation().toString());
-//				// Log.v("color", allRoutes.get(n).getColor());
-//
-//				// Log.v("WP", allRoutes.get(n).getWaypoints().toString());
-//				// Log.v("color", allRoutes.get(n).getColor().toString())
-//			}
-//
-//			return null;
-//		}
-//
-//		protected void onPostExecute(Void result) {
-//			super.onPostExecute(result);
-//
-//		
-//			
-//			
-//		
-//
-//		}
-//
-//	}
-
 	private class GetAllRoutes extends AsyncTask<Void, Void, Void> {
 
 		@Override
@@ -381,9 +268,9 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 				jAllRoutes = JsonReader
 						.readJsonFromUrl("http://cometride.elasticbeanstalk.com/api/route");
-				shortNameMap=new HashMap<String, String>();
-				routeSelectedMap= new HashMap<String, Boolean>();
-				
+				shortNameMap = new HashMap<String, String>();
+				routeSelectedMap = new HashMap<String, Boolean>();
+
 				for (int i = 0; i < jAllRoutes.length(); i++) {
 					Route route = new Route();
 					JSONObject r = jAllRoutes.getJSONObject(i);
@@ -397,11 +284,10 @@ public class DisplayMapActivity extends FragmentActivity implements
 					route.setName(name);
 					route.setShortName(sName);
 					route.setNavigationType(navType);
-					
-					
+
 					shortNameMap.put(id, sName);
 					routeSelectedMap.put(id, true);
-					
+
 					JSONArray wp = r.getJSONArray("waypoints");
 					JSONArray safe = r.getJSONArray("safepoints");
 					ArrayList<LatLng> waypoints = new ArrayList<LatLng>();
@@ -453,13 +339,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 				e.getMessage();
 			}
 
-		//	for (int n = 0; n < allRoutes.size(); n++) {
-				// Log.v("id", allRoutes.get(n).getId());
-				// Log.v("color", allRoutes.get(n).getColor());
-				// Log.v("WP", allRoutes.get(n).getWaypoints().toString());
-				// Log.v("SP", allRoutes.get(n).getSafepoints().toString());
-			//}
-			// Log.v("all route size", Integer.toString(allRoutes.size()));
 			return null;
 		}
 
@@ -474,50 +353,21 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 			// enable the My Location layer on the Map
 			googleMap.setMyLocationEnabled(true);
-			
-		    UiSettings setting = googleMap.getUiSettings();
+
+			UiSettings setting = googleMap.getUiSettings();
 			setting.setZoomControlsEnabled(true);
 			setting.setMapToolbarEnabled(false);
-			
-			
-			
-			
-		//	if (allCabs.size() > 0 && allCabs != null) {
-				//initCabInfo();
-				// googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-				// allCabs.get(0).getLocation(), 16));
 
-				LatLng UTLatLng = new LatLng(32.984563, -96.745930);
-				googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-						UTLatLng, 16));
-			
-				
-				UpdateCabInfo updater= new UpdateCabInfo();
-				
-				updater.update(shortNameMap,routeSelectedMap,fm);
-				
-			//	allCabs= updater.getAllCabs();
-			
-			
-		//	} else {
+			LatLng UTLatLng = new LatLng(32.984563, -96.745930);
+			googleMap.moveCamera(CameraUpdateFactory
+					.newLatLngZoom(UTLatLng, 16));
 
-				//LatLng UTLatLng = new LatLng(32.984563, -96.745930);
-				//googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-						//UTLatLng, 16));
+			UpdateCabInfo updater = new UpdateCabInfo();
 
-		//	}
+			updater.update(shortNameMap, routeSelectedMap, fm);
 
-			
-			
 			displayAllSafePoints();
 			hideAllSafePoints();
-
-			// Log.v("allCabs", allCabs.toString());
-			// Log.v("cabMarkerMap", cabMarkerMap.toString());
-
-			// if (myLocation!=null){
-
-			// }
 
 			// Init route selection drop down
 			routeSelectionSpinner.setItems(selectedRoutes,
@@ -546,12 +396,12 @@ public class DisplayMapActivity extends FragmentActivity implements
 	private String getMapsApiDirectionsUrl(int routeId) {
 		String waypoints = "";
 		String url = "";
-		String navType="";
+		String navType = "";
 		navFlag = 0;
-		
+
 		if (allRoutes.get(routeId).getWaypoints().size() > 0) {
-			
-			waypoints = "&waypoints=optimize:true";
+
+			waypoints = "&waypoints=optimize:false";
 
 			for (int i = 1; i < allRoutes.get(routeId).getWaypoints().size() - 1; i++) {
 				waypoints += "|"
@@ -561,17 +411,17 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 			}
 
-			navType=allRoutes.get(routeId).getNavigationType();
-			if(navType.equals("WALKING")){	
-				navType="walking";
-			}else{
-				
-				navType="driving";
+			navType = allRoutes.get(routeId).getNavigationType();
+			if (navType.equals("WALKING")) {
+				navType = "walking";
+			} else {
+
+				navType = "driving";
 			}
-			
+
 			Log.v("navType", navType);
 			String sensor = "sensor=false";
-			String mode = "mode="+ navType;
+			String mode = "mode=" + navType;
 			String origin = "origin="
 					+ allRoutes.get(routeId).getWaypoints().get(0).latitude
 					+ ","
@@ -580,7 +430,7 @@ public class DisplayMapActivity extends FragmentActivity implements
 					+ allRoutes.get(routeId).getWaypoints().get(0).latitude
 					+ ","
 					+ allRoutes.get(routeId).getWaypoints().get(0).longitude;
-			String params = waypoints + "&" + sensor +"&" + mode ;
+			String params = waypoints + "&" + sensor + "&" + mode;
 			String output = "json";
 			url += "https://maps.googleapis.com/maps/api/directions/" + output
 					+ "?" + origin + "&" + destination + params;
@@ -596,7 +446,8 @@ public class DisplayMapActivity extends FragmentActivity implements
 		}
 
 	}
-    //For Navigation only
+
+	// For Navigation only
 	private String getMapsApiDirectionsUrl(LatLng startPoint, LatLng endPoint) {
 
 		navFlag = 1;
@@ -675,14 +526,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 				for (int j = 0; j < path.size(); j++) {
 					HashMap<String, String> point = path.get(j);
 
-					// if(j==0){ // Get distance from the list
-					// distance = (String)point.get("distance");
-					// continue;
-					// }else if(j==1){ // Get duration from the list
-					// duration = (String)point.get("duration");
-					// continue;
-					// }
-
 					double lat = Double.parseDouble(point.get("lat"));
 					double lng = Double.parseDouble(point.get("lng"));
 					LatLng position = new LatLng(lat, lng);
@@ -703,24 +546,27 @@ public class DisplayMapActivity extends FragmentActivity implements
 					polyLineOptions.color(Color.parseColor("#000000"));
 
 				}
-				// Log.v("color", Integer.toString(routes.size()));
+			
 
 			}
 
-			// Log.v("color", allRoutes.get(numberOfRoutes).getColor());
 
-			polyLine = googleMap.addPolyline(polyLineOptions);
-
-			if (navFlag == 0) {
-
-				routePolyLines.add(polyLine);
-
-				numberOfRoutes++;
-			} else {
-
-				navPolyLines.add(polyLine);
+			if (polyLineOptions != null) {
+				polyLine = googleMap.addPolyline(polyLineOptions);
 			}
+			if (polyLine != null) {
 
+				if (navFlag == 0) {
+
+					routePolyLines.add(polyLine);
+
+					numberOfRoutes++;
+				} else {
+
+					navPolyLines.add(polyLine);
+				}
+
+			}
 		}
 	}
 
@@ -734,39 +580,20 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 		if (routePolyLines != null && routePolyLines.size() > 0) {
 			routePolyLines.get(id).setVisible(true);
-			
-			
+
 		}
 
-		routeSelectedMap.put(allRoutes.get(id).getId(), true );
-		
-//		if (allCabs.size() > 0) {
-//
-//			for (int i = 0; i < allCabs.size(); i++) {
-//				// cabMarkerMap.get(allCabs.get(i)).setVisible(true);
-//
-//				if (allRoutes.get(id).getId()
-//						.equals(allCabs.get(i).getRouteId())) {
-//
-//					Log.v("routeId", allRoutes.get(id).getId());
-//					Log.v("cabrouteId", allCabs.get(i).getRouteId());
-//
-//					cabMarkerMap.get(allCabs.get(i)).setVisible(true);
-//
-//					// cabLocationMarkers.get(i).setVisible(true);
-//
-//				}
-//			}
-//		}
+		routeSelectedMap.put(allRoutes.get(id).getId(), true);
+
 
 	}
 
 	public void hideNavRoute() {
 
 		if (navPolyLines.size() > 0 && navPolyLines != null) {
-			
-			for(int i=0;i<navPolyLines.size();i++){
-			navPolyLines.get(i).setVisible(false);
+
+			for (int i = 0; i < navPolyLines.size(); i++) {
+				navPolyLines.get(i).setVisible(false);
 			}
 		}
 	}
@@ -782,17 +609,6 @@ public class DisplayMapActivity extends FragmentActivity implements
 
 	}
 
-	// public void hideSpinner() {
-	//
-	// routeSelectionSpinner.setVisibility(View.INVISIBLE);
-	//
-	// }
-	//
-	// public void displaySpinner() {
-	//
-	// routeSelectionSpinner.setVisibility(View.VISIBLE);
-	//
-	// }
 
 	public void hideAllSafePoints() {
 		// TODO Auto-generated method stub
@@ -830,47 +646,15 @@ public class DisplayMapActivity extends FragmentActivity implements
 		if (routePolyLines != null && routePolyLines.size() > 0) {
 			for (int i = 0; i < numberOfRoutes; i++) {
 				routePolyLines.get(i).setVisible(false);
-				routeSelectedMap.put(allRoutes.get(i).getId(), false );
+				routeSelectedMap.put(allRoutes.get(i).getId(), false);
 
 			}
 
 		}
-		// Log.i("route number", Integer.toString(numberOfRoutes));
-
-//		if (allCabs != null && allCabs.size() > 0) {
-//
-//			for (int j = 0; j < allCabs.size(); j++) {
-//
-//				cabLocationMarkers.get(j).setVisible(false);
-//				
-//			}
-//		}
+		
 	}
 
-	// public static double CalculationByDistance(LatLng StartP, LatLng EndP) {
-	// int Radius = 6371;// radius of earth in Km
-	// double lat1 = StartP.latitude;
-	// double lat2 = EndP.latitude;
-	// double lon1 = StartP.longitude;
-	// double lon2 = EndP.longitude;
-	// double dLat = Math.toRadians(lat2 - lat1);
-	// double dLon = Math.toRadians(lon2 - lon1);
-	// double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-	// + Math.cos(Math.toRadians(lat1))
-	// * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-	// * Math.sin(dLon / 2);
-	// double c = 2 * Math.asin(Math.sqrt(a));
-	// double valueResult = Radius * c;
-	// double km = valueResult / 1000;
-	// DecimalFormat newFormat = new DecimalFormat("####");
-	// int kmInDec = Integer.valueOf(newFormat.format(km));
-	// double meter = valueResult % 1000;
-	// int meterInDec = Integer.valueOf(newFormat.format(meter));
-	// Log.i("Radius Value", "" + valueResult + "   KM  " + kmInDec
-	// + " Meter   " + meterInDec);
-	//
-	// return valueResult;
-	// }
+	
 
 	public String getDistance(double lat1, double lon1, double lat2, double lon2) {
 		String result_in_kms = "";
